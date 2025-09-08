@@ -1,4 +1,4 @@
-// src/components/HomePage.tsx - diagnostic test
+// src/components/HomePage.tsx - network diagnostic
 import { api } from "../api";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
