@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,20 +13,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
   };
 
   const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/voyages', label: 'Voyages' },
-    { path: '/presidents', label: 'Presidents' },
-    { path: '/people', label: 'Passengers' },
-    { path: '/media', label: 'Media' },
-    { path: '/admin', label: 'Admin' },
+    { path: "/", label: "Home" },
+    { path: "/voyages", label: "Voyages" },
+    { path: "/presidents", label: "Presidents" },
+    { path: "/people", label: "Passengers" },
+    { path: "/media", label: "Media" },
+    { path: "/curators", label: "For Curators" },
+    { path: "/admin", label: "Admin" },
   ];
 
   return (
@@ -37,7 +40,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-between items-center h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link to="/" className="text-xl font-medium text-gray-900 hover:text-gray-700 transition-colors">
+                <Link
+                  to="/"
+                  className="text-xl font-medium text-gray-900 hover:text-gray-700 transition-colors"
+                >
                   USS Sequoia Archive
                 </Link>
               </div>
@@ -48,8 +54,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     to={item.path}
                     className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
                       isActive(item.path)
-                        ? 'text-gray-900 border-gray-900'
-                        : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                        ? "text-gray-900 border-gray-900"
+                        : "text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300"
                     }`}
                   >
                     {item.label}
@@ -77,8 +83,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 to={item.path}
                 className={`block px-4 py-3 text-base font-medium ${
                   isActive(item.path)
-                    ? 'text-gray-900 bg-gray-100'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? "text-gray-900 bg-gray-100"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
                 {item.label}
@@ -89,9 +95,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
@@ -101,7 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               USS Sequoia Presidential Yacht Archive
             </p>
             <p className="text-gray-500 text-xs mt-2">
-              &copy; 2025 • Historical maritime records
+              &copy; 2025 • Equator Capital LLC
             </p>
           </div>
         </div>
