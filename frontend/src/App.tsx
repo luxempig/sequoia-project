@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Test nginx access - nginx is running, checking if serving content
+// Debug build process - nginx works but serves old content
 
 const App: React.FC = () => (
   <BrowserRouter>
