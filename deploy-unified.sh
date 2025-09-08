@@ -176,6 +176,16 @@ if [ -f "frontend-build.tar.gz" ]; then
     
     echo "Checking what's actually in index.html:"
     head -20 $NGINX_ROOT/index.html | grep -i isabel || echo "Isabel not found in index.html"
+    
+    echo "Checking external access issues:"
+    echo "Public IP of this instance:"
+    curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || echo "Could not get public IP"
+    
+    echo "Security groups and firewall:"
+    sudo iptables -L -n | grep :80 || echo "No iptables rules for port 80"
+    
+    echo "What DNS says about uss-sequoia.com:"
+    nslookup uss-sequoia.com || dig uss-sequoia.com || echo "Could not resolve DNS"
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
