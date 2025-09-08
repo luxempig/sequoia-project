@@ -153,10 +153,14 @@ if [ -f "frontend-build.tar.gz" ]; then
     fi
     
     # Set up automatic certificate renewal
-    if ! sudo crontab -l 2>/dev/null | grep -q "certbot renew"; then
-        log "Setting up automatic certificate renewal..."
-        (sudo crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet --nginx") | sudo crontab -
-        log "Automatic renewal configured to run daily at noon"
+    if command -v crontab &> /dev/null; then
+        if ! sudo crontab -l 2>/dev/null | grep -q "certbot renew"; then
+            log "Setting up automatic certificate renewal..."
+            (sudo crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet --nginx") | sudo crontab -
+            log "Automatic renewal configured to run daily at noon"
+        fi
+    else
+        log "crontab not available, but Certbot has built-in renewal (systemd timer)"
     fi
     
     log "Extracting frontend build..."
