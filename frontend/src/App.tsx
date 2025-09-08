@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Test comment - testing nginx config fix and deployment debugging
+// Test comment - testing nginx config validation and auto-update
 
 const App: React.FC = () => (
   <BrowserRouter>
