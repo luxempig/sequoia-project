@@ -119,6 +119,13 @@ cd $APP_DIR
 if [ -f "frontend-build.tar.gz" ]; then
     log "Deploying frontend from uploaded build..."
     
+    # Install Certbot if not already installed
+    if ! command -v certbot &> /dev/null; then
+        log "Installing Certbot for SSL certificates..."
+        sudo yum update -y
+        sudo yum install -y certbot python3-certbot-nginx
+    fi
+    
     # Ensure nginx config is up to date
     sudo cp nginx-sequoia.conf /etc/nginx/conf.d/
     sudo rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
@@ -127,6 +134,30 @@ if [ -f "frontend-build.tar.gz" ]; then
     # Remove any other conflicting configs
     sudo find /etc/nginx/conf.d/ -name "*.conf" ! -name "nginx-sequoia.conf" -delete 2>/dev/null || true
     log "Updated nginx config, removed all conflicting configs"
+    
+    # Check if SSL certificate exists, if not, obtain one
+    if [ ! -f "/etc/letsencrypt/live/uss-sequoia.com/fullchain.pem" ]; then
+        log "Obtaining SSL certificate for uss-sequoia.com..."
+        # First ensure nginx is running with HTTP config
+        sudo systemctl reload nginx || sudo systemctl restart nginx
+        # Obtain certificate
+        sudo certbot --nginx -d uss-sequoia.com --non-interactive --agree-tos --email admin@uss-sequoia.com --redirect
+        if [ $? -eq 0 ]; then
+            log "SSL certificate obtained successfully"
+        else
+            log "Failed to obtain SSL certificate, continuing with HTTP only"
+        fi
+    else
+        log "SSL certificate already exists, ensuring nginx config is updated"
+        sudo certbot --nginx -d uss-sequoia.com --non-interactive --agree-tos --email admin@uss-sequoia.com --redirect
+    fi
+    
+    # Set up automatic certificate renewal
+    if ! sudo crontab -l 2>/dev/null | grep -q "certbot renew"; then
+        log "Setting up automatic certificate renewal..."
+        (sudo crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet --nginx") | sudo crontab -
+        log "Automatic renewal configured to run daily at noon"
+    fi
     
     log "Extracting frontend build..."
     sudo mkdir -p $NGINX_ROOT
