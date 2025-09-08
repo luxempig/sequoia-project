@@ -21,7 +21,7 @@ def list_voyages(
     offset: int = Query(0, ge=0),
 ) -> List[Dict[str, Any]]:
     with db_cursor(read_only=True) as cur:
-        base = "SELECT DISTINCT v.* FROM voyages v"
+        base = "SELECT DISTINCT v.* FROM sequoia.voyages v"
         joins: List[str] = []
         conds: List[str] = []
         params: List[Any] = []
@@ -42,17 +42,17 @@ def list_voyages(
             conds.append("v.end_date <= %s"); params.append(date_to)
 
         if has_media is True:
-            joins.append("INNER JOIN voyage_media vm ON vm.voyage_slug = v.voyage_slug")
+            joins.append("INNER JOIN sequoia.voyage_media vm ON vm.voyage_slug = v.voyage_slug")
         elif has_media is False:
-            conds.append("NOT EXISTS (SELECT 1 FROM voyage_media vm2 WHERE vm2.voyage_slug = v.voyage_slug)")
+            conds.append("NOT EXISTS (SELECT 1 FROM sequoia.voyage_media vm2 WHERE vm2.voyage_slug = v.voyage_slug)")
 
         if person:
-            joins.append("LEFT JOIN voyage_passengers vp ON vp.voyage_slug = v.voyage_slug")
-            joins.append("LEFT JOIN people p ON p.person_slug = vp.person_slug")
+            joins.append("LEFT JOIN sequoia.voyage_passengers vp ON vp.voyage_slug = v.voyage_slug")
+            joins.append("LEFT JOIN sequoia.people p ON p.person_slug = vp.person_slug")
             conds.append("p.full_name ILIKE %s"); params.append(f"%{person}%")
 
         if president_slug:
-            joins.append("INNER JOIN voyage_presidents vpr ON vpr.voyage_slug = v.voyage_slug")
+            joins.append("INNER JOIN sequoia.voyage_presidents vpr ON vpr.voyage_slug = v.voyage_slug")
             conds.append("vpr.president_slug = %s"); params.append(president_slug)
 
         # Validate sort column to prevent SQL injection
@@ -73,7 +73,7 @@ def list_voyages(
 @router.get("/{voyage_slug}", response_model=Dict[str, Any])
 def get_voyage(voyage_slug: str) -> Dict[str, Any]:
     with db_cursor(read_only=True) as cur:
-        cur.execute("SELECT * FROM voyages WHERE voyage_slug = %s", (voyage_slug,))
+        cur.execute("SELECT * FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Voyage not found")
@@ -85,8 +85,8 @@ def voyage_presidents(voyage_slug: str) -> List[Dict[str, Any]]:
         cur.execute(
             """
             SELECT pr.*
-            FROM voyage_presidents vp
-            JOIN presidents pr ON pr.president_slug = vp.president_slug
+            FROM sequoia.voyage_presidents vp
+            JOIN sequoia.presidents pr ON pr.president_slug = vp.president_slug
             WHERE vp.voyage_slug = %s
             ORDER BY pr.term_start NULLS LAST
             """,
@@ -101,8 +101,8 @@ def voyage_people(voyage_slug: str) -> List[Dict[str, Any]]:
         cur.execute(
             """
             SELECT p.*, vp.capacity_role, vp.notes AS voyage_notes
-            FROM voyage_passengers vp
-            JOIN people p ON p.person_slug = vp.person_slug
+            FROM sequoia.voyage_passengers vp
+            JOIN sequoia.people p ON p.person_slug = vp.person_slug
             WHERE vp.voyage_slug = %s
             ORDER BY p.full_name NULLS LAST
             """,
