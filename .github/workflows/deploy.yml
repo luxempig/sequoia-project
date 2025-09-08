@@ -30,8 +30,11 @@ jobs:
     - name: Build frontend
       run: |
         cd frontend
-        npm install
+        rm -rf node_modules/.cache build dist 2>/dev/null || true
+        npm ci
         npm run build
+        echo "Build completed, checking for Isabel..."
+        grep -r "ISABEL" build/ || echo "Isabel not found in build"
         tar -czf ../frontend-build.tar.gz -C build .
 
     - name: Deploy to EC2
