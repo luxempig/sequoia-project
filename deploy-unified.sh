@@ -115,35 +115,30 @@ EOF
 fi
 
 # Deploy frontend if changed
-if [ "$FRONTEND_CHANGED" = true ]; then
-    log "Deploying frontend..."
-    cd $FRONTEND_DIR
+if [ "$FRONTEND_CHANGED" = "true" ]; then
+    log "Deploying frontend from uploaded build..."
+    cd $APP_DIR
     
-    # Install frontend dependencies if package.json changed
-    if [ "$OLD_COMMIT" = "initial" ] || git diff --name-only $OLD_COMMIT $NEW_COMMIT | grep -q "frontend/package.json\|frontend/package-lock.json"; then
-        log "Installing frontend dependencies..."
-        npm install
+    # Check if frontend build was uploaded
+    if [ -f "frontend-build.tar.gz" ]; then
+        log "Extracting frontend build..."
+        sudo mkdir -p $NGINX_ROOT
+        sudo rm -rf $NGINX_ROOT/*
+        sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
+        
+        # Clean up
+        rm frontend-build.tar.gz
+        
+        # Set proper permissions
+        sudo chown -R nginx:nginx $NGINX_ROOT
+        sudo chmod -R 755 $NGINX_ROOT
+        
+        # Reload nginx
+        sudo systemctl reload nginx
+        log "Frontend deployed from build archive"
+    else
+        log "No frontend build archive found, skipping frontend deployment"
     fi
-    
-    # Build frontend
-    log "Building frontend..."
-    npm run build
-    
-    # Deploy to nginx
-    log "Deploying frontend build to nginx..."
-    sudo mkdir -p $NGINX_ROOT
-    sudo rm -rf $NGINX_ROOT/*
-    sudo cp -r dist/* $NGINX_ROOT/ 2>/dev/null || sudo cp -r build/* $NGINX_ROOT/ 2>/dev/null || {
-        log "ERROR: Could not find frontend build directory (dist/ or build/)"
-        exit 1
-    }
-    
-    # Set proper permissions
-    sudo chown -R nginx:nginx $NGINX_ROOT
-    sudo chmod -R 755 $NGINX_ROOT
-    
-    # Reload nginx
-    sudo systemctl reload nginx
 fi
 
 # Health check

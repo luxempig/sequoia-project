@@ -19,13 +19,30 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+      if: contains(github.event.head_commit.modified, 'frontend/')
+
+    - name: Build frontend
+      if: contains(github.event.head_commit.modified, 'frontend/')
+      run: |
+        cd frontend
+        npm install
+        npm run build
+        tar -czf ../frontend-build.tar.gz -C build .
+
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,DB_PASSWORD,GOOGLE_CREDENTIALS
+        envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,DB_PASSWORD,GOOGLE_CREDENTIALS,FRONTEND_CHANGED
         script: |
           cd /home/ec2-user/sequoia-project
           git pull origin main
@@ -35,3 +52,14 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        FRONTEND_CHANGED: ${{ contains(github.event.head_commit.modified, 'frontend/') }}
+
+    - name: Upload frontend build
+      if: contains(github.event.head_commit.modified, 'frontend/')
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "frontend-build.tar.gz"
+        target: "/home/ec2-user/sequoia-project/"
