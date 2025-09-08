@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Debug external access - nginx works locally but domain unreachable
+// Fix nginx to serve domain requests - IP works, need domain routing
 
 const App: React.FC = () => (
   <BrowserRouter>
