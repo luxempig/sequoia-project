@@ -1,4 +1,4 @@
-// src/components/HomePage.tsx
+// src/components/HomePage.tsx - diagnostic test
 import { api } from "../api";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
