@@ -53,10 +53,10 @@ export default function HomePage() {
   const goSearch = () => navigate(`/voyages${qs() ? "?" + qs() : ""}`);
   const goFullTimeline = () => navigate("/voyages");
 
-  const Badge: React.FC<{ tone?: "amber" | "violet"; children: React.ReactNode }> = ({
-    tone = "amber",
-    children,
-  }) => (
+  const Badge: React.FC<{
+    tone?: "amber" | "violet";
+    children: React.ReactNode;
+  }> = ({ tone = "amber", children }) => (
     <span
       className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md ring-1
       ${
@@ -177,7 +177,10 @@ export default function HomePage() {
             </div>
           </form>
 
-          <a href="#about" className="mt-12 text-indigo-200 hover:text-white transition">
+          <a
+            href="#about"
+            className="mt-12 text-indigo-200 hover:text-white transition"
+          >
             Learn more ↓
           </a>
         </div>
