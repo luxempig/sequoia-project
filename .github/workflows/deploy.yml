@@ -45,7 +45,8 @@ jobs:
         envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,DB_PASSWORD,GOOGLE_CREDENTIALS,FRONTEND_CHANGED
         script: |
           cd /home/ec2-user/sequoia-project
-          git pull origin main
+          git fetch origin
+          git reset --hard origin/main
           chmod +x deploy-unified.sh
           ./deploy-unified.sh
       env:
