@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Debug build process - nginx works but serves old content
+// Fix npm install issue and test if build includes ISABEL
 
 const App: React.FC = () => (
   <BrowserRouter>
