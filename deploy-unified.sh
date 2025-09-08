@@ -118,6 +118,11 @@ fi
 cd $APP_DIR
 if [ -f "frontend-build.tar.gz" ]; then
     log "Deploying frontend from uploaded build..."
+    
+    # Ensure nginx config is up to date
+    sudo cp nginx-sequoia.conf /etc/nginx/conf.d/
+    sudo rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
+    
     log "Extracting frontend build..."
     sudo mkdir -p $NGINX_ROOT
     sudo rm -rf $NGINX_ROOT/*
@@ -134,9 +139,21 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo chown -R nginx:nginx $NGINX_ROOT
     sudo chmod -R 755 $NGINX_ROOT
     
-    # Reload nginx
-    sudo systemctl reload nginx
-    log "Frontend deployed from build archive"
+    # Test nginx config before reloading
+    if sudo nginx -t; then
+        log "Nginx config is valid, reloading..."
+        sudo systemctl reload nginx
+        log "Frontend deployed from build archive"
+    else
+        log "ERROR: Nginx config is invalid, attempting restart..."
+        sudo systemctl restart nginx
+        if sudo systemctl is-active nginx; then
+            log "Nginx restarted successfully"
+        else
+            log "ERROR: Nginx failed to start"
+            sudo systemctl status nginx
+        fi
+    fi
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
