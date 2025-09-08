@@ -26,7 +26,7 @@ const LoginScreen: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-left"
         style={{ backgroundImage: "url(/leon.jpg)" }}
       />
       <div className="absolute inset-0 bg-black/60" />
