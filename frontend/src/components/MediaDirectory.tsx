@@ -7,6 +7,7 @@ interface FileItem {
   size?: string;
   lastModified?: string;
   extension?: string;
+  s3Url?: string;
 }
 
 const MediaDirectory: React.FC = () => {
@@ -15,63 +16,83 @@ const MediaDirectory: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Simulate S3 bucket structure - in real implementation, this would come from your S3 API
-  const mockS3Structure: Record<string, FileItem[]> = {
+  // Real S3 structure: media/{president_slug}/{source_slug}/{voyage_slug}/{extension}/{media_slug}.{extension}
+  const realS3Structure: Record<string, FileItem[]> = {
     '/': [
-      { name: 'images', type: 'folder' },
-      { name: 'documents', type: 'folder' },
-      { name: 'videos', type: 'folder' },
-      { name: 'audio', type: 'folder' },
-      { name: 'manuscripts', type: 'folder' },
+      { name: 'media', type: 'folder' },
     ],
-    '/images/': [
-      { name: 'presidential-portraits', type: 'folder' },
-      { name: 'voyage-photography', type: 'folder' },
-      { name: 'deck-plans', type: 'folder' },
-      { name: 'guest-photos', type: 'folder' },
+    '/media/': [
+      { name: 'roosevelt-franklin', type: 'folder' },
+      { name: 'truman-harry', type: 'folder' },
+      { name: 'eisenhower-dwight', type: 'folder' },
+      { name: 'kennedy-john', type: 'folder' },
+      { name: 'johnson-lyndon', type: 'folder' },
+      { name: 'nixon-richard', type: 'folder' },
+      { name: 'ford-gerald', type: 'folder' },
+      { name: 'carter-jimmy', type: 'folder' },
     ],
-    '/images/presidential-portraits/': [
-      { name: 'roosevelt-fdr-1936.jpg', type: 'file', size: '2.4 MB', lastModified: '2024-03-15', extension: 'jpg' },
-      { name: 'truman-1948.jpg', type: 'file', size: '1.8 MB', lastModified: '2024-03-12', extension: 'jpg' },
-      { name: 'eisenhower-1954.jpg', type: 'file', size: '3.1 MB', lastModified: '2024-03-10', extension: 'jpg' },
-      { name: 'kennedy-1962.jpg', type: 'file', size: '2.7 MB', lastModified: '2024-03-08', extension: 'jpg' },
-      { name: 'johnson-1965.jpg', type: 'file', size: '2.2 MB', lastModified: '2024-03-05', extension: 'jpg' },
+    '/media/roosevelt-franklin/': [
+      { name: 'sequoia-logbook', type: 'folder' },
+      { name: 'fdr-day-by-day', type: 'folder' },
+      { name: 'philadelphia-inquirer', type: 'folder' },
+      { name: 'baltimore-sun', type: 'folder' },
+      { name: 'los-angeles-times', type: 'folder' },
     ],
-    '/images/voyage-photography/': [
-      { name: '1936-potomac-cruise', type: 'folder' },
-      { name: '1945-potsdam-conference', type: 'folder' },
-      { name: '1960-camp-david-talks', type: 'folder' },
-      { name: 'deck-ceremonies.jpg', type: 'file', size: '4.2 MB', lastModified: '2024-02-28', extension: 'jpg' },
+    '/media/roosevelt-franklin/sequoia-logbook/': [
+      { name: 'voyage-henry-roosevelt-1933-04-21', type: 'folder' },
+      { name: 'voyage-war-debts-discussion-1933-04-23', type: 'folder' },
+      { name: 'voyage-eleanor-todhunter-1933-04-30', type: 'folder' },
     ],
-    '/documents/': [
-      { name: 'guest-registers', type: 'folder' },
-      { name: 'navigation-logs', type: 'folder' },
-      { name: 'maintenance-records', type: 'folder' },
-      { name: 'diplomatic-correspondence', type: 'folder' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/': [
+      { name: 'pdf', type: 'folder' },
+      { name: 'jpg', type: 'folder' },
     ],
-    '/documents/guest-registers/': [
-      { name: 'guest-register-1936-1940.pdf', type: 'file', size: '15.6 MB', lastModified: '2024-01-20', extension: 'pdf' },
-      { name: 'guest-register-1941-1945.pdf', type: 'file', size: '18.2 MB', lastModified: '2024-01-18', extension: 'pdf' },
-      { name: 'guest-register-1946-1950.pdf', type: 'file', size: '14.8 MB', lastModified: '2024-01-15', extension: 'pdf' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/pdf/': [
+      { name: 'logbook-page-5.pdf', type: 'file', size: '2.1 MB', lastModified: '2024-01-15', extension: 'pdf', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/pdf/logbook-page-5.pdf' },
     ],
-    '/videos/': [
-      { name: 'ceremonial-footage', type: 'folder' },
-      { name: 'presidential-arrivals', type: 'folder' },
-      { name: 'news-reels', type: 'folder' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/jpg/': [
+      { name: 'logbook-page-5_thumb.jpg', type: 'file', size: '156 KB', lastModified: '2024-01-15', extension: 'jpg', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/jpg/logbook-page-5_thumb.jpg' },
+      { name: 'logbook-page-5_preview.jpg', type: 'file', size: '485 KB', lastModified: '2024-01-15', extension: 'jpg', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-henry-roosevelt-1933-04-21/jpg/logbook-page-5_preview.jpg' },
     ],
-    '/videos/ceremonial-footage/': [
-      { name: 'commissioning-ceremony-1933.mp4', type: 'file', size: '245 MB', lastModified: '2024-02-10', extension: 'mp4' },
-      { name: 'presidential-inspection-1936.mp4', type: 'file', size: '180 MB', lastModified: '2024-02-08', extension: 'mp4' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/': [
+      { name: 'pdf', type: 'folder' },
+      { name: 'jpg', type: 'folder' },
     ],
-    '/audio/': [
-      { name: 'radio-transmissions', type: 'folder' },
-      { name: 'oral-histories', type: 'folder' },
-      { name: 'ceremonial-recordings', type: 'folder' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/pdf/': [
+      { name: 'logbook-page-7.pdf', type: 'file', size: '2.8 MB', lastModified: '2024-01-16', extension: 'pdf', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/pdf/logbook-page-7.pdf' },
     ],
-    '/manuscripts/': [
-      { name: 'personal-correspondence', type: 'folder' },
-      { name: 'official-documents', type: 'folder' },
-      { name: 'diary-entries', type: 'folder' },
+    '/media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/jpg/': [
+      { name: 'logbook-page-7_thumb.jpg', type: 'file', size: '167 KB', lastModified: '2024-01-16', extension: 'jpg', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/jpg/logbook-page-7_thumb.jpg' },
+      { name: 'logbook-page-7_preview.jpg', type: 'file', size: '521 KB', lastModified: '2024-01-16', extension: 'jpg', s3Url: 'media/roosevelt-franklin/sequoia-logbook/voyage-war-debts-discussion-1933-04-23/jpg/logbook-page-7_preview.jpg' },
+    ],
+    '/media/roosevelt-franklin/philadelphia-inquirer/': [
+      { name: 'voyage-war-debts-discussion-1933-04-23', type: 'folder' },
+    ],
+    '/media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/': [
+      { name: 'pdf', type: 'folder' },
+      { name: 'jpg', type: 'folder' },
+    ],
+    '/media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/pdf/': [
+      { name: 'philadelphia-inquirer-full-pg3.pdf', type: 'file', size: '4.2 MB', lastModified: '2024-01-18', extension: 'pdf', s3Url: 'media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/pdf/philadelphia-inquirer-full-pg3.pdf' },
+    ],
+    '/media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/jpg/': [
+      { name: 'philadelphia-inquirer-full-pg3_thumb.jpg', type: 'file', size: '198 KB', lastModified: '2024-01-18', extension: 'jpg', s3Url: 'media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/jpg/philadelphia-inquirer-full-pg3_thumb.jpg' },
+      { name: 'philadelphia-inquirer-full-pg3_preview.jpg', type: 'file', size: '654 KB', lastModified: '2024-01-18', extension: 'jpg', s3Url: 'media/roosevelt-franklin/philadelphia-inquirer/voyage-war-debts-discussion-1933-04-23/jpg/philadelphia-inquirer-full-pg3_preview.jpg' },
+    ],
+    '/media/truman-harry/': [
+      { name: 'truman-library', type: 'folder' },
+      { name: 'washington-post', type: 'folder' },
+    ],
+    '/media/truman-harry/truman-library/': [
+      { name: 'voyage-potsdam-prep-1945-07-15', type: 'folder' },
+    ],
+    '/media/eisenhower-dwight/': [
+      { name: 'eisenhower-library', type: 'folder' },
+      { name: 'life-magazine', type: 'folder' },
+    ],
+    '/media/kennedy-john/': [
+      { name: 'kennedy-library', type: 'folder' },
+      { name: 'time-magazine', type: 'folder' },
     ],
   };
 
@@ -81,7 +102,7 @@ const MediaDirectory: React.FC = () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      const directoryItems = mockS3Structure[currentPath] || [];
+      const directoryItems = realS3Structure[currentPath] || [];
       setItems(directoryItems);
       setLoading(false);
     };
@@ -97,8 +118,41 @@ const MediaDirectory: React.FC = () => {
     if (item.type === 'folder') {
       const newPath = currentPath === '/' ? `/${item.name}/` : `${currentPath}${item.name}/`;
       navigateToPath(newPath);
+    } else if (item.type === 'file' && item.s3Url) {
+      // Open file - in real implementation, this would use presigned URLs
+      openFile(item);
     }
-    // For files, you could open them in a modal or navigate to a detail view
+  };
+
+  const openFile = async (item: FileItem) => {
+    try {
+      // In real implementation, this would request a presigned URL from the backend
+      const presignedUrl = await getPresignedUrl(item.s3Url!);
+      
+      // Open in new tab for viewing
+      window.open(presignedUrl, '_blank');
+    } catch (error) {
+      console.error('Failed to open file:', error);
+      // Fallback: try to construct a public URL or show error
+      alert(`Cannot open file: ${item.name}. File access not available in demo mode.`);
+    }
+  };
+
+  const getPresignedUrl = async (s3Url: string): Promise<string> => {
+    // In real implementation, this would call your backend API
+    // For demo, we'll simulate the URL generation
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // Simulate presigned URL - in reality this would come from your backend
+        if (s3Url.includes('.jpg') || s3Url.includes('.png')) {
+          resolve(`https://sequoia-canonical.s3.amazonaws.com/${s3Url}?presigned-demo`);
+        } else if (s3Url.includes('.pdf')) {
+          resolve(`https://sequoia-canonical.s3.amazonaws.com/${s3Url}?presigned-demo`);
+        } else {
+          reject(new Error('Unsupported file type'));
+        }
+      }, 500);
+    });
   };
 
   const getBreadcrumbs = () => {
@@ -231,18 +285,31 @@ const MediaDirectory: React.FC = () => {
                   <div
                     key={index}
                     onClick={() => handleItemClick(item)}
-                    className={`px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between ${
-                      item.type === 'folder' ? 'hover:bg-blue-50' : ''
+                    className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors ${
+                      item.type === 'folder' 
+                        ? 'hover:bg-blue-50' 
+                        : item.s3Url 
+                          ? 'hover:bg-green-50' 
+                          : 'hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center">
                       <span className="text-xl mr-3">{getFileIcon(item)}</span>
                       <span
                         className={`font-medium ${
-                          item.type === 'folder' ? 'text-blue-600' : 'text-gray-900'
+                          item.type === 'folder' 
+                            ? 'text-blue-600' 
+                            : item.s3Url 
+                              ? 'text-green-600' 
+                              : 'text-gray-900'
                         }`}
                       >
                         {item.name}
+                        {item.s3Url && (
+                          <span className="ml-2 text-xs text-green-500">
+                            📂 Click to open
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center space-x-8 text-sm text-gray-500">

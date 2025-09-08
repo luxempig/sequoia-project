@@ -13,7 +13,7 @@ import PersonDetail from "./components/PersonDetail";
 import MediaBrowser from "./components/MediaBrowser";
 import MediaDirectory from "./components/MediaDirectory";
 import MediaDetail from "./components/MediaDetail";
-import CuratorPage from "./components/CuratorPage";
+import CuratorDocument from "./components/CuratorDocument";
 import AdminDashboard from "./components/AdminDashboard";
 import "./index.css";
 
@@ -48,7 +48,7 @@ const AppContent: React.FC = () => {
         <Route path="/media" element={<MediaDirectory />} />
         <Route path="/media/:slug" element={<MediaDetail />} />
         
-        <Route path="/curators" element={<CuratorPage />} />
+        <Route path="/curators" element={<CuratorDocument />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
