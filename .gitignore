@@ -1,3 +1,17 @@
+# Exclude everything except essential deployment files and main directories
+/*
+!frontend/
+!backend/
+!.github/
+!.gitignore
+!README.md
+!package.json
+!deploy-unified.sh
+!setup-ec2.sh
+!nginx-sequoia.conf
+!ecosystem.config.js
+!webhook-server.js
+
 # Dependencies
 node_modules/
 */node_modules/
