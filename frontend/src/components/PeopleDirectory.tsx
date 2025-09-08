@@ -50,8 +50,8 @@ const PeopleDirectory: React.FC = () => {
       <Layout>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading people directory...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-2 text-amber-700 font-serif italic">Assembling passenger manifest...</p>
           </div>
         </div>
       </Layout>
@@ -64,11 +64,11 @@ const PeopleDirectory: React.FC = () => {
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              People Directory
+            <h2 className="text-2xl font-bold leading-7 text-amber-900 sm:text-3xl sm:truncate font-serif">
+              Passenger Manifest
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Passengers, crew, and officials who traveled aboard the USS Sequoia
+            <p className="mt-1 text-sm text-amber-700 font-serif italic">
+              Distinguished guests, crew, and officials who sailed aboard the USS Sequoia
             </p>
           </div>
         </div>
@@ -76,7 +76,7 @@ const PeopleDirectory: React.FC = () => {
         {/* Stats Cards */}
         {stats && (
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -84,15 +84,15 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total People</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.total_people}</dd>
+                      <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Total People</dt>
+                      <dd className="text-lg font-bold text-amber-900 font-serif">{stats.total_people}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -100,15 +100,15 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Voyage Records</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.total_passenger_records}</dd>
+                      <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Voyage Records</dt>
+                      <dd className="text-lg font-bold text-amber-900 font-serif">{stats.total_passenger_records}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -116,15 +116,15 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Unique Roles</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.by_role?.length || 0}</dd>
+                      <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Unique Roles</dt>
+                      <dd className="text-lg font-bold text-amber-900 font-serif">{stats.by_role?.length || 0}</dd>
                     </dl>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -132,8 +132,8 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Search Results</dt>
-                      <dd className="text-lg font-medium text-gray-900">{filteredPeople.length}</dd>
+                      <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Search Results</dt>
+                      <dd className="text-lg font-bold text-amber-900 font-serif">{filteredPeople.length}</dd>
                     </dl>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ const PeopleDirectory: React.FC = () => {
               <input
                 type="text"
                 id="search"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2 border-2 border-amber-300/60 rounded-md leading-5 bg-amber-50/80 placeholder-amber-700/60 focus:outline-none focus:placeholder-amber-600/80 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 sm:text-sm text-amber-900 font-serif backdrop-blur-sm shadow-lg"
                 placeholder="Search by name, role, or organization..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -165,12 +165,12 @@ const PeopleDirectory: React.FC = () => {
         {/* People Grid */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPeople.map((person) => (
-            <div key={person.person_slug} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+            <div key={person.person_slug} className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow border-2 border-amber-200/60 backdrop-blur-sm hover:bg-amber-50/90">
               <div className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <span className="text-indigo-600 font-medium text-sm">
+                    <div className="h-10 w-10 rounded-full bg-amber-200/60 flex items-center justify-center border-2 border-amber-300/60">
+                      <span className="text-amber-800 font-bold text-sm font-serif">
                         {person.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </span>
                     </div>
@@ -179,18 +179,18 @@ const PeopleDirectory: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <Link 
                         to={`/people/${person.person_slug}`}
-                        className="text-sm font-medium text-gray-900 hover:text-indigo-600"
+                        className="text-sm font-bold text-amber-900 hover:text-amber-700 font-serif"
                       >
                         {person.full_name}
                       </Link>
                     </div>
                     {person.role_title && (
-                      <p className="text-sm text-gray-500">{person.role_title}</p>
+                      <p className="text-sm text-amber-700 font-serif">{person.role_title}</p>
                     )}
                     {person.organization && (
-                      <p className="text-xs text-gray-400 mt-1">{person.organization}</p>
+                      <p className="text-xs text-amber-600 mt-1 font-serif italic">{person.organization}</p>
                     )}
-                    <div className="mt-2 flex items-center space-x-2 text-xs text-gray-400">
+                    <div className="mt-2 flex items-center space-x-2 text-xs text-amber-600 font-serif">
                       {person.birth_year && (
                         <span>Born: {person.birth_year}</span>
                       )}
@@ -209,9 +209,9 @@ const PeopleDirectory: React.FC = () => {
         {filteredPeople.length === 0 && !loading && (
           <div className="text-center py-12">
             <span className="text-4xl">🔍</span>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No people found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Try adjusting your search terms or browse all people.
+            <h3 className="mt-2 text-sm font-bold text-amber-900 font-serif">No passengers found</h3>
+            <p className="mt-1 text-sm text-amber-700 font-serif italic">
+              Try adjusting your search terms or browse all passengers.
             </p>
           </div>
         )}
@@ -219,23 +219,23 @@ const PeopleDirectory: React.FC = () => {
         {/* Top Roles */}
         {stats?.by_role && (
           <div className="mt-8">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Most Common Roles</h3>
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <h3 className="text-lg font-bold text-amber-900 mb-4 font-serif">Most Distinguished Roles</h3>
+            <div className="bg-amber-50/80 shadow-lg overflow-hidden sm:rounded-md border-2 border-amber-200/60 backdrop-blur-sm">
+              <ul className="divide-y divide-amber-200/60">
                 {stats.by_role.slice(0, 10).map((role: any, index: number) => (
                   <li key={role.capacity_role} className="px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="text-sm font-medium text-gray-900 mr-2">
+                      <div className="text-sm font-bold text-amber-900 mr-2 font-serif">
                         {index + 1}.
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{role.capacity_role}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm font-bold text-amber-900 font-serif">{role.capacity_role}</div>
+                        <div className="text-sm text-amber-700 font-serif">
                           {role.unique_people} people, {role.voyage_count} voyages
                         </div>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-amber-700 font-serif">
                       {role.count} records
                     </div>
                   </li>

@@ -37,10 +37,10 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
       <div className="timeline-content w-full">
         <Link
           to={`/voyages/${voyage.voyage_slug}`}
-          className="block bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-200 hover:shadow-md transition"
+          className="block bg-amber-50/80 p-4 rounded-xl shadow-lg ring-2 ring-amber-200/60 hover:shadow-xl transition hover:bg-amber-50/90 backdrop-blur-sm border border-amber-100/50"
         >
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-            <h3 className="text-sm sm:text-base font-semibold">
+            <h3 className="text-sm sm:text-base font-bold text-amber-900 font-serif">
               {fmtRange(voyage.start_date, voyage.end_date)}
             </h3>
             <div className="flex gap-2">
@@ -49,7 +49,7 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
             </div>
           </div>
           {voyage.summary_markdown && (
-            <p className="text-sm text-gray-600 line-clamp-2">{voyage.summary_markdown}</p>
+            <p className="text-sm text-amber-800 line-clamp-2 font-serif">{voyage.summary_markdown}</p>
           )}
         </Link>
       </div>

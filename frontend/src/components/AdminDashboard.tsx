@@ -39,8 +39,8 @@ const AdminDashboard: React.FC = () => {
       <Layout>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading dashboard...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-2 text-amber-700 font-serif italic">Preparing command deck...</p>
           </div>
         </div>
       </Layout>
@@ -53,26 +53,26 @@ const AdminDashboard: React.FC = () => {
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Admin Dashboard
+            <h2 className="text-2xl font-bold leading-7 text-amber-900 sm:text-3xl sm:truncate font-serif">
+              Command Bridge
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Overview and analytics for the USS Sequoia Archive
+            <p className="mt-1 text-sm text-amber-700 font-serif italic">
+              Archive operations and maritime analytics for the USS Sequoia
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="mt-6 border-b border-gray-200">
+        <div className="mt-6 border-b border-amber-300">
           <div className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-semibold text-sm font-serif ${
                   activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-amber-600 text-amber-800'
+                    : 'border-transparent text-amber-600 hover:text-amber-800 hover:border-amber-400'
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
@@ -88,7 +88,7 @@ const AdminDashboard: React.FC = () => {
             <div className="space-y-6">
               {/* Stats Cards */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
@@ -96,15 +96,15 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Total Voyages</dt>
-                          <dd className="text-lg font-medium text-gray-900">{dashboardData.totals?.total_voyages || 0}</dd>
+                          <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Total Voyages</dt>
+                          <dd className="text-lg font-bold text-amber-900 font-serif">{dashboardData.totals?.total_voyages || 0}</dd>
                         </dl>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
@@ -112,15 +112,15 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Presidents</dt>
-                          <dd className="text-lg font-medium text-gray-900">{dashboardData.totals?.total_presidents || 0}</dd>
+                          <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Presidents</dt>
+                          <dd className="text-lg font-bold text-amber-900 font-serif">{dashboardData.totals?.total_presidents || 0}</dd>
                         </dl>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
@@ -128,15 +128,15 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">People</dt>
-                          <dd className="text-lg font-medium text-gray-900">{dashboardData.totals?.total_people || 0}</dd>
+                          <dt className="text-sm font-semibold text-amber-700 truncate font-serif">People</dt>
+                          <dd className="text-lg font-bold text-amber-900 font-serif">{dashboardData.totals?.total_people || 0}</dd>
                         </dl>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="bg-amber-50/80 overflow-hidden shadow-lg rounded-lg border-2 border-amber-200/60 backdrop-blur-sm">
                   <div className="p-5">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
@@ -144,8 +144,8 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="ml-5 w-0 flex-1">
                         <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">Media Items</dt>
-                          <dd className="text-lg font-medium text-gray-900">{dashboardData.totals?.total_media || 0}</dd>
+                          <dt className="text-sm font-semibold text-amber-700 truncate font-serif">Media Items</dt>
+                          <dd className="text-lg font-bold text-amber-900 font-serif">{dashboardData.totals?.total_media || 0}</dd>
                         </dl>
                       </div>
                     </div>

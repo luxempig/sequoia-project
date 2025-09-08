@@ -79,14 +79,22 @@ export default function HomePage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/sequoia-homepage.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-indigo-900/60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/60 via-amber-800/70 to-slate-900/80" />
 
-        <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 sm:p-8 text-center text-white">
-          <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
+        <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 sm:p-8 text-center">
+          <div className="mb-6">
+            <div className="w-24 h-24 mx-auto bg-gradient-to-b from-amber-400 via-amber-500 to-amber-700 rounded-full flex items-center justify-center border-6 border-amber-200 shadow-2xl mb-6">
+              <span className="text-4xl text-amber-50">⚓</span>
+            </div>
+          </div>
+          <h1 className="text-5xl sm:text-7xl font-bold mb-4 tracking-tight leading-tight font-serif text-amber-50 drop-shadow-2xl">
             USS Sequoia Archive
           </h1>
-          <p className="text-lg mb-10 text-indigo-200">
-            Charting a century of presidential voyages
+          <p className="text-xl mb-4 text-amber-100 font-serif italic drop-shadow-lg">
+            Presidential Maritime Collection
+          </p>
+          <p className="text-lg mb-10 text-amber-200/90 font-serif max-w-2xl">
+            Charting a century of presidential voyages aboard America's most distinguished yacht
           </p>
 
           <form
@@ -163,23 +171,23 @@ export default function HomePage() {
             <div className="flex justify-center gap-4">
               <button
                 type="submit"
-                className="px-6 py-3 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 font-medium transition hover:scale-105"
+                className="px-6 py-3 rounded-lg bg-amber-700/80 hover:bg-amber-600 font-medium font-serif transition hover:scale-105 text-amber-50 border-2 border-amber-500/50 hover:border-amber-400 shadow-lg"
               >
-                Search
+                Chart Course
               </button>
               <button
                 type="button"
                 onClick={goFullTimeline}
-                className="px-6 py-3 rounded-lg bg-white/30 hover:bg-white/40 font-medium transition hover:scale-105"
+                className="px-6 py-3 rounded-lg bg-amber-800/60 hover:bg-amber-700/80 font-medium font-serif transition hover:scale-105 text-amber-100 border-2 border-amber-600/50 hover:border-amber-500 shadow-lg"
               >
-                Full timeline
+                Full Maritime Log
               </button>
             </div>
           </form>
 
           <a
             href="#about"
-            className="mt-12 text-indigo-200 hover:text-white transition"
+            className="mt-12 text-amber-200 hover:text-amber-50 transition font-serif"
           >
             Learn more ↓
           </a>
@@ -187,41 +195,41 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 bg-gray-50">
+      <section id="about" className="py-16 bg-gradient-to-b from-amber-50 to-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-extrabold text-amber-900 sm:text-4xl font-serif">
               About the USS Sequoia Archive
             </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-              A comprehensive digital collection of presidential voyages aboard America's most famous yacht
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-amber-800 font-serif italic">
+              A comprehensive digital collection of presidential voyages aboard America's most distinguished yacht
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="text-center">
-              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+            <div className="text-center p-6 bg-white/60 rounded-lg shadow-lg border border-amber-200/50">
+              <div className="flex items-center justify-center h-16 w-16 mx-auto bg-gradient-to-b from-amber-600 to-amber-700 text-amber-50 rounded-full border-3 border-amber-300 shadow-lg">
                 🚢
               </div>
-              <h3 className="mt-6 text-lg font-medium text-gray-900">Presidential Voyages</h3>
-              <p className="mt-2 text-base text-gray-500">
+              <h3 className="mt-6 text-lg font-bold text-amber-900 font-serif">Presidential Voyages</h3>
+              <p className="mt-2 text-base text-amber-800 font-serif">
                 Detailed records of presidential trips and official state visits aboard the USS Sequoia
               </p>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+            <div className="text-center p-6 bg-white/60 rounded-lg shadow-lg border border-amber-200/50">
+              <div className="flex items-center justify-center h-16 w-16 mx-auto bg-gradient-to-b from-amber-600 to-amber-700 text-amber-50 rounded-full border-3 border-amber-300 shadow-lg">
                 📸
               </div>
-              <h3 className="mt-6 text-lg font-medium text-gray-900">Historical Media</h3>
-              <p className="mt-2 text-base text-gray-500">
+              <h3 className="mt-6 text-lg font-bold text-amber-900 font-serif">Historical Media</h3>
+              <p className="mt-2 text-base text-amber-800 font-serif">
                 Photographs, documents, and multimedia from decades of presidential history
               </p>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+            <div className="text-center p-6 bg-white/60 rounded-lg shadow-lg border border-amber-200/50">
+              <div className="flex items-center justify-center h-16 w-16 mx-auto bg-gradient-to-b from-amber-600 to-amber-700 text-amber-50 rounded-full border-3 border-amber-300 shadow-lg">
                 👥
               </div>
-              <h3 className="mt-6 text-lg font-medium text-gray-900">People & Passengers</h3>
-              <p className="mt-2 text-base text-gray-500">
+              <h3 className="mt-6 text-lg font-bold text-amber-900 font-serif">People & Passengers</h3>
+              <p className="mt-2 text-base text-amber-800 font-serif">
                 Comprehensive directory of passengers, crew, and officials who traveled aboard
               </p>
             </div>
