@@ -3,6 +3,7 @@ import { api } from "../api";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { President } from "../types";
+import Layout from "./Layout";
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
@@ -71,7 +72,8 @@ export default function HomePage() {
   const glass = "bg-white/20 backdrop-blur-md ring-1 ring-white/30 shadow-lg";
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <Layout>
+    <div className="min-h-screen flex flex-col overflow-x-hidden -mt-16">
       <section className="relative flex-grow">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -81,7 +83,7 @@ export default function HomePage() {
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 sm:p-8 text-center text-white">
           <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
-            HI ISABEL :DDDD
+            USS Sequoia Archive
           </h1>
           <p className="text-lg mb-10 text-indigo-200">
             Charting a century of presidential voyages
@@ -181,8 +183,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* (rest unchanged) */}
-      {/* ... keep your long-form sections exactly as before ... */}
+      {/* About Section */}
+      <section id="about" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              About the USS Sequoia Archive
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+              A comprehensive digital collection of presidential voyages aboard America's most famous yacht
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+                🚢
+              </div>
+              <h3 className="mt-6 text-lg font-medium text-gray-900">Presidential Voyages</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Detailed records of presidential trips and official state visits aboard the USS Sequoia
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+                📸
+              </div>
+              <h3 className="mt-6 text-lg font-medium text-gray-900">Historical Media</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Photographs, documents, and multimedia from decades of presidential history
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center h-12 w-12 mx-auto bg-indigo-500 text-white rounded-md">
+                👥
+              </div>
+              <h3 className="mt-6 text-lg font-medium text-gray-900">People & Passengers</h3>
+              <p className="mt-2 text-base text-gray-500">
+                Comprehensive directory of passengers, crew, and officials who traveled aboard
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
+    </Layout>
   );
 }

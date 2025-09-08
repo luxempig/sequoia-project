@@ -129,3 +129,51 @@ def get_media(media_slug: str, presign: bool = Query(True), ttl: Optional[int] =
     else:
         row["url"] = row.get("public_derivative_url") or row.get("google_drive_link") or row.get("s3_url")
     return row
+
+@router.get("/{media_slug}/related-voyages", response_model=List[Dict[str, Any]])
+def get_media_related_voyages(media_slug: str) -> List[Dict[str, Any]]:
+    """Get all voyages that use this media item"""
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT v.*, vm.sort_order, vm.notes as voyage_media_notes,
+               p.full_name as president_name, p.party as president_party
+        FROM voyage_media vm
+        JOIN voyages v ON v.voyage_slug = vm.voyage_slug
+        LEFT JOIN presidents p ON p.president_slug = v.president_slug_from_voyage
+        WHERE vm.media_slug = %s
+        ORDER BY v.start_date::date
+    """, (media_slug,))
+    rows = cur.fetchall()
+    cur.close(); conn.close()
+    return rows
+
+@router.get("/types/stats", response_model=Dict[str, Any])
+def get_media_type_statistics():
+    """Get statistics about media types in the collection"""
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT 
+            media_type,
+            COUNT(*) as count,
+            MIN(date) as earliest_date,
+            MAX(date) as latest_date,
+            COUNT(DISTINCT vm.voyage_slug) as voyage_count
+        FROM media m
+        LEFT JOIN voyage_media vm ON m.media_slug = vm.media_slug
+        WHERE media_type IS NOT NULL
+        GROUP BY media_type
+        ORDER BY count DESC
+    """)
+    stats = cur.fetchall()
+    
+    cur.execute("SELECT COUNT(*) as total FROM media")
+    total = cur.fetchone()
+    
+    cur.close(); conn.close()
+    
+    return {
+        "total_media": total["total"],
+        "by_type": [dict(row) for row in stats]
+    }

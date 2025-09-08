@@ -20,6 +20,7 @@ from app.routers.media       import router as media_router
 from app.routers.presidents  import router as presidents_router
 from app.routers.people      import router as people_router
 from app.routers.ingest      import router as ingest_router
+from app.routers.analytics   import router as analytics_router
 
 s = get_settings()
 app = FastAPI(
@@ -45,6 +46,7 @@ app.include_router(media_router)
 app.include_router(presidents_router)
 app.include_router(people_router)
 app.include_router(ingest_router)
+app.include_router(analytics_router)
 
 @app.get("/", tags=["root"])
 def read_root():
