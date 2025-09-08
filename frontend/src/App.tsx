@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Test comment - nginx config syntax fixed, should work now!
+// Emergency fix - simplified nginx config to restore site access
 
 const App: React.FC = () => (
   <BrowserRouter>
