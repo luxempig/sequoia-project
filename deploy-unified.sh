@@ -114,31 +114,27 @@ EOF
     pm2 restart sequoia-backend || pm2 start ecosystem.config.js --name sequoia-backend
 fi
 
-# Deploy frontend if changed
-if [ "$FRONTEND_CHANGED" = "true" ]; then
+# Deploy frontend if build archive exists
+cd $APP_DIR
+if [ -f "frontend-build.tar.gz" ]; then
     log "Deploying frontend from uploaded build..."
-    cd $APP_DIR
+    log "Extracting frontend build..."
+    sudo mkdir -p $NGINX_ROOT
+    sudo rm -rf $NGINX_ROOT/*
+    sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
     
-    # Check if frontend build was uploaded
-    if [ -f "frontend-build.tar.gz" ]; then
-        log "Extracting frontend build..."
-        sudo mkdir -p $NGINX_ROOT
-        sudo rm -rf $NGINX_ROOT/*
-        sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
-        
-        # Clean up
-        rm frontend-build.tar.gz
-        
-        # Set proper permissions
-        sudo chown -R nginx:nginx $NGINX_ROOT
-        sudo chmod -R 755 $NGINX_ROOT
-        
-        # Reload nginx
-        sudo systemctl reload nginx
-        log "Frontend deployed from build archive"
-    else
-        log "No frontend build archive found, skipping frontend deployment"
-    fi
+    # Clean up
+    rm frontend-build.tar.gz
+    
+    # Set proper permissions
+    sudo chown -R nginx:nginx $NGINX_ROOT
+    sudo chmod -R 755 $NGINX_ROOT
+    
+    # Reload nginx
+    sudo systemctl reload nginx
+    log "Frontend deployed from build archive"
+else
+    log "No frontend build archive found, skipping frontend deployment"
 fi
 
 # Health check
