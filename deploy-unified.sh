@@ -5,7 +5,7 @@
 
 set -e
 
-LOG_FILE="/var/log/sequoia-deploy.log"
+LOG_FILE="/home/ec2-user/sequoia-deploy.log"
 APP_DIR="/home/ec2-user/sequoia-project"  # This will be your unified repo
 REPO_URL="https://github.com/your-username/sequoia-project.git"  # Update this
 FRONTEND_DIR="$APP_DIR/frontend"
