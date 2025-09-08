@@ -123,6 +123,10 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo rm -rf $NGINX_ROOT/*
     sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
     
+    # Debug: Check what files were deployed
+    log "Files deployed to $NGINX_ROOT:"
+    sudo ls -la $NGINX_ROOT/
+    
     # Clean up
     rm frontend-build.tar.gz
     
