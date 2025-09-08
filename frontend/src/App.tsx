@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Test comment to trigger unified deployment system - workflow fixed
+// Test comment - testing nginx config fix and deployment debugging
 
 const App: React.FC = () => (
   <BrowserRouter>
