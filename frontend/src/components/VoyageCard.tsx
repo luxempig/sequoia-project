@@ -8,11 +8,11 @@ const Badge: React.FC<{ tone?: "amber" | "violet"; children: React.ReactNode }> 
   children,
 }) => (
   <span
-    className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ring-1
+    className={`inline-flex px-2 py-1 text-xs font-light tracking-wide rounded-sm border
      ${
        tone === "amber"
-         ? "bg-amber-100 text-amber-800 ring-amber-200"
-         : "bg-violet-100 text-violet-800 ring-violet-200"
+         ? "bg-amber-100/60 text-amber-800 border-amber-200/40"
+         : "bg-violet-100/60 text-violet-800 border-violet-200/40"
      }`}
   >
     {children}
@@ -37,10 +37,10 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
       <div className="timeline-content w-full">
         <Link
           to={`/voyages/${voyage.voyage_slug}`}
-          className="block bg-amber-50/80 p-4 rounded-xl shadow-lg ring-2 ring-amber-200/60 hover:shadow-xl transition hover:bg-amber-50/90 backdrop-blur-sm border border-amber-100/50"
+          className="block bg-white/60 p-6 rounded-sm border border-amber-200/30 shadow-sm hover:shadow-md transition-shadow hover:bg-white/80 backdrop-blur-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-            <h3 className="text-sm sm:text-base font-bold text-amber-900 font-serif">
+            <h3 className="text-sm sm:text-base font-medium text-amber-900 tracking-wide">
               {fmtRange(voyage.start_date, voyage.end_date)}
             </h3>
             <div className="flex gap-2">
@@ -49,7 +49,7 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
             </div>
           </div>
           {voyage.summary_markdown && (
-            <p className="text-sm text-amber-800 line-clamp-2 font-serif">{voyage.summary_markdown}</p>
+            <p className="text-sm text-amber-800/70 line-clamp-2 font-light leading-relaxed mt-2">{voyage.summary_markdown}</p>
           )}
         </Link>
       </div>

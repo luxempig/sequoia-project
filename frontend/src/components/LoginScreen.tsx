@@ -29,23 +29,18 @@ const LoginScreen: React.FC = () => {
         className="absolute inset-0 bg-cover bg-left"
         style={{ backgroundImage: "url(/leon.jpg)" }}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/40 via-amber-800/50 to-slate-900/70" />
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-950/70 via-amber-900/80 to-stone-900/90" />
 
       {/* Login Form */}
-      <div className="relative z-10 bg-gradient-to-b from-amber-50/95 to-amber-100/95 backdrop-blur-sm rounded-lg p-8 w-full max-w-md mx-4 border-2 border-amber-200/50 shadow-2xl">
-        <div className="text-center mb-8">
-          <div className="mb-4">
-            <div className="w-16 h-16 mx-auto bg-gradient-to-b from-amber-600 to-amber-800 rounded-full flex items-center justify-center border-4 border-amber-300 shadow-lg">
-              <span className="text-2xl text-amber-50">⚓</span>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-amber-900 mb-2 font-serif">USS Sequoia Archive</h1>
-          <p className="text-amber-800/90 font-serif italic">Presidential Maritime Collection</p>
+      <div className="relative z-10 bg-white/95 backdrop-blur-md rounded-sm p-10 w-full max-w-md mx-4 border border-amber-200/30 shadow-2xl">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-light text-amber-900 mb-2 tracking-wide">USS Sequoia Archive</h1>
+          <p className="text-amber-800/70 font-light">Presidential Maritime Collection</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-amber-900 mb-2 font-serif">
+            <label htmlFor="username" className="block text-sm font-light text-amber-900 mb-3 tracking-wide">
               Username
             </label>
             <input
@@ -53,14 +48,14 @@ const LoginScreen: React.FC = () => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded-md bg-amber-50/80 border-2 border-amber-300/60 text-amber-900 placeholder-amber-700/50 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-amber-600 font-serif shadow-inner"
+              className="w-full px-4 py-3 rounded-sm bg-white border border-amber-300/40 text-amber-900 placeholder-amber-700/40 focus:outline-none focus:border-amber-600 transition-colors font-light"
               placeholder="Enter username"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-amber-900 mb-2 font-serif">
+            <label htmlFor="password" className="block text-sm font-light text-amber-900 mb-3 tracking-wide">
               Password
             </label>
             <input
@@ -68,30 +63,30 @@ const LoginScreen: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-md bg-amber-50/80 border-2 border-amber-300/60 text-amber-900 placeholder-amber-700/50 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-amber-600 font-serif shadow-inner"
+              className="w-full px-4 py-3 rounded-sm bg-white border border-amber-300/40 text-amber-900 placeholder-amber-700/40 focus:outline-none focus:border-amber-600 transition-colors font-light"
               placeholder="Enter password"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-100 border-2 border-red-300 rounded-md p-3 shadow-inner">
-              <p className="text-red-800 text-sm font-serif">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-sm p-3">
+              <p className="text-red-800 text-sm font-light">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-md bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-amber-50 font-semibold font-serif transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg border-2 border-amber-500"
+            className="w-full py-3 px-4 rounded-sm bg-amber-800 hover:bg-amber-700 text-white font-light tracking-wide transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Authenticating...' : 'Board the Archive'}
+            {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-amber-800/70 text-xs font-serif italic">
-            Authorized maritime historians only
+        <div className="mt-8 text-center">
+          <p className="text-amber-800/60 text-xs font-light tracking-wide">
+            Authorized access only
           </p>
         </div>
       </div>
