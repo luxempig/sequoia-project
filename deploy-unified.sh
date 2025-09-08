@@ -167,9 +167,15 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo systemctl status nginx --no-pager -l
     log "Active nginx config files:"
     sudo ls -la /etc/nginx/conf.d/
-    log "Running comprehensive nginx debugging..."
-    chmod +x debug-nginx.sh
-    ./debug-nginx.sh
+    log "Testing nginx access..."
+    echo "Testing localhost access:"
+    curl -I http://localhost/ 2>/dev/null || echo "Could not curl localhost"
+    
+    echo "Testing direct file access:"
+    curl -I http://localhost/index.html 2>/dev/null || echo "Could not curl index.html"
+    
+    echo "Checking what's actually in index.html:"
+    head -20 $NGINX_ROOT/index.html | grep -i isabel || echo "Isabel not found in index.html"
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
