@@ -98,8 +98,8 @@ export default function VoyageList() {
   }, {});
 
   return (
-    <div className="px-6 lg:px-8 py-8">
-      <Link to="/" className="text-amber-800 hover:text-amber-600 inline-block mb-8 font-light tracking-wide">
+    <div className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
+      <Link to="/" className="text-gray-600 hover:text-gray-900 inline-block mb-8 font-medium">
         ← Home
       </Link>
 
@@ -111,20 +111,20 @@ export default function VoyageList() {
             apply();
           }
         }}
-        className="flex flex-wrap items-end gap-4 mb-8 bg-white/60 p-6 rounded-sm border border-amber-200/30 shadow-sm backdrop-blur-sm"
+        className="flex flex-wrap items-end gap-4 mb-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm"
       >
-        <label className="flex items-center gap-2 text-sm font-light text-amber-900 tracking-wide">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <span>From:</span>
-          <input type="date" value={df} onChange={(e) => setDF(e.target.value)} className="px-3 py-2 border border-amber-300/40 rounded-sm bg-white text-amber-900 font-light focus:outline-none focus:border-amber-600" />
+          <input type="date" value={df} onChange={(e) => setDF(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
         </label>
-        <label className="flex items-center gap-2 text-sm font-light text-amber-900 tracking-wide">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <span>To:</span>
-          <input type="date" value={dt} onChange={(e) => setDT(e.target.value)} className="px-3 py-2 border border-amber-300/40 rounded-sm bg-white text-amber-900 font-light focus:outline-none focus:border-amber-600" />
+          <input type="date" value={dt} onChange={(e) => setDT(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
         </label>
 
-        <label className="flex items-center gap-2 text-sm font-light text-amber-900 tracking-wide">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <span>President:</span>
-          <select value={pres} onChange={(e) => setPres(e.target.value)} className="px-3 py-2 border border-amber-300/40 rounded-sm bg-white text-amber-900 font-light focus:outline-none focus:border-amber-600">
+          <select value={pres} onChange={(e) => setPres(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent">
             <option value="">All Administrations</option>
             {presidents.map((p) => (
               <option key={p.president_slug} value={p.president_slug}>
@@ -164,20 +164,20 @@ export default function VoyageList() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-amber-300/40 rounded-sm w-48 bg-white text-amber-900 placeholder-amber-700/40 font-light focus:outline-none focus:border-amber-600" />
-          <button type="submit" className="px-4 py-2 rounded-sm bg-amber-800 text-white hover:bg-amber-700 font-light tracking-wide transition-colors">Search</button>
-          <button type="button" onClick={clear} className="px-4 py-2 rounded-sm bg-white hover:bg-stone-50 text-amber-900 font-light tracking-wide border border-amber-300/40 hover:border-amber-400/40 transition-colors">Clear</button>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-gray-300 rounded-md w-48 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
+          <button type="submit" className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 font-medium transition-colors">Search</button>
+          <button type="button" onClick={clear} className="px-4 py-2 rounded-md bg-white hover:bg-gray-50 text-gray-900 font-medium border border-gray-300 hover:border-gray-400 transition-colors">Clear</button>
         </div>
       </form>
 
-      {loading && <p className="text-center text-amber-800/70 py-12 font-light tracking-wide">Loading voyages...</p>}
-      {!loading && voyages.length === 0 && <p className="text-center text-amber-800/70 py-12 font-light tracking-wide">No voyages found.</p>}
+      {loading && <p className="text-center text-gray-600 py-12">Loading voyages...</p>}
+      {!loading && voyages.length === 0 && <p className="text-center text-gray-600 py-12">No voyages found.</p>}
 
       {!loading && voyages.length > 0 && (
         <div className="timeline">
           {Object.entries(grouped).map(([hdr, items]) => (
             <section key={hdr} className="mb-8">
-              <h2 className="sticky top-0 z-10 py-3 mb-6 text-lg font-medium bg-white/80 backdrop-blur border-b border-amber-200/30 text-amber-900 tracking-wide">
+              <h2 className="sticky top-0 z-10 py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900">
                 {hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`}
               </h2>
 

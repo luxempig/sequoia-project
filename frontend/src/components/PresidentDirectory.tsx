@@ -50,29 +50,38 @@ export default function PresidentDirectory() {
     [pres]
   );
 
-  if (loading) return <div className="p-6">Loading administrations…</div>;
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading administrations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <Link to="/" className="text-blue-600 hover:underline">← Back</Link>
-      <h1 className="mt-3 text-2xl font-bold">Presidential Administrations</h1>
-      <p className="text-gray-600 mb-6">Browse voyages by ownership period.</p>
+      <Link to="/" className="text-gray-600 hover:text-gray-900 inline-block mb-8 font-medium">← Home</Link>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Presidents</h1>
+      <p className="text-gray-500 mb-6">Browse voyages by presidential administration.</p>
 
-      <div className="divide-y divide-gray-200 bg-white rounded-xl ring-1 ring-gray-200 overflow-hidden">
+      <div className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         {rows.map((p) => (
           <Link
             key={p.president_slug}
             to={`/presidents/${p.president_slug}`}
-            className="flex items-center justify-between p-4 hover:bg-gray-50"
+            className="flex items-center justify-between p-6 hover:bg-gray-50"
           >
             <div>
-              <div className="font-semibold">{p.full_name}</div>
-              <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">{p.full_name}</div>
+              <div className="text-sm text-gray-500">
                 {fmtRange(p.term_start, p.term_end)}
               </div>
-              {p.party && <div className="text-xs text-gray-500 mt-1">{p.party}</div>}
+              {p.party && <div className="text-xs text-gray-400 mt-1">{p.party}</div>}
             </div>
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-500 font-medium">
               {counts[p.president_slug] ?? 0} voyages →
             </div>
           </Link>

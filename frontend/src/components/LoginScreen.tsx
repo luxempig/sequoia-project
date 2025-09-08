@@ -29,18 +29,18 @@ const LoginScreen: React.FC = () => {
         className="absolute inset-0 bg-cover bg-left"
         style={{ backgroundImage: "url(/leon.jpg)" }}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-950/70 via-amber-900/80 to-stone-900/90" />
+      <div className="absolute inset-0 bg-black/20" />
 
       {/* Login Form */}
-      <div className="relative z-10 bg-white/95 backdrop-blur-md rounded-sm p-10 w-full max-w-md mx-4 border border-amber-200/30 shadow-2xl">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-light text-amber-900 mb-2 tracking-wide">USS Sequoia Archive</h1>
-          <p className="text-amber-800/70 font-light">Presidential Maritime Collection</p>
+      <div className="relative z-10 bg-white rounded-lg p-8 w-full max-w-md mx-4 shadow-xl border border-gray-200">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">USS Sequoia Archive</h1>
+          <p className="text-gray-600">Presidential Maritime Collection</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-light text-amber-900 mb-3 tracking-wide">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
               Username
             </label>
             <input
@@ -48,14 +48,14 @@ const LoginScreen: React.FC = () => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded-sm bg-white border border-amber-300/40 text-amber-900 placeholder-amber-700/40 focus:outline-none focus:border-amber-600 transition-colors font-light"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               placeholder="Enter username"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-light text-amber-900 mb-3 tracking-wide">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
             <input
@@ -63,29 +63,29 @@ const LoginScreen: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-sm bg-white border border-amber-300/40 text-amber-900 placeholder-amber-700/40 focus:outline-none focus:border-amber-600 transition-colors font-light"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               placeholder="Enter password"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-sm p-3">
-              <p className="text-red-800 text-sm font-light">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-red-800 text-sm">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-sm bg-amber-800 hover:bg-amber-700 text-white font-light tracking-wide transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-8 text-center">
-          <p className="text-amber-800/60 text-xs font-light tracking-wide">
+        <div className="mt-6 text-center">
+          <p className="text-gray-500 text-xs">
             Authorized access only
           </p>
         </div>

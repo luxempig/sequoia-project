@@ -114,28 +114,30 @@ const MediaBrowser: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder="Search media..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="sm:w-48">
-            <select
-              value={mediaTypeFilter}
-              onChange={(e) => setMediaTypeFilter(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="">All Types</option>
-              <option value="image">Images</option>
-              <option value="video">Videos</option>
-              <option value="audio">Audio</option>
-              <option value="pdf">Documents</option>
-            </select>
+        <div className="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                placeholder="Search media..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="sm:w-48">
+              <select
+                value={mediaTypeFilter}
+                onChange={(e) => setMediaTypeFilter(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              >
+                <option value="">All Types</option>
+                <option value="image">Images</option>
+                <option value="video">Videos</option>
+                <option value="audio">Audio</option>
+                <option value="pdf">Documents</option>
+              </select>
+            </div>
           </div>
         </div>
 
