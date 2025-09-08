@@ -1,4 +1,4 @@
-// src/components/HomePage.tsx - network diagnostic
+// src/components/HomePage.tsx - HTTPS setup
 import { api } from "../api";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
