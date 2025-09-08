@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Test comment to trigger unified deployment system - with logging fix
+// Test comment to trigger unified deployment system - with git reset fix
 
 const App: React.FC = () => (
   <BrowserRouter>
