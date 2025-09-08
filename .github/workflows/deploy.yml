@@ -6,12 +6,16 @@ on:
     paths:
       - 'frontend/**'
       - 'backend/**'
+      - 'deploy-unified.sh'
+      - 'nginx-sequoia.conf'
   pull_request:
     branches: [ main ]
     types: [ closed ]
     paths:
       - 'frontend/**'
       - 'backend/**'
+      - 'deploy-unified.sh'
+      - 'nginx-sequoia.conf'
 
 jobs:
   deploy:
