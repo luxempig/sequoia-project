@@ -81,7 +81,7 @@ export default function HomePage() {
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 sm:p-8 text-center text-white">
           <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 tracking-tight leading-tight">
-            USS Sequoia Archive
+            HI ISABEL :DDDD
           </h1>
           <p className="text-lg mb-10 text-indigo-200">
             Charting a century of presidential voyages
