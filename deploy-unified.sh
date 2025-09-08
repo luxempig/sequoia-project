@@ -167,8 +167,9 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo systemctl status nginx --no-pager -l
     log "Active nginx config files:"
     sudo ls -la /etc/nginx/conf.d/
-    log "Testing if nginx is serving the correct content:"
-    curl -s -I localhost/ | head -5 || log "Could not curl localhost"
+    log "Running comprehensive nginx debugging..."
+    chmod +x debug-nginx.sh
+    ./debug-nginx.sh
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
