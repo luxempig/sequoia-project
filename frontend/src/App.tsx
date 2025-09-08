@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Fix nginx service startup and remove conflicting server configs
+// Run comprehensive nginx debugging to identify the issue
 
 const App: React.FC = () => (
   <BrowserRouter>
