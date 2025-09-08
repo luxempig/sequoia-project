@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Fix npm install issue and test if build includes ISABEL
+// Debug external access - nginx works locally but domain unreachable
 
 const App: React.FC = () => (
   <BrowserRouter>
