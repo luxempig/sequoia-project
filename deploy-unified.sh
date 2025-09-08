@@ -123,7 +123,10 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo cp nginx-sequoia.conf /etc/nginx/conf.d/
     sudo rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
     sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
-    log "Updated nginx config, removed default configs"
+    sudo rm -f /etc/nginx/sites-available/default 2>/dev/null || true
+    # Remove any other conflicting configs
+    sudo find /etc/nginx/conf.d/ -name "*.conf" ! -name "nginx-sequoia.conf" -delete 2>/dev/null || true
+    log "Updated nginx config, removed all conflicting configs"
     
     log "Extracting frontend build..."
     sudo mkdir -p $NGINX_ROOT
@@ -144,9 +147,16 @@ if [ -f "frontend-build.tar.gz" ]; then
     # Test nginx config before reloading
     log "Testing nginx configuration..."
     if sudo nginx -t; then
-        log "Nginx config is valid, reloading..."
-        sudo systemctl reload nginx
-        log "Nginx reload completed"
+        log "Nginx config is valid"
+        # Check if nginx is running, start if not
+        if sudo systemctl is-active nginx; then
+            log "Nginx is running, reloading..."
+            sudo systemctl reload nginx
+        else
+            log "Nginx is not running, starting..."
+            sudo systemctl start nginx
+        fi
+        log "Nginx operation completed"
     else
         log "ERROR: Nginx config is invalid, attempting restart..."
         sudo systemctl restart nginx
