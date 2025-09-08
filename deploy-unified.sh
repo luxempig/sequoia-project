@@ -192,6 +192,18 @@ if [ -f "frontend-build.tar.gz" ]; then
     
     echo "Testing if server responds to domain name directly:"
     curl -I http://uss-sequoia.com/ 2>/dev/null || echo "Could not curl domain directly"
+    
+    echo "Current nginx service status:"
+    sudo systemctl status nginx --no-pager -l
+    
+    echo "Current nginx processes:"
+    ps aux | grep nginx
+    
+    echo "Port 80 listeners:"
+    sudo netstat -tlnp | grep :80 || echo "No processes listening on port 80"
+    
+    echo "AWS instance metadata (to verify we're running):"
+    curl -s http://169.254.169.254/latest/meta-data/instance-id || echo "Could not get instance metadata"
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
