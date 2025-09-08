@@ -46,6 +46,7 @@ jobs:
         script: |
           cd /home/ec2-user/sequoia-project
           git pull origin main
+          chmod +x deploy-unified.sh
           ./deploy-unified.sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
