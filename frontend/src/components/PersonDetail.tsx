@@ -14,7 +14,7 @@ const PersonDetail: React.FC = () => {
       
       try {
         setLoading(true);
-        const personData = await api.get(`/api/people/${slug}`);
+        const personData = await api.getPerson(slug);
         setPerson(personData);
       } catch (error) {
         console.error('Failed to fetch person:', error);

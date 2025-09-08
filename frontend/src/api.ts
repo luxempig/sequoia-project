@@ -35,4 +35,33 @@ export const api = {
   /** Media for voyage (presigned URLs provided by backend) */
   getVoyageMedia: (voyageSlug: string) =>
     getJSON<MediaItem[]>(`/api/media/by-voyage/${encodeURIComponent(voyageSlug)}`),
+
+  /** Generic GET method for new endpoints */
+  get: <T = any>(path: string) => getJSON<T>(path),
+
+  /** People API */
+  listPeople: (params?: URLSearchParams) =>
+    getJSON<Person[]>(`/api/people${params?.toString() ? "?" + params : ""}`),
+  getPerson: (personSlug: string) =>
+    getJSON<any>(`/api/people/${encodeURIComponent(personSlug)}`),
+  getPeopleStats: () =>
+    getJSON<any>("/api/people/roles/stats"),
+
+  /** Media API */
+  listMedia: (params?: URLSearchParams) =>
+    getJSON<MediaItem[]>(`/api/media${params?.toString() ? "?" + params : ""}`),
+  getMedia: (mediaSlug: string, presign = false) =>
+    getJSON<any>(`/api/media/${encodeURIComponent(mediaSlug)}${presign ? '?presign=true' : ''}`),
+  getMediaStats: () =>
+    getJSON<any>("/api/media/types/stats"),
+  getMediaRelatedVoyages: (mediaSlug: string) =>
+    getJSON<any[]>(`/api/media/${encodeURIComponent(mediaSlug)}/related-voyages`),
+
+  /** Analytics API */
+  getDashboard: () =>
+    getJSON<any>("/api/analytics/dashboard"),
+  getTimeline: () =>
+    getJSON<any[]>("/api/analytics/timeline"),
+  getSearchSuggestions: (query: string) =>
+    getJSON<any>(`/api/analytics/search/suggestions?q=${encodeURIComponent(query)}`),
 };

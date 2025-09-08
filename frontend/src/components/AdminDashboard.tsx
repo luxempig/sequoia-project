@@ -13,8 +13,8 @@ const AdminDashboard: React.FC = () => {
       try {
         setLoading(true);
         const [dashboard, timeline] = await Promise.all([
-          api.get('/api/analytics/dashboard'),
-          api.get('/api/analytics/timeline')
+          api.getDashboard(),
+          api.getTimeline()
         ]);
         setDashboardData(dashboard);
         setTimelineData(timeline);

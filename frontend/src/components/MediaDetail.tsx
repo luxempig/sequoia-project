@@ -16,8 +16,8 @@ const MediaDetail: React.FC = () => {
       try {
         setLoading(true);
         const [mediaData, voyagesData] = await Promise.all([
-          api.get(`/api/media/${slug}?presign=true`),
-          api.get(`/api/media/${slug}/related-voyages`)
+          api.getMedia(slug, true),
+          api.getMediaRelatedVoyages(slug)
         ]);
         setMedia(mediaData);
         setRelatedVoyages(voyagesData);

@@ -16,8 +16,8 @@ const MediaBrowser: React.FC = () => {
       try {
         setLoading(true);
         const [mediaData, statsData] = await Promise.all([
-          api.get('/api/media?limit=500&presign=true'),
-          api.get('/api/media/types/stats')
+          api.listMedia(new URLSearchParams({ limit: '500', presign: 'true' })),
+          api.getMediaStats()
         ]);
         setMedia(mediaData);
         setFilteredMedia(mediaData);

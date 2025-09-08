@@ -16,8 +16,8 @@ const PeopleDirectory: React.FC = () => {
       try {
         setLoading(true);
         const [peopleData, statsData] = await Promise.all([
-          api.get('/api/people?limit=500'),
-          api.get('/api/people/roles/stats')
+          api.listPeople(new URLSearchParams({ limit: '500' })),
+          api.getPeopleStats()
         ]);
         setPeople(peopleData);
         setFilteredPeople(peopleData);
