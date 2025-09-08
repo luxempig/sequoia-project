@@ -8,7 +8,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import "./index.css";
 
-// Emergency fix - simplified nginx config to restore site access
+// Fix nginx service startup and remove conflicting server configs
 
 const App: React.FC = () => (
   <BrowserRouter>
