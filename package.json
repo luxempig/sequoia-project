@@ -1,0 +1,30 @@
+{
+  "name": "sequoia-project",
+  "version": "1.0.0",
+  "description": "Unified Sequoia Frontend + Backend Repository",
+  "private": true,
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "deploy": "./deploy-unified.sh",
+    "clean:frontend": "cd frontend && rm -rf node_modules build dist",
+    "clean:backend": "cd backend && find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["sequoia", "frontend", "backend", "monorepo"],
+  "author": "Your Name",
+  "license": "MIT"
+}
