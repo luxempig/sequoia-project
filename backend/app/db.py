@@ -26,7 +26,7 @@ def get_connection():
         )
         # Set search path for schema
         with conn.cursor() as cur:
-            cur.execute("SET search_path = sequoia, public")
+            cur.execute(f"SET search_path = {s.DB_SCHEMA}, public")
         conn.commit()
         return conn
     except psycopg2.Error as e:
