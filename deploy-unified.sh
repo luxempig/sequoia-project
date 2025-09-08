@@ -186,6 +186,12 @@ if [ -f "frontend-build.tar.gz" ]; then
     
     echo "What DNS says about uss-sequoia.com:"
     nslookup uss-sequoia.com || dig uss-sequoia.com || echo "Could not resolve DNS"
+    
+    echo "Testing domain access from server:"
+    curl -I -H "Host: uss-sequoia.com" http://localhost/ 2>/dev/null || echo "Could not curl with Host header"
+    
+    echo "Testing if server responds to domain name directly:"
+    curl -I http://uss-sequoia.com/ 2>/dev/null || echo "Could not curl domain directly"
 else
     log "No frontend build archive found, skipping frontend deployment"
 fi
