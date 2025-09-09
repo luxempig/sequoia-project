@@ -68,7 +68,7 @@ def health_check():
             "status": "healthy",
             "database": "connected",
             "backend": "running",
-            "timestamp": "2025-09-09T05:46:00Z"
+            "timestamp": "2025-09-09T05:52:00Z"
         }
     except Exception as e:
         return {
@@ -76,5 +76,5 @@ def health_check():
             "database": "disconnected",
             "backend": "error",
             "error": str(e),
-            "timestamp": "2025-09-09T05:46:00Z"
+            "timestamp": "2025-09-09T05:52:00Z"
         }
