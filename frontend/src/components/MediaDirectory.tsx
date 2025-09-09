@@ -125,34 +125,74 @@ const MediaDirectory: React.FC = () => {
   };
 
   const openFile = async (item: FileItem) => {
+    // Show loading indicator
+    const loadingToast = document.createElement('div');
+    loadingToast.className = 'fixed top-4 right-4 bg-blue-100 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg z-50';
+    loadingToast.textContent = `Opening ${item.name}...`;
+    document.body.appendChild(loadingToast);
+
     try {
-      // In real implementation, this would request a presigned URL from the backend
       const presignedUrl = await getPresignedUrl(item.s3Url!);
+      
+      // Remove loading indicator
+      document.body.removeChild(loadingToast);
       
       // Open in new tab for viewing
       window.open(presignedUrl, '_blank');
+      
+      // Show success message
+      const successToast = document.createElement('div');
+      successToast.className = 'fixed top-4 right-4 bg-green-100 border border-green-200 text-green-800 px-4 py-2 rounded-lg z-50';
+      successToast.textContent = `Opened ${item.name}`;
+      document.body.appendChild(successToast);
+      setTimeout(() => {
+        if (document.body.contains(successToast)) {
+          document.body.removeChild(successToast);
+        }
+      }, 3000);
+      
     } catch (error) {
+      // Remove loading indicator
+      if (document.body.contains(loadingToast)) {
+        document.body.removeChild(loadingToast);
+      }
+      
       console.error('Failed to open file:', error);
-      // Fallback: try to construct a public URL or show error
-      alert(`Cannot open file: ${item.name}. File access not available in demo mode.`);
+      
+      // Show error message
+      const errorToast = document.createElement('div');
+      errorToast.className = 'fixed top-4 right-4 bg-red-100 border border-red-200 text-red-800 px-4 py-2 rounded-lg z-50';
+      errorToast.textContent = `Failed to open ${item.name}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      document.body.appendChild(errorToast);
+      setTimeout(() => {
+        if (document.body.contains(errorToast)) {
+          document.body.removeChild(errorToast);
+        }
+      }, 5000);
     }
   };
 
   const getPresignedUrl = async (s3Url: string): Promise<string> => {
-    // In real implementation, this would call your backend API
-    // For demo, we'll simulate the URL generation
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simulate presigned URL - in reality this would come from your backend
-        if (s3Url.includes('.jpg') || s3Url.includes('.png')) {
-          resolve(`https://sequoia-canonical.s3.amazonaws.com/${s3Url}?presigned-demo`);
-        } else if (s3Url.includes('.pdf')) {
-          resolve(`https://sequoia-canonical.s3.amazonaws.com/${s3Url}?presigned-demo`);
-        } else {
-          reject(new Error('Unsupported file type'));
-        }
-      }, 500);
-    });
+    try {
+      const response = await fetch('/api/curator/presign-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ s3_url: s3Url }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(errorData.detail || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.presigned_url;
+    } catch (error) {
+      console.error('Failed to get presigned URL:', error);
+      throw error;
+    }
   };
 
   const getBreadcrumbs = () => {

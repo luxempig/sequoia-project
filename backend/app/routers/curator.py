@@ -1,8 +1,16 @@
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+class PresignRequest(BaseModel):
+    s3_url: str
 
 @router.get("/master-doc")
 async def get_master_doc():
@@ -200,3 +208,46 @@ term_start: 1933-03-04
 term_end: 1945-04-12"""
         
         return PlainTextResponse(fallback_content, media_type="text/plain; charset=utf-8")
+
+
+@router.post("/presign-url")
+async def get_presigned_url(request: PresignRequest):
+    """Generate a presigned URL for accessing S3 files."""
+    try:
+        # Get AWS credentials from environment
+        s3_client = boto3.client(
+            's3',
+            region_name=os.getenv('AWS_REGION', 'us-east-1'),
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+        )
+        
+        # Parse bucket and key from s3_url
+        # Expected format: "media/president/source/voyage/extension/file.ext"
+        bucket_name = os.getenv('PRIVATE_BUCKET', 'sequoia-canonical')
+        key = request.s3_url
+        
+        # Generate presigned URL (valid for 1 hour)
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': key},
+            ExpiresIn=3600  # 1 hour
+        )
+        
+        return {"presigned_url": presigned_url}
+        
+    except NoCredentialsError:
+        logger.error("AWS credentials not found")
+        raise HTTPException(status_code=500, detail="AWS credentials not configured")
+    except ClientError as e:
+        logger.error(f"AWS S3 error: {e}")
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey':
+            raise HTTPException(status_code=404, detail="File not found")
+        elif error_code == 'AccessDenied':
+            raise HTTPException(status_code=403, detail="Access denied to file")
+        else:
+            raise HTTPException(status_code=500, detail=f"S3 error: {error_code}")
+    except Exception as e:
+        logger.error(f"Unexpected error generating presigned URL: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate presigned URL")

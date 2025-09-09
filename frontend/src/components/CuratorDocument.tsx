@@ -257,14 +257,19 @@ tags: fdr
                   setContent(e.target.value);
                   parseContent(e.target.value);
                 }}
-                className="w-full h-screen max-h-[800px] p-6 font-mono text-sm text-gray-900 bg-white border-0 resize-none focus:ring-0 focus:outline-none"
-                style={{ lineHeight: '1.5', tabSize: 2 }}
+                className="w-full p-6 font-mono text-sm text-gray-900 bg-white border-0 resize-none focus:ring-0 focus:outline-none overflow-y-auto"
+                style={{ 
+                  lineHeight: '1.5', 
+                  tabSize: 2,
+                  height: '80vh',
+                  minHeight: '600px'
+                }}
               />
             </div>
           </div>
         ) : (
           /* Formatted View Mode */
-          <div className="space-y-6">
+          <div className="space-y-6 max-h-[80vh] overflow-y-auto">
             {parsedData.map((entry, index) => (
               <div key={index} className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
