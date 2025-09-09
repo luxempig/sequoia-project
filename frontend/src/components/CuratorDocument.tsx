@@ -41,6 +41,9 @@ const CuratorDocument: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalContent, setOriginalContent] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -50,9 +53,12 @@ const CuratorDocument: React.FC = () => {
         if (response.ok) {
           const docContent = await response.text();
           setContent(docContent);
+          setOriginalContent(docContent);
           parseContent(docContent);
+          setError(null);
         } else {
           console.error('Failed to load MASTER_DOC from backend, status:', response.status);
+          setError(`Failed to load MASTER_DOC (HTTP ${response.status})`);
           const errorContent = `## ERROR: Failed to load MASTER_DOC
 
 Could not load the master document from backend API.
@@ -72,10 +78,12 @@ term_start: 1933-03-04
 term_end: 1945-04-12`;
           
           setContent(errorContent);
+          setOriginalContent(errorContent);
           parseContent(errorContent);
         }
       } catch (error) {
         console.error('Failed to load content:', error);
+        setError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
@@ -129,17 +137,44 @@ term_end: 1945-04-12`;
     setParsedData(parsed);
   };
 
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    setHasUnsavedChanges(newContent !== originalContent);
+    parseContent(newContent);
+  };
+
   const handleSave = async () => {
     setSaving(true);
+    setError(null);
     try {
-      // In real implementation, save to backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLastSaved(new Date());
+      const response = await fetch('/api/curator/master-doc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: content,
+      });
+
+      if (response.ok) {
+        setOriginalContent(content);
+        setHasUnsavedChanges(false);
+        setLastSaved(new Date());
+        setError(null);
+      } else {
+        throw new Error(`Save failed: HTTP ${response.status}`);
+      }
     } catch (error) {
       console.error('Failed to save:', error);
+      setError(`Save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRevert = () => {
+    setContent(originalContent);
+    setHasUnsavedChanges(false);
+    parseContent(originalContent);
   };
 
   if (loading) {
@@ -167,30 +202,62 @@ term_end: 1945-04-12`;
             <p className="mt-1 text-sm text-gray-500">
               USS Sequoia Master Document - Live MASTER_DOC.md content
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              Parsed entries: {parsedData.length} | Content length: {content.length} chars
-            </p>
+            {error ? (
+              <p className="mt-1 text-xs text-red-500">
+                ⚠️ {error}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-400">
+                Parsed entries: {parsedData.length} | Content length: {content.length} chars
+                {hasUnsavedChanges && <span className="text-orange-600 font-medium"> • Unsaved changes</span>}
+              </p>
+            )}
           </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
             <button
               onClick={() => setEditMode(!editMode)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+              className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors ${
+                editMode 
+                  ? 'text-white bg-gray-900 hover:bg-gray-800' 
+                  : 'text-gray-700 bg-white hover:bg-gray-50'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900`}
             >
-              {editMode ? 'View Mode' : 'Edit Mode'}
+              {editMode ? '📖 View Mode' : '✏️ Edit Mode'}
             </button>
+            {editMode && hasUnsavedChanges && (
+              <button
+                onClick={handleRevert}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                ↩️ Revert
+              </button>
+            )}
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50"
+              disabled={saving || !hasUnsavedChanges}
+              className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors ${
+                hasUnsavedChanges 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50`}
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? '💾 Saving...' : hasUnsavedChanges ? '💾 Save Changes' : '✅ Saved'}
             </button>
           </div>
         </div>
 
-        {lastSaved && (
-          <div className="mb-4 text-sm text-gray-500">
-            Last saved: {lastSaved.toLocaleTimeString()}
+        {(lastSaved || hasUnsavedChanges) && (
+          <div className="mb-4 flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border">
+            {lastSaved && (
+              <div className="text-sm text-gray-600">
+                ✅ Last saved: {lastSaved.toLocaleString()}
+              </div>
+            )}
+            {hasUnsavedChanges && (
+              <div className="text-sm text-orange-600 font-medium">
+                ⚠️ You have unsaved changes
+              </div>
+            )}
           </div>
         )}
 
@@ -201,26 +268,38 @@ term_end: 1945-04-12`;
               <div className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
                 MASTER_DOC.md (Raw Edit Mode)
               </div>
-              <textarea
-                value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  parseContent(e.target.value);
-                }}
-                className="w-full p-6 font-mono text-sm text-gray-900 bg-white border-0 resize-none focus:ring-0 focus:outline-none overflow-y-auto"
-                style={{ 
-                  lineHeight: '1.5', 
-                  tabSize: 2,
-                  height: '80vh',
-                  minHeight: '600px'
-                }}
-              />
+              <div className="relative">
+                <textarea
+                  value={content}
+                  onChange={(e) => handleContentChange(e.target.value)}
+                  className="w-full p-6 font-mono text-sm text-gray-900 bg-white border-0 resize-none focus:ring-0 focus:outline-none overflow-y-auto"
+                  style={{ 
+                    lineHeight: '1.6', 
+                    tabSize: 2,
+                    height: '75vh',
+                    minHeight: '600px'
+                  }}
+                  placeholder="Enter your MASTER_DOC content here..."
+                />
+                {hasUnsavedChanges && (
+                  <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
+                    Unsaved
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (
           /* Formatted View Mode */
-          <div className="space-y-6 max-h-[80vh] overflow-y-auto">
-            {parsedData.map((entry, index) => (
+          <div className="space-y-6 max-h-[75vh] overflow-y-auto bg-gray-50 p-4 rounded-lg border">
+            {parsedData.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-4xl mb-4">📄</div>
+                <p className="text-lg">No voyage data found</p>
+                <p className="text-sm">Switch to Edit Mode to add content</p>
+              </div>
+            ) : (
+              parsedData.map((entry, index) => (
               <div key={index} className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-medium text-gray-900">
@@ -357,7 +436,8 @@ term_end: 1945-04-12`;
                   )}
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         )}
       </div>

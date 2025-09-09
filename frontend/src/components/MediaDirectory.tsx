@@ -16,32 +16,47 @@ const MediaDirectory: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [s3Structure, setS3Structure] = useState<Record<string, FileItem[]>>({});
+  const [structureLoading, setStructureLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
 
   useEffect(() => {
     const loadS3Structure = async () => {
+      setStructureLoading(true);
+      setError(null);
       try {
         const response = await fetch('/api/curator/s3-structure');
         if (response.ok) {
           const data = await response.json();
           setS3Structure(data.structure);
+          console.log('Loaded S3 structure with', Object.keys(data.structure).length, 'directories');
         } else {
-          console.error('Failed to load S3 structure');
-          // Use fallback structure
+          console.error('Failed to load S3 structure:', response.status);
+          setError(`Failed to load S3 structure (HTTP ${response.status})`);
+          // Use fallback structure with more complete example
           setS3Structure({
             '/': [{ name: 'media', type: 'folder' }],
             '/media/': [
               { name: 'roosevelt-franklin', type: 'folder' },
-              { name: 'truman-harry', type: 'folder' }
+              { name: 'truman-harry', type: 'folder' },
+              { name: 'eisenhower-dwight', type: 'folder' }
+            ],
+            '/media/roosevelt-franklin/': [
+              { name: 'logbooks', type: 'folder' },
+              { name: 'newspapers', type: 'folder' },
+              { name: 'photos', type: 'folder' }
             ]
           });
         }
       } catch (error) {
         console.error('Error loading S3 structure:', error);
+        setError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         // Use minimal fallback
         setS3Structure({
           '/': [{ name: 'media', type: 'folder' }]
         });
+      } finally {
+        setStructureLoading(false);
       }
     };
 
@@ -50,8 +65,10 @@ const MediaDirectory: React.FC = () => {
 
   useEffect(() => {
     const loadDirectory = async () => {
+      if (structureLoading) return;
+      
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const directoryItems = s3Structure[currentPath] || [];
       setItems(directoryItems);
@@ -61,7 +78,7 @@ const MediaDirectory: React.FC = () => {
     if (Object.keys(s3Structure).length > 0) {
       loadDirectory();
     }
-  }, [currentPath, s3Structure]);
+  }, [currentPath, s3Structure, structureLoading]);
 
   const navigateToPath = (path: string) => {
     setCurrentPath(path);
@@ -208,11 +225,17 @@ const MediaDirectory: React.FC = () => {
               Media Archive
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Live S3 bucket contents from sequoia-canonical 
+              Live S3 bucket contents from sequoia-canonical
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              Current path: {currentPath} | Items: {items.length} | Loaded: {Object.keys(s3Structure).length} directories
-            </p>
+            {error ? (
+              <p className="mt-1 text-xs text-red-500">
+                ⚠️ {error}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-400">
+                Current path: {currentPath} | Items: {items.length} | Directories loaded: {Object.keys(s3Structure).length}
+              </p>
+            )}
           </div>
         </div>
 
@@ -250,16 +273,24 @@ const MediaDirectory: React.FC = () => {
           />
         </div>
 
-        {/* Loading */}
-        {loading && (
+        {/* Structure Loading */}
+        {structureLoading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading directory...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading S3 bucket structure...</p>
+          </div>
+        )}
+
+        {/* Directory Loading */}
+        {!structureLoading && loading && (
+          <div className="text-center py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading directory contents...</p>
           </div>
         )}
 
         {/* File List */}
-        {!loading && (
+        {!structureLoading && !loading && (
           <div className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center justify-between text-sm font-medium text-gray-500">
@@ -283,9 +314,9 @@ const MediaDirectory: React.FC = () => {
                     onClick={() => handleItemClick(item)}
                     className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors ${
                       item.type === 'folder' 
-                        ? 'hover:bg-blue-50' 
+                        ? 'hover:bg-blue-50 border-l-4 border-l-transparent hover:border-l-blue-200' 
                         : item.s3Url 
-                          ? 'hover:bg-green-50' 
+                          ? 'hover:bg-green-50 border-l-4 border-l-transparent hover:border-l-green-200' 
                           : 'hover:bg-gray-50'
                     }`}
                   >

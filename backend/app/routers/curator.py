@@ -1,5 +1,6 @@
 import os
-from fastapi import APIRouter, HTTPException
+import time
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 import boto3
@@ -208,6 +209,39 @@ term_start: 1933-03-04
 term_end: 1945-04-12"""
         
         return PlainTextResponse(fallback_content, media_type="text/plain; charset=utf-8")
+
+
+@router.post("/master-doc")
+async def save_master_doc(request: Request):
+    """Save the MASTER_DOC.md content from the curator interface."""
+    try:
+        # Read the raw body as text content
+        content = await request.body()
+        content = content.decode('utf-8')
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="Content is required")
+            
+        master_doc_path = os.path.join(os.path.dirname(__file__), "..", "..", "tools", "MASTER_DOC.md")
+        
+        # Create backup of existing file
+        if os.path.exists(master_doc_path):
+            backup_path = f"{master_doc_path}.backup.{int(time.time())}"
+            with open(master_doc_path, 'r', encoding='utf-8') as src:
+                with open(backup_path, 'w', encoding='utf-8') as dst:
+                    dst.write(src.read())
+            logger.info(f"Created backup at {backup_path}")
+        
+        # Write new content
+        with open(master_doc_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        logger.info(f"Successfully saved MASTER_DOC.md ({len(content)} characters)")
+        return {"status": "success", "message": "MASTER_DOC.md saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Failed to save MASTER_DOC.md: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save document: {str(e)}")
 
 
 @router.get("/s3-structure")
