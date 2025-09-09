@@ -210,6 +210,85 @@ term_end: 1945-04-12"""
         return PlainTextResponse(fallback_content, media_type="text/plain; charset=utf-8")
 
 
+@router.get("/s3-structure")
+async def get_s3_structure():
+    """Get the real S3 bucket structure from sequoia-canonical."""
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=os.getenv('AWS_REGION', 'us-east-1'),
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+        )
+        
+        bucket_name = os.getenv('PRIVATE_BUCKET', 'sequoia-canonical')
+        
+        # List all objects in the bucket
+        paginator = s3_client.get_paginator('list_objects_v2')
+        pages = paginator.paginate(Bucket=bucket_name)
+        
+        structure = {}
+        
+        for page in pages:
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    key = obj['Key']
+                    size = obj['Size']
+                    last_modified = obj['LastModified'].isoformat()
+                    
+                    # Parse the path to build directory structure
+                    parts = key.split('/')
+                    current_path = '/'
+                    
+                    for i, part in enumerate(parts):
+                        if i == len(parts) - 1 and part:  # This is a file
+                            if current_path not in structure:
+                                structure[current_path] = []
+                            
+                            # Get file extension
+                            extension = part.split('.')[-1] if '.' in part else ''
+                            
+                            structure[current_path].append({
+                                'name': part,
+                                'type': 'file',
+                                'size': f"{size / 1024:.1f} KB" if size < 1024*1024 else f"{size / (1024*1024):.1f} MB",
+                                'lastModified': last_modified[:10],  # Just date part
+                                'extension': extension,
+                                's3Url': key
+                            })
+                        elif part:  # This is a directory part
+                            new_path = current_path + part + '/' if current_path == '/' else current_path + part + '/'
+                            
+                            if current_path not in structure:
+                                structure[current_path] = []
+                            
+                            # Add folder if not already present
+                            folder_exists = any(item['name'] == part and item['type'] == 'folder' 
+                                              for item in structure[current_path])
+                            if not folder_exists:
+                                structure[current_path].append({
+                                    'name': part,
+                                    'type': 'folder'
+                                })
+                            
+                            current_path = new_path
+        
+        return {"structure": structure}
+        
+    except Exception as e:
+        logger.error(f"Failed to get S3 structure: {e}")
+        # Return fallback structure based on known patterns
+        fallback_structure = {
+            "/": [{"name": "media", "type": "folder"}],
+            "/media/": [
+                {"name": "roosevelt-franklin", "type": "folder"},
+                {"name": "truman-harry", "type": "folder"},
+                {"name": "eisenhower-dwight", "type": "folder"}
+            ]
+        }
+        return {"structure": fallback_structure}
+
+
 @router.post("/presign-url")
 async def get_presigned_url(request: PresignRequest):
     """Generate a presigned URL for accessing S3 files."""

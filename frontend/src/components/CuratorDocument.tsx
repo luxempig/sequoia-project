@@ -52,77 +52,27 @@ const CuratorDocument: React.FC = () => {
           setContent(docContent);
           parseContent(docContent);
         } else {
-          // Fallback sample content
-          const fallbackContent = `## President
+          console.error('Failed to load MASTER_DOC from backend, status:', response.status);
+          const errorContent = `## ERROR: Failed to load MASTER_DOC
+
+Could not load the master document from backend API.
+Status: ${response.status}
+
+Please check:
+- Backend is running
+- /api/curator/master-doc endpoint is accessible
+- MASTER_DOC.md file exists in backend/tools/
+
+## Sample Entry (Fallback)
 
 president_slug: roosevelt-franklin
 full_name: Franklin D. Roosevelt
 party: Democratic
 term_start: 1933-03-04
-term_end: 1945-04-12
-wikipedia_url: https://en.wikipedia.org/wiki/Franklin_D._Roosevelt
-tags: fdr, owner, potus
-
----
-
-## Voyage
-
-title: Voyage with Henry L. Roosevelt
-start_date: 1933-04-21
-origin: Potomac River
-vessel_name: USS Sequoia
-tags: fdr
-
----
-
-## Passengers
-
-- slug: roosevelt-henry-l
-  full_name: Henry L. Roosevelt
-  role_title:
-  wikipedia_url: https://en.wikipedia.org/wiki/Henry_L._Roosevelt
-
----
-
-## Media
-
-- credit: Sequoia Logbook p5
-  date: 1933
-  google_drive_link: https://drive.google.com/file/d/1ArrE6smmcCFXzVwaGP7WJuwiFsJGuxiX/view?usp=sharing#page=6
-  description: ""
-  tags:
-
-## Voyage
-
-title: Discussion of war debts, currency stabilization
-start_date: 1933-04-23
-origin: Potomac River
-vessel_name: USS Sequoia
-summary: |
-  Discussion of war debts, currency stabilization (FDR leaves Gold Standard one week before), disarmament
-tags: fdr
-
----
-
-## Passengers
-
-- slug: roosevelt-franklin-delano
-  full_name: Franklin Delano Roosevelt
-  role_title: POTUS
-  wikipedia_url: https://en.wikipedia.org/wiki/Franklin_D._Roosevelt
-
-- slug: roosevelt-eleanor
-  full_name: Eleanor Roosevelt
-  role_title: First Lady
-  wikipedia_url: https://en.wikipedia.org/wiki/Eleanor_Roosevelt
-
-- slug: macdonald-ramsay
-  full_name: Ramsay MacDonald
-  role_title: UK Prime Minister
-  wikipedia_url: https://en.wikipedia.org/wiki/Ramsay_MacDonald`;
+term_end: 1945-04-12`;
           
-          setContent(fallbackContent);
-          parseContent(fallbackContent);
+          setContent(errorContent);
+          parseContent(errorContent);
         }
       } catch (error) {
         console.error('Failed to load content:', error);
