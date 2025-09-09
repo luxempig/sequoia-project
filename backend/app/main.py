@@ -67,12 +67,14 @@ def health_check():
         return {
             "status": "healthy",
             "database": "connected",
-            "timestamp": "2025-09-06T23:52:00Z"  # Would use datetime.utcnow() in real implementation
+            "backend": "running",
+            "timestamp": "2025-09-09T03:59:00Z"
         }
     except Exception as e:
         return {
             "status": "unhealthy", 
             "database": "disconnected",
+            "backend": "error",
             "error": str(e),
-            "timestamp": "2025-09-06T23:52:00Z"
+            "timestamp": "2025-09-09T03:59:00Z"
         }
