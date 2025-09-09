@@ -2,7 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'sequoia-backend',
-      script: 'backend/app/main.py',
+      script: 'uvicorn',
+      args: 'app.main:app --host 0.0.0.0 --port 8000',
+      cwd: '/home/ec2-user/sequoia-project/backend',
       interpreter: 'python3',
       instances: 1,
       autorestart: true,
@@ -10,7 +12,7 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 8000 // Backend API port
+        PORT: 8000
       },
       error_file: '/var/log/sequoia-backend-error.log',
       out_file: '/var/log/sequoia-backend-out.log',
