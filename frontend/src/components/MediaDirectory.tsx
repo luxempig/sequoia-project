@@ -215,7 +215,10 @@ const MediaDirectory: React.FC = () => {
               Media Archive
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Browse the sequoia-canonical S3 bucket contents
+              Real S3 structure: media/president/source/voyage/extension/file
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              Current path: {currentPath} | Items: {items.length}
             </p>
           </div>
         </div>

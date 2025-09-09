@@ -215,7 +215,10 @@ tags: fdr
               For Curators
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              USS Sequoia Master Document - Structured voyage records for curatorial processing
+              USS Sequoia Master Document - Live MASTER_DOC.md content
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              Parsed entries: {parsedData.length} | Content length: {content.length} chars
             </p>
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
