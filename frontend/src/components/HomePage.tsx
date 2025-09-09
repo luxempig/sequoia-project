@@ -11,6 +11,10 @@ export default function HomePage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               About the USS Sequoia Archive
             </h1>
+            {/* Deployment test indicator */}
+            <div className="text-xs text-gray-400 mb-2">
+              Version: Real-Data-Loading-v2024.09.08
+            </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               A comprehensive digital collection of presidential voyages aboard America's most distinguished yacht
             </p>
