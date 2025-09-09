@@ -18,8 +18,12 @@ class Settings(BaseSettings):
 
     # AWS / S3
     AWS_REGION: str = "us-east-2"
-    # Optional override: if your media.s3_url is a bare key (not s3://...), we’ll use this bucket
-    MEDIA_BUCKET: str = ""     
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    # Optional override: if your media.s3_url is a bare key (not s3://...), we'll use this bucket
+    MEDIA_BUCKET: str = ""
+    PUBLIC_BUCKET: str = ""
+    PRIVATE_BUCKET: str = ""     
     PRESIGNED_TTL: int = 3600  # seconds
 
     # CORS
