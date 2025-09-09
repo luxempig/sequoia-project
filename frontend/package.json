@@ -2,7 +2,7 @@
   "name": "sequoia-frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://18.191.216.71:8000",
+  "proxy": "http://localhost:8000",
   "type": "commonjs",
   "dependencies": {
     "@tailwindcss/cli": "^4.1.11",
