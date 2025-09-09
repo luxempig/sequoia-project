@@ -116,8 +116,10 @@ fi
 
 # Deploy frontend if build archive exists
 cd $APP_DIR
+log "Checking for frontend build archive..."
+ls -la frontend-build.tar.gz 2>/dev/null || log "frontend-build.tar.gz not found"
 if [ -f "frontend-build.tar.gz" ]; then
-    log "Deploying frontend from uploaded build..."
+    log "Found frontend-build.tar.gz, deploying frontend from uploaded build..."
     
     # Install Certbot if not already installed
     if ! command -v certbot &> /dev/null; then

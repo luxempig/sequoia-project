@@ -41,6 +41,15 @@ jobs:
         grep -r "ISABEL" build/ || echo "Isabel not found in build"
         tar -czf ../frontend-build.tar.gz -C build .
 
+    - name: Upload frontend build
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "frontend-build.tar.gz"
+        target: "/home/ec2-user/sequoia-project/"
+
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -59,12 +68,3 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-    - name: Upload frontend build
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "frontend-build.tar.gz"
-        target: "/home/ec2-user/sequoia-project/"
