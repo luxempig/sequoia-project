@@ -57,11 +57,8 @@ if [ "$BACKEND_CHANGED" = true ]; then
     log "Deploying backend..."
     cd $BACKEND_DIR
     
-    # Install backend dependencies if package.json changed
-    if [ "$OLD_COMMIT" = "initial" ] || git diff --name-only $OLD_COMMIT $NEW_COMMIT | grep -q "backend/package.json\|backend/package-lock.json"; then
-        log "Installing backend dependencies..."
-        npm install
-    fi
+    # Skip npm install for backend - this is Python-only
+    # Backend uses Python dependencies only
     
     # Install Python dependencies if requirements changed
     if [ "$OLD_COMMIT" = "initial" ] || git diff --name-only $OLD_COMMIT $NEW_COMMIT | grep -q "backend/requirements.txt"; then
@@ -111,7 +108,7 @@ EOF
     
     # Restart backend with PM2
     log "Restarting backend..."
-    pm2 restart sequoia-backend || pm2 start ecosystem.config.js --name sequoia-backend
+    pm2 restart sequoia-backend || pm2 start ../ecosystem.config.js --name sequoia-backend
 fi
 
 # Deploy frontend if build archive exists
