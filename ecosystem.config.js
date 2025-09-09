@@ -14,9 +14,9 @@ module.exports = {
         PORT: 8000,
         PYTHONPATH: '/home/ec2-user/sequoia-project/backend'
       },
-      error_file: '/var/log/sequoia-backend-error.log',
-      out_file: '/var/log/sequoia-backend-out.log',
-      log_file: '/var/log/sequoia-backend-combined.log',
+      error_file: './logs/sequoia-backend-error.log',
+      out_file: './logs/sequoia-backend-out.log',
+      log_file: './logs/sequoia-backend-combined.log',
       time: true,
       kill_timeout: 3000,
       restart_delay: 1000
@@ -32,9 +32,9 @@ module.exports = {
         PORT: 9000,
         GITHUB_WEBHOOK_SECRET: 'your-webhook-secret-here'
       },
-      error_file: '/var/log/sequoia-webhook-error.log',
-      out_file: '/var/log/sequoia-webhook-out.log',
-      log_file: '/var/log/sequoia-webhook-combined.log',
+      error_file: './logs/sequoia-webhook-error.log',
+      out_file: './logs/sequoia-webhook-out.log',
+      log_file: './logs/sequoia-webhook-combined.log',
       time: true
     }
   ]
