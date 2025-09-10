@@ -1,0 +1,6 @@
+{
+  "error": "JSON parsing failed",
+  "original_error": "Expecting ',' delimiter: line 369 column 12 (char 13758)",
+  "file_processed": true,
+  "fallback_structure": true
+}

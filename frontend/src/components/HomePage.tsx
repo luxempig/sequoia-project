@@ -13,10 +13,11 @@ export default function HomePage() {
             </h1>
             {/* Deployment test indicator */}
             <div className="text-xs text-gray-400 mb-2">
-              Version: Real-Data-Loading-v2024.09.08
+              Version: Real-Data-Loading-v2024.09.08no
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              A comprehensive digital collection of presidential voyages aboard America's most distinguished yacht
+              A comprehensive digital collection of presidential voyages aboard
+              America's most distinguished yacht
             </p>
           </div>
 
@@ -29,7 +30,8 @@ export default function HomePage() {
                 Presidential Voyages
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Detailed records of presidential trips and official state visits aboard the USS Sequoia
+                Detailed records of presidential trips and official state visits
+                aboard the USS Sequoia
               </p>
             </div>
 
@@ -41,7 +43,8 @@ export default function HomePage() {
                 Historical Media
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Photographs, documents, and multimedia from decades of presidential history
+                Photographs, documents, and multimedia from decades of
+                presidential history
               </p>
             </div>
 
@@ -53,7 +56,8 @@ export default function HomePage() {
                 Distinguished Passengers
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Comprehensive directory of passengers, crew, and officials who traveled aboard
+                Comprehensive directory of passengers, crew, and officials who
+                traveled aboard
               </p>
             </div>
           </div>
