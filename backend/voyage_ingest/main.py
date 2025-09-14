@@ -28,6 +28,8 @@ Notes:
 
 import os
 import logging
+import argparse
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -50,6 +52,42 @@ def _as_bool(s: str, default=False) -> bool:
     return s.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def parse_json_file(json_path):
+    """Parse JSON file in the format expected by the curator interface."""
+    with open(json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    # Extract data from the format: {"truman-harry-s": {"president": {...}, "voyages": [...], ...}}
+    presidents = []
+    bundles = []
+
+    for president_key, pres_data in data.items():
+        if not isinstance(pres_data, dict):
+            continue
+
+        # Extract president info
+        president_info = pres_data.get("president", {})
+        if president_info:
+            presidents.append(president_info)
+
+        # Extract voyages and convert to bundle format
+        voyages = pres_data.get("voyages", [])
+        passengers = pres_data.get("passengers", [])
+        media = pres_data.get("media", [])
+
+        for voyage in voyages:
+            # Create bundle in the format expected by the ingestion system
+            bundle = {
+                "president": president_info,
+                "voyage": voyage,
+                "passengers": passengers,  # Note: this assigns all passengers to all voyages
+                "media": media  # Note: this assigns all media to all voyages
+            }
+            bundles.append(bundle)
+
+    return presidents, bundles
+
+
 def _classify_status(validation_errors, media_warnings):
     if validation_errors:
         return "ERROR"
@@ -59,20 +97,41 @@ def _classify_status(validation_errors, media_warnings):
 
 
 def main():
+    # Parse command line arguments
+    parser_args = argparse.ArgumentParser(description="Voyage Ingest Pipeline")
+    parser_args.add_argument("--source", choices=["doc", "json"], default="doc", help="Input source type")
+    parser_args.add_argument("--file", help="JSON file path (when source=json)")
+    args = parser_args.parse_args()
+
     load_dotenv()
 
     doc_id = os.environ.get("DOC_ID", "").strip()
     spreadsheet_id = os.environ.get("SPREADSHEET_ID", "").strip()
     dry_run = _as_bool(os.environ.get("DRY_RUN"), default=False)
 
-    if not doc_id or not spreadsheet_id:
-        LOG.error("Missing required env vars: DOC_ID and/or SPREADSHEET_ID")
-        return
+    # Handle different input sources
+    if args.source == "json":
+        if not args.file:
+            LOG.error("--file argument required when --source=json")
+            return
+        if not os.path.exists(args.file):
+            LOG.error(f"JSON file not found: {args.file}")
+            return
+        LOG.info("=== Voyage Ingest (JSON) ===  DRY_RUN=%s  FILE=%s  SHEET=%s", dry_run, args.file, spreadsheet_id)
 
-    LOG.info("=== Voyage Ingest ===  DRY_RUN=%s  DOC_ID=%s  SHEET=%s", dry_run, doc_id, spreadsheet_id)
+        # Parse JSON file into presidents + voyage bundles
+        presidents, bundles = parse_json_file(args.file)
+        source_id = args.file
+    else:
+        # Original Google Doc parsing
+        if not doc_id or not spreadsheet_id:
+            LOG.error("Missing required env vars: DOC_ID and/or SPREADSHEET_ID")
+            return
+        LOG.info("=== Voyage Ingest (Doc) ===  DRY_RUN=%s  DOC_ID=%s  SHEET=%s", dry_run, doc_id, spreadsheet_id)
 
-    # ---------------- Parse the Google Doc into presidents + voyage bundles ----------------
-    presidents, bundles = parser.parse_doc_multi(doc_id)
+        # Parse the Google Doc into presidents + voyage bundles
+        presidents, bundles = parser.parse_doc_multi(doc_id)
+        source_id = doc_id
     if not bundles:
         LOG.error("No voyages found in the document.")
         return
@@ -180,7 +239,7 @@ def main():
         note = (media_warnings[0] if media_warnings else "OK")
 
         log_rows.append([
-            ts, doc_id, vslug or f"[bundle#{idx}]",
+            ts, source_id, vslug or f"[bundle#{idx}]",
             status,
             "0", str(len(media_warnings)),
             str(media_declared),
@@ -197,7 +256,7 @@ def main():
     # 7) Add a GLOBAL row summarizing global reconcile (Sheets/DB)
     if global_prune_stats is not None:
         log_rows.append([
-            ts, doc_id, "[GLOBAL]",
+            ts, source_id, "[GLOBAL]",
             "OK",
             "0", "0", "0", "0", "0",
             "exact", "TRUE" if dry_run else "FALSE",
