@@ -11,6 +11,7 @@
 !nginx-sequoia.conf
 !ecosystem.config.js
 !webhook-server.js
+!truman.json
 
 # Dependencies
 node_modules/
