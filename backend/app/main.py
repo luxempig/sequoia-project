@@ -60,11 +60,11 @@ def read_root():
 
 @app.get("/truman.json", tags=["data"])
 def get_truman_data():
-    """Serve the truman.json file for the curator interface."""
+    """Serve the truman_translated.json file for the curator interface."""
     import os
     import json
 
-    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "truman.json")
+    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "truman_translated.json")
 
     try:
         if os.path.exists(json_path):

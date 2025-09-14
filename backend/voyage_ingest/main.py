@@ -53,11 +53,11 @@ def _as_bool(s: str, default=False) -> bool:
 
 
 def parse_json_file(json_path):
-    """Parse JSON file in the format expected by the curator interface."""
+    """Parse JSON file in the new truman_translated.json format."""
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    # Extract data from the format: {"truman-harry-s": {"president": {...}, "voyages": [...], ...}}
+    # Extract data from the format: {"truman-harry-s": {"term_start": ..., "voyages": [...], ...}}
     presidents = []
     bundles = []
 
@@ -65,23 +65,26 @@ def parse_json_file(json_path):
         if not isinstance(pres_data, dict):
             continue
 
-        # Extract president info
-        president_info = pres_data.get("president", {})
-        if president_info:
-            presidents.append(president_info)
+        # Create president info from the new format
+        president_info = {
+            "president_slug": president_key,
+            "full_name": "Harry S. Truman",  # Could extract from key or make configurable
+            "term_start": pres_data.get("term_start"),
+            "term_end": pres_data.get("term_end"),
+            "party": "Democratic"  # Default for Truman
+        }
+        presidents.append(president_info)
 
-        # Extract voyages and convert to bundle format
+        # Extract voyages with embedded passengers and media
         voyages = pres_data.get("voyages", [])
-        passengers = pres_data.get("passengers", [])
-        media = pres_data.get("media", [])
 
         for voyage in voyages:
-            # Create bundle in the format expected by the ingestion system
+            # Each voyage now has its own passengers and media
             bundle = {
                 "president": president_info,
                 "voyage": voyage,
-                "passengers": passengers,  # Note: this assigns all passengers to all voyages
-                "media": media  # Note: this assigns all media to all voyages
+                "passengers": voyage.get("passengers", []),
+                "media": voyage.get("media", [])
             }
             bundles.append(bundle)
 

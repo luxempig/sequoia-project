@@ -12,6 +12,7 @@
 !ecosystem.config.js
 !webhook-server.js
 !truman.json
+!truman_translated.json
 
 # Dependencies
 node_modules/

@@ -9,6 +9,7 @@ on:
       - 'deploy-unified.sh'
       - 'nginx-sequoia.conf'
       - 'truman.json'
+      - 'truman_translated.json'
   pull_request:
     branches: [ main ]
     types: [ closed ]
@@ -18,6 +19,7 @@ on:
       - 'deploy-unified.sh'
       - 'nginx-sequoia.conf'
       - 'truman.json'
+      - 'truman_translated.json'
 
 jobs:
   deploy:

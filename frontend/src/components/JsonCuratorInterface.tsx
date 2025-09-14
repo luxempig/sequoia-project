@@ -4,18 +4,18 @@ import Layout from "./Layout";
 interface Passenger {
   name: string;
   full_name: string;
-  role_title?: string;
-  wikipedia_url?: string;
+  title?: string | null;
+  role: string;
+  bio: string;
 }
 
 interface MediaItem {
-  credit: string;
-  description: string;
-  google_drive_link?: string;
-  date?: string;
-  tags?: string[];
-  file?: File | null;
-  s3_path?: string;
+  media_name: string;
+  link: string;
+  source: string;
+  date: string;
+  type: string;
+  link_type: string;
 }
 
 interface Voyage {
@@ -27,10 +27,10 @@ interface Voyage {
   origin: string | null;
   destination: string | null;
   passengers: Passenger[];
-  media?: MediaItem[];
-  summary?: string;
-  notes?: string;
-  missing_info?: string[];
+  media: MediaItem[];
+  notes: string[];
+  tags: string[];
+  missing_info: string[];
 }
 
 interface PresidentData {
@@ -38,13 +38,6 @@ interface PresidentData {
   term_end: string;
   info: string;
   voyages: Voyage[];
-  president: {
-    full_name: string;
-    party: string;
-    slug: string;
-    term_start: string;
-    term_end: string;
-  };
 }
 
 interface TrumanData {
@@ -127,15 +120,15 @@ const JsonCuratorInterface: React.FC = () => {
           ? `To ${voyage.destination}`
           : null;
     
-    const passengers = voyage.passengers?.length 
-      ? voyage.passengers.map(p => p.name).join(", ")
+    const passengers = voyage.passengers?.length
+      ? voyage.passengers.map(p => p.full_name).join(", ")
       : "No passengers recorded";
 
     return `**Date:** ${dateRange}
 **Route:** ${route || "Route unknown"}
 **Passengers:** ${passengers}
-${voyage.summary ? `\n**Summary:** ${voyage.summary}` : ""}
-${voyage.notes ? `\n**Notes:** ${voyage.notes}` : ""}
+${voyage.notes?.length ? `\n**Notes:** ${voyage.notes.join("; ")}` : ""}
+${voyage.tags?.length ? `\n**Tags:** ${voyage.tags.join(", ")}` : ""}
 ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_info.join(", ")}` : ""}`;
   };
 
@@ -153,8 +146,8 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
       destination: null,
       passengers: [],
       media: [],
-      summary: "",
-      notes: "",
+      notes: [],
+      tags: [],
       missing_info: []
     };
   };
