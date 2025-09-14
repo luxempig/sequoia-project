@@ -54,7 +54,7 @@ app.include_router(curator_router, prefix="/api/curator", tags=["curator"])
 def read_root():
     return {
         "message": "Welcome to the Sequoia API (slug schema)",
-        "version": "deployment-debug-v2025.09.14-22:56",
+        "version": "truman-json-fix-v2025.09.14-23:06",
         "endpoints": ["/truman.json", "/health", "/api/voyages", "/api/curator/truman.json"]
     }
 
