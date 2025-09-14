@@ -16,6 +16,8 @@ interface MediaItem {
   date: string;
   type: string;
   link_type: string;
+  file?: File | null; // Temporary for upload functionality
+  s3_path?: string; // Temporary for upload functionality
 }
 
 interface Voyage {
@@ -226,8 +228,9 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
         {
           name: "",
           full_name: "",
-          role_title: "",
-          wikipedia_url: ""
+          title: "",
+          role: "",
+          bio: ""
         }
       ]
     };
@@ -239,13 +242,12 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
       media: [
         ...(voyage.media || []),
         {
-          credit: "",
-          description: "",
-          google_drive_link: "",
+          media_name: "",
+          link: "",
+          source: "",
           date: "",
-          tags: [],
-          file: null,
-          s3_path: ""
+          type: "",
+          link_type: ""
         }
       ]
     };
@@ -264,8 +266,8 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
           const formData = new FormData();
           formData.append('file', mediaItem.file);
           formData.append('voyage_id', voyage.voyage);
-          formData.append('credit', mediaItem.credit || '');
-          formData.append('description', mediaItem.description || '');
+          formData.append('source', mediaItem.source || '');
+          formData.append('media_name', mediaItem.media_name || '');
 
           const response = await fetch('/api/curator/upload-media', {
             method: 'POST',
@@ -277,7 +279,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
             updatedMedia[i] = {
               ...mediaItem,
               s3_path: result.s3_path,
-              google_drive_link: result.public_url || "",
+              link: result.public_url || "",
               file: null // Clear the file object after upload
             };
           } else {
@@ -376,10 +378,10 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h1 className="text-3xl font-bold text-blue-800 mb-2">
-            Historical Curator - {data.president.full_name}
+            Historical Curator - Harry S. Truman
           </h1>
           <p className="text-gray-600">
-            {data.president.party} • {data.president.term_start} - {data.president.term_end}
+            Democratic • {data.term_start} - {data.term_end}
           </p>
           <p className="text-sm text-gray-500 mt-2">
             {data.voyages.length} voyage{data.voyages.length !== 1 ? 's' : ''} recorded
@@ -606,8 +608,8 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
               Summary
             </label>
             <textarea
-              value={voyage.summary || ''}
-              onChange={(e) => setVoyage({ ...voyage, summary: e.target.value })}
+              value={voyage.notes?.join('\n') || ''}
+              onChange={(e) => setVoyage({ ...voyage, notes: e.target.value.split('\n').filter(n => n.trim()) })}
               rows={3}
               className="w-full border rounded px-3 py-2"
             />
@@ -618,8 +620,8 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
               Notes
             </label>
             <textarea
-              value={voyage.notes || ''}
-              onChange={(e) => setVoyage({ ...voyage, notes: e.target.value })}
+              value={voyage.notes?.join('\n') || ''}
+              onChange={(e) => setVoyage({ ...voyage, notes: e.target.value.split('\n').filter(n => n.trim()) })}
               rows={3}
               className="w-full border rounded px-3 py-2"
             />
@@ -667,15 +669,15 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
                     <input
                       type="text"
                       placeholder="Role/Title"
-                      value={passenger.role_title || ''}
-                      onChange={(e) => updatePassenger(index, 'role_title', e.target.value)}
+                      value={passenger.role || ''}
+                      onChange={(e) => updatePassenger(index, 'role', e.target.value)}
                       className="border rounded px-2 py-1 text-sm"
                     />
                     <input
                       type="url"
                       placeholder="Wikipedia URL"
-                      value={passenger.wikipedia_url || ''}
-                      onChange={(e) => updatePassenger(index, 'wikipedia_url', e.target.value)}
+                      value={passenger.bio || ''}
+                      onChange={(e) => updatePassenger(index, 'bio', e.target.value)}
                       className="border rounded px-2 py-1 text-sm"
                     />
                   </div>
@@ -719,14 +721,14 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
                     <input
                       type="text"
                       placeholder="Credit/Source"
-                      value={media.credit}
-                      onChange={(e) => updateMedia(index, 'credit', e.target.value)}
+                      value={media.source}
+                      onChange={(e) => updateMedia(index, 'source', e.target.value)}
                       className="border rounded px-2 py-1 text-sm"
                     />
                     <textarea
                       placeholder="Description"
-                      value={media.description}
-                      onChange={(e) => updateMedia(index, 'description', e.target.value)}
+                      value={media.media_name}
+                      onChange={(e) => updateMedia(index, 'media_name', e.target.value)}
                       rows={2}
                       className="border rounded px-2 py-1 text-sm"
                     />
