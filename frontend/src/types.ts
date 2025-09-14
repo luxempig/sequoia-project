@@ -30,17 +30,22 @@ export interface Voyage {
 export interface Person {
   person_slug: string;
   full_name: string;
-  role_title?: string | null;
+  role?: string | null;  // Updated from role_title
+  title?: string | null; // New field
   organization?: string | null;
   birth_year?: number | null;
   death_year?: number | null;
-  wikipedia_url?: string | null;
+  bio?: string | null;    // Updated from wikipedia_url
   notes_internal?: string | null;
   tags?: string | null;
 
   // From voyage_passengers join (when fetched via by-voyage)
   capacity_role?: string | null;
   voyage_notes?: string | null;
+
+  // Legacy fields for backward compatibility
+  role_title?: string | null;
+  wikipedia_url?: string | null;
 }
 
 export interface MediaItem {
