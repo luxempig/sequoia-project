@@ -2,6 +2,7 @@ import { api } from "../api";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import VoyageCard from "./VoyageCard";
+import HorizontalTimeline from "./HorizontalTimeline";
 import { Voyage, President } from "../types";
 
 const Badge: React.FC<{ tone?: "amber" | "violet"; children: React.ReactNode }> = ({
@@ -33,6 +34,7 @@ export default function VoyageList() {
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [presidents, setPrez] = useState<President[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
 
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -164,6 +166,30 @@ export default function VoyageList() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
+          <div className="flex rounded-md border border-gray-300 bg-white">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-2 text-sm font-medium rounded-l-md transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className={`px-3 py-2 text-sm font-medium rounded-r-md border-l transition-colors ${
+                viewMode === 'timeline' 
+                  ? 'bg-gray-900 text-white border-gray-900' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+              }`}
+            >
+              Timeline
+            </button>
+          </div>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-gray-300 rounded-md w-48 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
           <button type="submit" className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 font-medium transition-colors">Search</button>
           <button type="button" onClick={clear} className="px-4 py-2 rounded-md bg-white hover:bg-gray-50 text-gray-900 font-medium border border-gray-300 hover:border-gray-400 transition-colors">Clear</button>
@@ -174,22 +200,28 @@ export default function VoyageList() {
       {!loading && voyages.length === 0 && <p className="text-center text-gray-600 py-12">No voyages found.</p>}
 
       {!loading && voyages.length > 0 && (
-        <div className="timeline">
-          {Object.entries(grouped).map(([hdr, items]) => (
-            <section key={hdr} className="mb-8">
-              <h2 className="sticky top-0 z-10 py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900">
-                {hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`}
-              </h2>
+        <>
+          {viewMode === 'timeline' ? (
+            <HorizontalTimeline voyages={voyages} />
+          ) : (
+            <div className="timeline">
+              {Object.entries(grouped).map(([hdr, items]) => (
+                <section key={hdr} className="mb-8">
+                  <h2 className="sticky top-0 z-10 py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900">
+                    {hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`}
+                  </h2>
 
-              {items
-                .filter((v) => v.start_date)
-                .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
-                .map((v) => (
-                  <VoyageCard key={v.voyage_slug} voyage={v} />
-                ))}
-            </section>
-          ))}
-        </div>
+                  {items
+                    .filter((v) => v.start_date)
+                    .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
+                    .map((v) => (
+                      <VoyageCard key={v.voyage_slug} voyage={v} />
+                    ))}
+                </section>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -35,10 +35,15 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             raise
             
         except psycopg2.Error as e:
-            # Database errors
+            # Database errors - let route handlers try their fallbacks first
             process_time = time.time() - start_time
             LOG.error(f"Database error on {request.method} {request.url.path}: {e} - {process_time:.3f}s")
             
+            # For API routes that should have mock data fallbacks, don't intercept the error
+            if request.url.path.startswith("/api/voyages") or request.url.path.startswith("/api/presidents") or request.url.path.startswith("/api/media"):
+                # Let the route handler's try-catch blocks handle this
+                raise
+                
             return JSONResponse(
                 status_code=500,
                 content={
