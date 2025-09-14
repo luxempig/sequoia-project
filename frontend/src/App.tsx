@@ -14,8 +14,7 @@ import PersonDetail from "./components/PersonDetail";
 import MediaBrowser from "./components/MediaBrowser";
 import MediaDirectory from "./components/MediaDirectory";
 import MediaDetail from "./components/MediaDetail";
-import CuratorDocument from "./components/CuratorDocument";
-import AdminDashboard from "./components/AdminDashboard";
+import JsonCuratorInterface from "./components/JsonCuratorInterface";
 import "./index.css";
 
 const AppContent: React.FC = () => {
@@ -49,8 +48,7 @@ const AppContent: React.FC = () => {
         <Route path="/media" element={<MediaDirectory />} />
         <Route path="/media/:slug" element={<MediaDetail />} />
         
-        <Route path="/curators" element={<CuratorDocument />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/curators" element={<JsonCuratorInterface />} />
       </Routes>
     </BrowserRouter>
   );

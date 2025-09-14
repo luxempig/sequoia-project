@@ -1,7 +1,9 @@
 import os
 import time
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import PlainTextResponse
+import json
+import subprocess
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
+from fastapi.responses import PlainTextResponse, JSONResponse
 from pydantic import BaseModel
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
@@ -364,3 +366,135 @@ async def get_presigned_url(request: PresignRequest):
     except Exception as e:
         logger.error(f"Unexpected error generating presigned URL: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate presigned URL")
+
+
+@router.post("/upload-media")
+async def upload_media(
+    file: UploadFile = File(...),
+    voyage_id: str = Form(...),
+    credit: str = Form(""),
+    description: str = Form("")
+):
+    """Upload media files to S3 and return the S3 path."""
+    try:
+        # Get AWS credentials and S3 client
+        s3_client = boto3.client(
+            's3',
+            region_name=os.getenv('AWS_REGION', 'us-east-1'),
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+        )
+        
+        bucket_name = os.getenv('PRIVATE_BUCKET', 'sequoia-canonical')
+        
+        # Create S3 path: media/president/voyage_id/filename
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'unknown'
+        s3_key = f"media/truman-harry-s/{voyage_id}/{file.filename}"
+        
+        # Upload file to S3
+        file_content = await file.read()
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=s3_key,
+            Body=file_content,
+            ContentType=file.content_type or 'application/octet-stream',
+            Metadata={
+                'voyage_id': voyage_id,
+                'credit': credit,
+                'description': description,
+                'uploaded_by': 'curator_interface'
+            }
+        )
+        
+        # Generate public URL
+        public_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+        
+        logger.info(f"Media uploaded successfully: {s3_key}")
+        
+        return {
+            "s3_path": s3_key,
+            "public_url": public_url,
+            "filename": file.filename,
+            "size": len(file_content),
+            "content_type": file.content_type
+        }
+        
+    except Exception as e:
+        logger.error(f"Media upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@router.post("/save-president-data")
+async def save_president_data(request: Request):
+    """Save updated president JSON data."""
+    try:
+        data = await request.json()
+        
+        # Save to the truman.json file
+        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+        
+        # Create backup
+        if os.path.exists(json_path):
+            backup_path = f"{json_path}.backup.{int(time.time())}"
+            with open(json_path, 'r', encoding='utf-8') as src:
+                with open(backup_path, 'w', encoding='utf-8') as dst:
+                    dst.write(src.read())
+            logger.info(f"Created backup at {backup_path}")
+        
+        # Write updated data
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        logger.info("President data saved successfully")
+        return {"status": "success", "message": "Data saved successfully"}
+        
+    except Exception as e:
+        logger.error(f"Failed to save president data: {e}")
+        raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
+
+
+@router.post("/trigger-ingestion")
+async def trigger_ingestion(request: Request):
+    """Trigger the voyage ingestion pipeline."""
+    try:
+        data = await request.json()
+        voyage_id = data.get('voyage_id')
+        action = data.get('action', 'update')
+        
+        logger.info(f"Triggering ingestion for voyage {voyage_id} (action: {action})")
+        
+        # Run the voyage ingestion script
+        script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
+        
+        if os.path.exists(script_path):
+            # Run the ingestion script
+            result = subprocess.run([
+                'python', script_path,
+                '--source', 'json',
+                '--file', os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+            ], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                logger.info("Data ingestion completed successfully")
+                return {
+                    "status": "success", 
+                    "message": "Data ingestion triggered successfully",
+                    "output": result.stdout
+                }
+            else:
+                logger.error(f"Ingestion failed: {result.stderr}")
+                return {
+                    "status": "warning",
+                    "message": "Ingestion script ran with errors", 
+                    "error": result.stderr
+                }
+        else:
+            logger.warning("Ingestion script not found, data saved but not ingested")
+            return {
+                "status": "warning",
+                "message": "Data saved but ingestion script not available"
+            }
+        
+    except Exception as e:
+        logger.error(f"Failed to trigger ingestion: {e}")
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
