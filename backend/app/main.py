@@ -54,6 +54,39 @@ app.include_router(curator_router, prefix="/api/curator", tags=["curator"])
 def read_root():
     return {"message": "Welcome to the Sequoia API (slug schema)"}
 
+@app.get("/truman.json", tags=["data"])
+def get_truman_data():
+    """Serve the truman.json file for the curator interface."""
+    import os
+    import json
+
+    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "truman.json")
+
+    try:
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data
+        else:
+            # Return empty structure if file doesn't exist
+            return {
+                "truman-harry-s": {
+                    "president": {
+                        "president_slug": "truman-harry-s",
+                        "full_name": "Harry S. Truman",
+                        "term_start": "1945-04-12",
+                        "term_end": "1953-01-20",
+                        "party": "Democratic"
+                    },
+                    "voyages": [],
+                    "passengers": [],
+                    "media": []
+                }
+            }
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Failed to load truman data: {str(e)}")
+
 
 @app.get("/health", tags=["health"])
 def health_check():
