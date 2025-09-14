@@ -8,6 +8,7 @@ on:
       - 'backend/**'
       - 'deploy-unified.sh'
       - 'nginx-sequoia.conf'
+      - 'truman.json'
   pull_request:
     branches: [ main ]
     types: [ closed ]
@@ -16,6 +17,7 @@ on:
       - 'backend/**'
       - 'deploy-unified.sh'
       - 'nginx-sequoia.conf'
+      - 'truman.json'
 
 jobs:
   deploy:
