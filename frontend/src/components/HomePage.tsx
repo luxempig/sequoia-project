@@ -13,7 +13,7 @@ export default function HomePage() {
             </h1>
             {/* Deployment test indicator */}
             <div className="text-xs text-gray-400 mb-2">
-              Version: Real-Data-Loading-v2024.09.08no
+              Version: Local-Test-Deploy-v2025.09.14
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               A comprehensive digital collection of presidential voyages aboard
