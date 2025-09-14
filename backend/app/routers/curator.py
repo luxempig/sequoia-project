@@ -15,6 +15,36 @@ logger = logging.getLogger(__name__)
 class PresignRequest(BaseModel):
     s3_url: str
 
+@router.get("/truman.json")
+def get_truman_data():
+    """Serve the truman.json file for the curator interface."""
+    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+
+    try:
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data
+        else:
+            # Return empty structure if file doesn't exist
+            return {
+                "truman-harry-s": {
+                    "president": {
+                        "president_slug": "truman-harry-s",
+                        "full_name": "Harry S. Truman",
+                        "term_start": "1945-04-12",
+                        "term_end": "1953-01-20",
+                        "party": "Democratic"
+                    },
+                    "voyages": [],
+                    "passengers": [],
+                    "media": []
+                }
+            }
+    except Exception as e:
+        logger.error(f"Failed to load truman data: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load truman data: {str(e)}")
+
 @router.get("/master-doc")
 async def get_master_doc():
     """Return the MASTER_DOC.md content for the curator interface."""
