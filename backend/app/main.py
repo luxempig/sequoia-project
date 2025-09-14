@@ -52,7 +52,11 @@ app.include_router(curator_router, prefix="/api/curator", tags=["curator"])
 
 @app.get("/", tags=["root"])
 def read_root():
-    return {"message": "Welcome to the Sequoia API (slug schema)"}
+    return {
+        "message": "Welcome to the Sequoia API (slug schema)",
+        "version": "deployment-debug-v2025.09.14-22:56",
+        "endpoints": ["/truman.json", "/health", "/api/voyages", "/api/curator/truman.json"]
+    }
 
 @app.get("/truman.json", tags=["data"])
 def get_truman_data():
