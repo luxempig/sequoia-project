@@ -18,7 +18,7 @@ class PresignRequest(BaseModel):
 @router.get("/truman.json")
 def get_truman_data():
     """Serve the truman.json file for the curator interface."""
-    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
 
     try:
         if os.path.exists(json_path):
@@ -461,7 +461,7 @@ async def save_president_data(request: Request):
         data = await request.json()
         
         # Save to the truman.json file
-        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
         
         # Create backup
         if os.path.exists(json_path):
@@ -501,7 +501,7 @@ async def trigger_ingestion(request: Request):
             result = subprocess.run([
                 'python', script_path,
                 '--source', 'json',
-                '--file', os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman.json")
+                '--file', os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
             ], capture_output=True, text=True)
             
             if result.returncode == 0:
