@@ -167,6 +167,10 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo rm -rf $NGINX_ROOT/*
     sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
     
+    # Copy truman_translated.json to web root for nginx static serving
+    log "Copying truman_translated.json to web root..."
+    sudo cp $APP_DIR/truman_translated.json $NGINX_ROOT/
+
     # Debug: Check what files were deployed
     log "Files deployed to $NGINX_ROOT:"
     sudo ls -la $NGINX_ROOT/
