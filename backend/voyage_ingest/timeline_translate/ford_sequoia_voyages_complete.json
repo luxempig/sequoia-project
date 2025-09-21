@@ -1,0 +1,323 @@
+{
+  "ford-gerald": {
+    "term_start": "August 8, 1974",
+    "term_end": "January 20, 1977",
+    "info": "President Ford (August 8, 1974 to January 20, 1977)",
+    "voyages": [
+      {
+        "voyage": "ford-gerald-1976-06-09",
+        "start_date": "1976-06-09",
+        "end_date": "1976-06-09",
+        "start_time": "20:06",
+        "end_time": "22:50",
+        "origin": "Washington Navy Yard",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "ford-gerald",
+            "full_name": "Gerald Ford",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Gerald_Ford"
+          },
+          {
+            "name": "ford-first-lady",
+            "full_name": "the First Lady",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Betty_Ford"
+          },
+          {
+            "name": "levi-edward-h",
+            "full_name": "Mr. and Mrs. Edward H. Levi",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Edward_H._Levi"
+          },
+          {
+            "name": "levi-wife",
+            "full_name": "Mrs. Levi",
+            "title": "",
+            "role": "",
+            "bio": "http://chronicle.uchicago.edu/030320/levi-obit.shtml"
+          },
+          {
+            "name": "coleman-william-t",
+            "full_name": "William T. Coleman",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_Thaddeus_Coleman_Jr."
+          },
+          {
+            "name": "coleman-wife",
+            "full_name": "Mrs. Coleman",
+            "title": "",
+            "role": "",
+            "bio": "https://www.lehmanreen.com/obituary/Lovida-ColemanSr"
+          },
+          {
+            "name": "scott-hugh",
+            "full_name": "Senator and Mrs. Hugh Scott",
+            "title": "Senator",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Hugh_Scott"
+          },
+          {
+            "name": "rhodes-john-j",
+            "full_name": "Congressman and Mrs. John J. Rhodes",
+            "title": "Congressman",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_Jacob_Rhodes"
+          },
+          {
+            "name": "bartlett-charles-l",
+            "full_name": "Mr. and Mrs. Charles L. Bartlett",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Charles_L._Bartlett_(journalist)"
+          },
+          {
+            "name": "bartlett-wife",
+            "full_name": "Mrs. Bartlett",
+            "title": "",
+            "role": "",
+            "bio": "https://www.nytimes.com/1950/12/17/archives/josephine-m-buck-bride-in-far-hills-finch-graduate-is-married-to.html"
+          },
+          {
+            "name": "hart-kitty-carlisle",
+            "full_name": "Mrs. Moss Hart (Kitty Carlisle)",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Kitty_Carlisle"
+          },
+          {
+            "name": "morton-rogers-c-b",
+            "full_name": "Rogers C. B. Morton",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Rogers_Morton"
+          },
+          {
+            "name": "rockefeller-nelson-a",
+            "full_name": "Nelson A. Rockefeller",
+            "title": "VP",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Nelson_Rockefeller"
+          },
+          {
+            "name": "rockefeller-mrs-nelson",
+            "full_name": "Mrs. Nelson Rockefeller",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Happy_Rockefeller"
+          },
+          {
+            "name": "ford-janet",
+            "full_name": "Mrs. Thomas G. (Janet) Ford",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Thomas_Gardner_Ford"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "ford-daily-diary-1976-06-09",
+            "link": "https://www.fordlibrarymuseum.gov/library/document/0036/pdd760609.pdf",
+            "source": "Ford Daily Diary",
+            "date": "1976-06-09",
+            "type": "pdf",
+            "platform": "other"
+          },
+          {
+            "media_name": "happy-rockefeller-birthday-1976-06-09",
+            "link": "https://drive.google.com/file/d/1wtK3Tmm9SULtPyu6MGuRkLZxDTXHdwFa/view?usp=drive_link",
+            "source": "Unknown",
+            "date": "1976-06-09",
+            "type": "png",
+            "platform": "drive"
+          },
+          {
+            "media_name": "sheila-weidenfeld-files-birthday-1976-06-09",
+            "link": "https://drive.google.com/file/d/1951J-VBpzZa2H6rDuZ0ObZ9RcxiF-qPo/view?usp=drive_link",
+            "source": "Sheila Weidenfeld Files",
+            "date": "1976-06-09",
+            "type": "pdf",
+            "platform": "drive"
+          }
+        ],
+        "notes": [
+          "Guests greeted by Lt. Cdr. Dewey \"Skip\" Beliech (Commanding Officer of the Sequoia), dinner was served",
+          "(GRF)"
+        ],
+        "tags": ["dinner", "birthday", "Happy Rockefeller"],
+        "missing_info": {
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "ford-gerald-1976-06-16",
+        "start_date": "1976-06-16",
+        "end_date": "1976-06-16",
+        "start_time": "19:00",
+        "end_time": "21:03",
+        "origin": "Washington Navy Yard",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "ford-gerald",
+            "full_name": "Gerald Ford",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Gerald_Ford"
+          },
+          {
+            "name": "trudeau-pierre-elliot",
+            "full_name": "Prime Minister Pierre Elliot Trudeau",
+            "title": "Prime Minister",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Pierre_Trudeau"
+          },
+          {
+            "name": "warren-jack-h",
+            "full_name": "Ambassador Jack H. Warren",
+            "title": "Ambassador",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Jake_Warren"
+          },
+          {
+            "name": "head-ivan",
+            "full_name": "Ivan Head",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Ivan_Head"
+          },
+          {
+            "name": "kissinger-henry-a",
+            "full_name": "Henry A. Kissinger",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Henry_Kissinger"
+          },
+          {
+            "name": "scowcroft-brent",
+            "full_name": "Lt. Gen. Brent Scowcroft",
+            "title": "Lt. Gen.",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Brent_Scowcroft"
+          },
+          {
+            "name": "enders-thomas-o",
+            "full_name": "Ambassador Thomas O. Enders",
+            "title": "Ambassador",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Thomas_O._Enders"
+          },
+          {
+            "name": "macdonald-donald",
+            "full_name": "Donald MacDonald",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Donald_Stovel_Macdonald"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "ford-daily-diary-1976-06-16",
+            "link": "https://www.fordlibrarymuseum.gov/library/document/0036/pdd760616.pdf",
+            "source": "Ford Daily Diary",
+            "date": "1976-06-16",
+            "type": "pdf",
+            "platform": "other"
+          },
+          {
+            "media_name": "press-pool-trudeau-visit-1976-06-16",
+            "link": "https://drive.google.com/file/d/1tECwWr8W-46irtb_L7Dy-bHFGY3MucK1/view?usp=drive_link",
+            "source": "Press Pool",
+            "date": "1976-06-16",
+            "type": "pdf",
+            "platform": "drive"
+          },
+          {
+            "media_name": "trudeau-pm-canada-1976-06-16",
+            "link": "https://drive.google.com/drive/folders/1JTDm3gcTQm7c589BgtwN-ic93KCh-z9B?usp=drive_link",
+            "source": "Unknown",
+            "date": "1976-06-16",
+            "type": "",
+            "platform": "drive"
+          },
+          {
+            "media_name": "maria-downs-files-canada",
+            "link": "https://www.dropbox.com/s/rtw1pn5dqd3v724/Maria%20Downs%20Files%20-%20Canada%20%28Aboard%20the%20Sequoia%29%20copy.pdf?dl=0",
+            "source": "Maria Downs Files",
+            "date": "",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Guests greeted by Lt. Cdr. Dewey \"Skip\" Beliech (Commanding Officer of the Sequoia), dinner was served.",
+          "(GRF)"
+        ],
+        "tags": ["Canadian relations", "diplomatic dinner", "Trudeau visit"],
+        "missing_info": {
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "ford-gerald-1976-07-04",
+        "start_date": "1976-07-04",
+        "end_date": "1976-07-04",
+        "start_time": "20:00",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "ford-susan",
+            "full_name": "Susan Ford",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Susan_Ford"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "ford-susan-events-1976-07-04",
+            "link": "https://www.dropbox.com/s/u20qqvgzooeno61/Ford%2C%20Susan%20-%20Events%20-%207%3A4%3A76%20-%20Sequoia%20%20%20%20copy.pdf?dl=0",
+            "source": "Unknown",
+            "date": "1976-07-04",
+            "type": "pdf",
+            "platform": "drop"
+          },
+          {
+            "media_name": "susan-ford-19th-birthday-1976-07-05",
+            "link": "https://drive.google.com/drive/folders/1aMtjxSM2xggLS55OQ1bHExu5kj_sj-E-?usp=drive_link",
+            "source": "Unknown",
+            "date": "1976-07-05",
+            "type": "",
+            "platform": "drive"
+          },
+          {
+            "media_name": "unidentified-letter",
+            "link": "https://www.dropbox.com/s/cr7wzf2sszdgbq6/Unidentified%20copy.pdf?dl=0",
+            "source": "Unknown",
+            "date": "",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Susan Ford's 19th birthday party/Bicentennial fireworks.",
+          "and 30 guests",
+          "Menu: full bar, hot miniature beef shish kebabs, teriyaki meatballs, nachos, deviled eggs, raw vegetables w/seasoning salt, assorted finger sandwiches, ham roulades, watermelon boat, potato salad, tuna salad, assorted french pastries, dinner rolls"
+        ],
+        "tags": ["birthday party", "Bicentennial", "fireworks", "Susan Ford"],
+        "missing_info": {
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1360 @@
+{
+  "truman-harry-s": {
+    "term_start": "April 12, 1945",
+    "term_end": "January 20, 1953",
+    "info": "President Truman (April 12, 1945 to January 20, 1953)",
+    "voyages": [
+      {
+        "voyage": "truman-harry-s-1945-05-14",
+        "start_date": "1945-05-14",
+        "end_date": "1945-05-14",
+        "start_time": "19:00",
+        "end_time": "",
+        "origin": "secretary of war's office",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "eden-anthony",
+            "full_name": "Anthony Eden",
+            "title": "British Foreign Secretary",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Anthony_Eden"
+          },
+          {
+            "name": "grew-joseph-c",
+            "full_name": "Joseph C. Grew",
+            "title": "under secretary of state",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Joseph_Grew"
+          },
+          {
+            "name": "attlee-clement",
+            "full_name": "Clement Attlee",
+            "title": "Britain's lord president of the council",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Clement_Attlee"
+          },
+          {
+            "name": "harriman-averill",
+            "full_name": "Averill Harriman",
+            "title": "US ambassador to Russia",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/W._Averell_Harriman"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "mccloy-diary-1945",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/3.%20Sequoia%20-%20Research%20and%20Photos/8(b).%20Sequoia%20History%20-%20Presidential/John%20McCloy%20Diary%20(1941-1944)?preview=McCloy_diary_1945.pdf",
+            "source": "Diary of John J. McCloy",
+            "date": "1945",
+            "type": "pdf",
+            "platform": "drop"
+          },
+          {
+            "media_name": "stimson-diary",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/3.%20Sequoia%20-%20Research%20and%20Photos/8(b).%20Sequoia%20History%20-%20Presidential?preview=Stimson+Diary.pdf",
+            "source": "Stimson Diary",
+            "date": "",
+            "type": "pdf",
+            "platform": "drop"
+          },
+          {
+            "media_name": "einstein-szilard-letter",
+            "link": "https://en.wikipedia.org/wiki/Einstein–Szilád_letter",
+            "source": "Wikipedia",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          },
+          {
+            "media_name": "handy-spaatz-1945",
+            "link": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Handy_to_spaatz_1945.gif",
+            "source": "Wikimedia",
+            "date": "1945",
+            "type": "gif",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "this is an educated guess— McCloy's diary says they left the secretary of war's office at 6:40 to go to the sequoia",
+          "In the biography, The Colonel: The Life and Wars of Henry Stimson, 1867-1950 By Godfrey Hodgson · First published 1990 (page *) states, \"A few days later Stimson dined on board the presidential yacht Sequoia as Secretary Forrestal's guest to meet the British foreign secretary, Anthony Eden. The spirit of Theodore Roosevelt, speaking softly and carrying a big stick, moved in his ..\" This seems to contradict Secretary Stimson's diary entry for Monday May 15, 1945 (a few months before bombs were dropped Hiroshima and Nagasaki August 6 and 9, 1945) which describes a meeting in his office that day with British Foreign Secretary Anthony Edan but states his heart condition precluded him from attending the dinner that evening aboard Sequoia with Secretary of the Navy Forrestal.",
+          "In his diary, Stimson discusses his view of Stalin and refers to the Manhattan Project and the A-bomb as \"S-1\"",
+          "Ending war with Japan",
+          "McCloy tried to convince President Truman that an invasion of Japan was not sensible. Through Magic intercepts, McCloy had known that the emperor was prepared to surrender if assurances to preserve the Japanese monarchy were given. As such, he advised Truman to offer terms of surrender that offered such a guarantee bundled with the implied threat of using the atomic bomb against Japan.",
+          "While traveling by boat to the Potsdam Conference (which took place July 17 to August 2, 1945), Secretary of State James Byrnes convinced Truman to ignore McCloy's advice. Eventually, Truman ordered the atomic bombs to be dropped as soon as they were ready.",
+          "Order to drop A-bomb Handy to Statz July, 25, 1945"
+        ],
+        "tags": ["atomic bomb", "World War II", "Manhattan Project", "S-1", "foreign relations", "British officials", "ending war with Japan"],
+        "missing_info": {
+          "end_time": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1945-05",
+        "start_date": "1945-05",
+        "end_date": "1945-05",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "harriman-w-averell",
+            "full_name": "W. Averell Harriman",
+            "title": "U.S. Ambassador to U.S.S.R",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/W._Averell_Harriman"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "wise-men-pg-280",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/3.%20Sequoia%20-%20Research%20and%20Photos/8(b).%20Sequoia%20History%20-%20Presidential?preview=Wise+Men+pg+280+Forrestal+Harriman.pdf",
+            "source": "The Wise Men",
+            "date": "",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "The Wise Men: Six Friends and the World They Made by Walter Isaacson and Evan Thomas. Published by Simon & Schuster 1986 - P280"
+        ],
+        "tags": ["diplomacy", "U.S.-Soviet relations"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1945-09-03",
+        "start_date": "1945-09-03",
+        "end_date": "1945-09-03",
+        "start_time": "18:30",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "mccloy-john-j",
+            "full_name": "John J. McCloy",
+            "title": "Asst. Secretary of War",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_J._McCloy"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "mccloy-diary",
+            "link": "https://www.dropbox.com/search/work?path=%2F&preview=id%3AaCgor1sHxFAAAAAAAAADmg&query=1945%3A05%3A14&search_token=9vjKCMin85VFWEf9qtcJc1Ykfh6KdsrI3NYmeg1BjHE%3D&typeahead_session_id=80466647408555882540719489998647",
+            "source": "Diary of John J. McCloy",
+            "date": "",
+            "type": "",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "6:15 Left for Mr. Forrestal's yacht for dinner and cruise down the Potomac",
+          "Mentioned in \"The Wise Men\"",
+          "(HST)"
+        ],
+        "tags": ["dinner cruise", "Potomac River"],
+        "missing_info": {
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1945-11-11",
+        "start_date": "1945-11-11",
+        "end_date": "1945-11-11",
+        "start_time": "11:00",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "truman-harry-s",
+            "full_name": "Harry S. Truman",
+            "title": "POTUS",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Harry_S._Truman"
+          },
+          {
+            "name": "king-wlm",
+            "full_name": "W.L.M. King",
+            "title": "PM of Canada",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_Lyon_Mackenzie_King"
+          },
+          {
+            "name": "attlee-clement",
+            "full_name": "Clement Attlee",
+            "title": "PM of UK",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Clement_Attlee"
+          },
+          {
+            "name": "byrnes-james",
+            "full_name": "James Byrnes",
+            "title": "Sec. of State",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_F._Byrnes"
+          },
+          {
+            "name": "leahy-william-d",
+            "full_name": "Fleet Admiral William D. Leahy",
+            "title": "Chief of Staff to the Commander in Chief",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_D._Leahy"
+          },
+          {
+            "name": "halifax-lord",
+            "full_name": "Lord Halifax",
+            "title": "Ambassador from UK",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Edward_Wood,_1st_Earl_of_Halifax"
+          },
+          {
+            "name": "pearson-lester-bowles",
+            "full_name": "Lester Bowles Pearson",
+            "title": "Ambassador from Canada",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Lester_B._Pearson"
+          },
+          {
+            "name": "anderson-john",
+            "full_name": "Sir John Anderson",
+            "title": "Chairman of British Atomic Energy Committee",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_Anderson,_1st_Viscount_Waverley"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "daily-presidential-appointments-1945-11-11",
+            "link": "https://drive.google.com/file/d/1KTushL9-HUjFBt7Z0SLUSdk21lQRIQVX/view?usp=drive_link",
+            "source": "Daily Presidential Appointments of Harry S. Truman",
+            "date": "1945-11-11",
+            "type": "pdf",
+            "platform": "drive"
+          },
+          {
+            "media_name": "danville-advocate-messenger",
+            "link": "https://www.dropbox.com/search/personal?path=%2F&preview=id%3A9FchkPVYu2AAAAAAAAAICg&query=Danville+Advocate-Messenger&search_token=MFIExZL9iFjdYmHbRA8Uzha07sWyl6crvefv5oJYIT4%3D&typeahead_session_id=64398275088953450154343780457164",
+            "source": "Danville Advocate-Messenger",
+            "date": "",
+            "type": "",
+            "platform": "drop"
+          },
+          {
+            "media_name": "truman-atlee-mackenzie-1945-11-11",
+            "link": "https://drive.google.com/file/d/1ZkHjl8JjG6q4Jw5Vc-83a5fE9xbnWAHp/view?usp=drive_link",
+            "source": "Photograph",
+            "date": "1945-11-11",
+            "type": "JPG",
+            "platform": "drive"
+          },
+          {
+            "media_name": "truman-library",
+            "link": "https://www.trumanlibrary.gov/calendar/search?body_value_op=word&comment_keywords=&page=21",
+            "source": "Truman Library",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "nine-hour cruise (Danville Advocate-Messenger)",
+          "Conference on atomic proliferation and nuclear energy",
+          "John Maynard Keynes is simultaneously in Washington, talking about post-war loans to sustain the British economy",
+          "Possibly two cruises on the same day; from The Winning Weapon: \"A second meeting was held on the yacht that afternoon, when Byrnes and Admiral Leahy joined the President. On this occasion the conversation ranged far afield from atomic energy, but as before, general unanimity characterized discussion on the bomb.\""
+        ],
+        "tags": ["atomic energy", "international conference", "nuclear proliferation", "British-American relations", "Canadian relations"],
+        "missing_info": {
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1945-12-08",
+        "start_date": "1945-12-08",
+        "end_date": "1945-12-08",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "davies-joseph-e",
+            "full_name": "Joseph E. Davies",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Joseph_E._Davies"
+          },
+          {
+            "name": "truman-harry-s",
+            "full_name": "Harry S. Truman",
+            "title": "POTUS",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Harry_S._Truman"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "From The Winning Weapon: The Atomic Bomb in the Cold War, 1945-1950 by Gregg Herken: Truman, in a private forum, had begun to protest the independence of his secretary of state. Taken aside by Truman aboard the Sequoia on December 8, Davies was \"amazed\" to hear the President speak of the secretary of state as \"a 'conniver.'\" Truman, Davies recalled, \"was greatly concerned and . . . asked me to see Byrnes without fail before Byrnes got away.\"",
+          "Davis and Truman known to be \"poker buddies\" see the Wise Men"
+        ],
+        "tags": ["political tensions", "Secretary of State", "private meeting"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1945-12-23",
+        "start_date": "1945-12-23",
+        "end_date": "1945-12-30",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "Green Cove Springs, St. Johns River",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "palm-beach-post-1945-12-22",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/3.%20Sequoia%20-%20Research%20and%20Photos/8(b).%20Sequoia%20History%20-%20Presidential/13.%20Press%20Clippings/4.%20Secretary%20of%20the%20Navy/1945%3A12%3A22%20-%20The%20Palm%20Beach%20Post%20-Yacht%20Sequoia%20Moves%20into%20Private%20Dock?preview=The_Palm_Beach_Post_Sat__Dec_22__1945_.jpg",
+            "source": "Palm Beach Post",
+            "date": "1945-12-22",
+            "type": "jpg",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "I shall be in Florida on the Sequoia and propose to inspect our post-war lay-up facilities at Green Cove Springs, St. Johns River and also to make inspection trips to Panama and Roosevelt Roads, Puerto Rico",
+          "(RMD)"
+        ],
+        "tags": ["Florida", "naval inspection", "post-war facilities"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-02-18",
+        "start_date": "1946-02-18",
+        "end_date": "1946-02-18",
+        "start_time": "",
+        "end_time": "",
+        "origin": "Ft. Lauderdale",
+        "destination": "Washington",
+        "passengers": [
+          {
+            "name": "sullivan-john-l",
+            "full_name": "John L. Sullivan",
+            "title": "Assistant Secretary of the Navy for the Air",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_L._Sullivan_(United_States_Navy)"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "charlotte-news-1946-02-18",
+            "link": "http://www.wjcash.org/WJCash14/Charlotte.News.Articles/2-18-46.htm",
+            "source": "Charlotte News",
+            "date": "1946-02-18",
+            "type": "htm",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "The presidential yacht Sequoia, having run aground at Buoy 211 off Florida, where it was stranded for over 30 hours, was freed. The Assistant Secretary of the Navy for Air, John L. Sullivan, was aboard at the time, heading from Ft. Lauderdale back to Washington",
+          "(RMD)"
+        ],
+        "tags": ["grounding incident", "Florida", "travel mishap"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-03",
+        "start_date": "1946-03",
+        "end_date": "1946-03",
+        "start_time": "",
+        "end_time": "",
+        "origin": "Palm Beach, FL",
+        "destination": "Washington",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "san-francisco-examiner-1946-03-24",
+            "link": "https://www.dropbox.com/search/personal?path=%2F&preview=id%3A9FchkPVYu2AAAAAAAAATYw&query=San+Francisco+examiner&search_token=MFIExZL9iFjdYmHbRA8Uzha07sWyl6crvefv5oJYIT4%3D&typeahead_session_id=18018024849428190532336175851008",
+            "source": "San Francisco Examiner",
+            "date": "1946-03-24",
+            "type": "",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Forrestal flies to Washington from Palm Beach because Sequoia runs aground in Lake Worth"
+        ],
+        "tags": ["grounding incident", "Lake Worth", "Palm Beach"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-fall-1947-spring",
+        "start_date": "1946",
+        "end_date": "1947",
+        "start_time": "",
+        "end_time": "",
+        "origin": "DC Navy yard",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "kennan-george-f",
+            "full_name": "George F. Kennan",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/George_F._Kennan"
+          },
+          {
+            "name": "bohlen-charles-e",
+            "full_name": "Charles E. \"Chip\" Bohlen",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Charles_E._Bohlen"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "wise-men-pg-381",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/3.%20Sequoia%20-%20Research%20and%20Photos/8(b).%20Sequoia%20History%20-%20Presidential?preview=Wise+Men+pg+381.pdf",
+            "source": "The Wise Men",
+            "date": "",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Discussion of US Foreign Policy toward USSR at the time of the X Article, formally titled The Sources of Soviet Conduct aka as the Long Telegram, published Foreign Affairs magazine July 1947. \"Containment\" policy",
+          "Forrestal was eager to pick Kennan's brain as Kennan was to have someone finally eager to pick it. On a leisurely cruise down the Potomac on the Navy Yacht Sequoia, they spent an evening with Chip Bohlen discussing Soviet motives",
+          "Edythe M. Holbrook (tel 212-224-1120) is the daughter of Charles J.V. Murphy who died while writing an unfinished Forrestal biography. Edythe's daughter, Sara, is married to Grace Guggenheim's brother [Gracie is Bruce Bunting's friend documentary filmmaker in Georgetown] 1995-04- 09 NYT - WEDDINGS; SARA HOLBROOK, J. S. GUGGENHEIM - Page 54"
+        ],
+        "tags": ["containment policy", "X Article", "Long Telegram", "Soviet relations", "foreign policy"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-08-27",
+        "start_date": "1946-08-27",
+        "end_date": "1946-08-27",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "patterson-robert-p",
+            "full_name": "Secretary Robert P. Patterson",
+            "title": "Secretary of War",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Robert_P._Patterson"
+          },
+          {
+            "name": "eberstadt-ferdinand",
+            "full_name": "Ferdinand Eberstadt",
+            "title": "Chairman of the Army and Navy Munitions Board and Vice Chairman of the War Productions Board",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Ferdinand_Eberstadt"
+          },
+          {
+            "name": "handy-thomas-t",
+            "full_name": "General Thomas T. Handy",
+            "title": "Deputy Chief of Staff, United States Army",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Thomas_T._Handy"
+          },
+          {
+            "name": "kenney-w-john",
+            "full_name": "W. John Kenney",
+            "title": "Assistant Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/W._John_Kenney"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "eberstadt-nicholas",
+            "link": "https://en.wikipedia.org/wiki/Nicholas_Eberstadt",
+            "source": "Wikipedia",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "James Forrestal gave a dinner to discuss unification of the armed forces (which occurred via National Security Act of 1947)",
+          "At the end of the War, on behalf of Secretary of the Navy, James V. Forrestal, Eberstadt wrote what became known as the Eberstadt Report that identified a serious lack of coordination between the Central Intelligence Agency, the Federal Bureau of Investigation, the State Department, and the military intelligence services. His Report led to the creation of the National Security Council. In 1946, Eberstadt served as assistant to Bernard M. Baruch on the United Nations Atomic Energy Commission. In 1948, he prepared a Report on the operations of the National Security Resources Board and the following year was named Chairman of the Commission on National Security Organization for the Hoover Commission.",
+          "Fernanda Eberstadt is the daughter of two patrons of New York City's avant-garde, Frederick Eberstadt, a photographer and psychotherapist, and Isabel Eberstadt, a writer. Her paternal grandfather was Ferdinand Eberstadt, a Wall Street financier and adviser to presidents; her maternal grandfather was the poet Ogden Nash. One of her brothers, Nicholas Eberstadt, is a scholar at the American Enterprise Institute."
+        ],
+        "tags": ["armed forces unification", "National Security Act", "military reorganization"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-09-16",
+        "start_date": "1946-09-16",
+        "end_date": "1946-09-16",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "Mount Vernon, VA",
+        "passengers": [
+          {
+            "name": "eisenhower-dwight-david",
+            "full_name": "General Dwight David Eisenhower",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+          },
+          {
+            "name": "nimitz-chester-w",
+            "full_name": "U.S. Fleet Admiral Chester W. Nimitz",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Chester_W._Nimitz"
+          },
+          {
+            "name": "spaatz-carl",
+            "full_name": "General Carl Spaatz",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Carl_Spaatz"
+          },
+          {
+            "name": "montgomery-bernard-law",
+            "full_name": "British Field Marshal Bernard Law Montgomery \"Monty\"",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Bernard_Montgomery"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "british-pathe-1946-08-27",
+            "link": "https://www.britishpathe.com/video/monty-in-us/query/monty",
+            "source": "British Pathé",
+            "date": "1946-08-27",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "On September 16, 1946, then General Dwight David Eisenhower's calendar showed he met aboard the Sequoia with the U.S. Fleet Admiral Chester W. Nimitz and British Field Marshal Bernard Law Montgomery. This meeting, under the guise of a cruise to Mount Vernon, initiated a series of highly classified political and military discussions from which emerged the Western European Union, which formed in 1948, followed by NATO 1949.",
+          "General Eisenhower later served from 1951 to 1952 as the first Supreme Commander of NATO",
+          "(MV)"
+        ],
+        "tags": ["NATO origins", "Western European Union", "military alliance", "Mount Vernon", "classified discussions"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1946-11-10",
+        "start_date": "1946-11-10",
+        "end_date": "1946-11-10",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "vinson-fred-m",
+            "full_name": "Fred M. Vinson",
+            "title": "Chief Justice June 21, 1946 – September 8, 1953",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Fred_M._Vinson"
+          },
+          {
+            "name": "clifford-clark-m",
+            "full_name": "Clark M. Clifford",
+            "title": "Asst. Naval Aide to President",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Clark_Clifford"
+          }
+        ],
+        "media": [],
+        "notes": [],
+        "tags": ["Chief Justice", "presidential aide"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-01-22",
+        "start_date": "1947-01-22",
+        "end_date": "1947-01-22",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "smedberg-william-r-iii",
+            "full_name": "Capt. William R. Smedberg III",
+            "title": "aide to Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_R._Smedberg_III"
+          },
+          {
+            "name": "vandenberg-hoyt-s",
+            "full_name": "General Hoyt S. Vandenberg",
+            "title": "Director of Intelligence on the War Department general staff",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Hoyt_Vandenberg"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "cia-diary-vandenberg-1946-06-07",
+            "link": "https://www.cia.gov/readingroom/docs/1946-06-07a.pdf",
+            "source": "CIA Diary Lt. General Hoyt S. Vandenberg",
+            "date": "1946-06-07",
+            "type": "pdf",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Lunch",
+          "Naval Air Station (Pensacola?)",
+          "1947-03-12 Truman Doctrine Speech"
+        ],
+        "tags": ["intelligence", "Naval Air Station", "Truman Doctrine"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-05-29",
+        "start_date": "1947-05-29",
+        "end_date": "1947-05-29",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "daniel-charles",
+            "full_name": "Admiral Sir Charles Daniel",
+            "title": "Third Sea Lord and Controllers of the [British] Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Charles_Daniel_(Royal_Navy_officer)"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "cia-1947-04-09",
+            "link": "https://www.cia.gov/library/readingroom/docs/1947-04-09a.pdf",
+            "source": "CIA document",
+            "date": "1947-04-09",
+            "type": "pdf",
+            "platform": "other"
+          },
+          {
+            "media_name": "morgan-frederick",
+            "link": "https://en.wikipedia.org/wiki/Frederick_E._Morgan",
+            "source": "Wikipedia",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          },
+          {
+            "media_name": "atomic-intelligence",
+            "link": "https://kclpure.kcl.ac.uk/portal/files/53828217/The_Father_of_Atomic_Intelligence_.pdf",
+            "source": "KCL Pure",
+            "date": "",
+            "type": "pdf",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Capt. Buchanan, Aide S/N (tel) - Invitation from Secretary to Stag Dinner aboard the Sequoia this evening in honor of Admiral Daniels, British. Regrets; Director away on official trip",
+          "Admiral Sir Charles Daniel (Royal Navy officer) Third Sea Lord and Controllers of the Navy (1945–1949)",
+          "In 1954, with the transfer of the civilian and military aspects of atomic energy out of the Ministry of Supply, atomic intelligence underwent a comprehensive evaluation, conducted by Admiral Sir Charles Daniel. Central to his review were Welsh's organisations and the critical role of Welsh himself. His 'overt' body in the Ministry of Supply was under the overall command of Sir Frederick Morgan. In his evaluation Morgan was quite unequivocal in his opinion: The peculiar virtue of this small body of people lies in its leader, Lieutenant Commander Eric Welsh, who is not only a natural born genius of precisely the type required for the work in hand but who has, over the years, built-up a truly astonishing network of personal contacts up to the highest, not only in this country but in the United States of America and in Canada...the ramifications of Commander Welsh's activities are world wide and he seems able to command the services of practically anyone."
+        ],
+        "tags": ["British Navy", "stag dinner", "atomic intelligence", "international relations"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-06-25",
+        "start_date": "1947-06-25",
+        "end_date": "1947-06-25",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "saltonstall-leverett",
+            "full_name": "Senator Leverett Saltonstall",
+            "title": "R-MA",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Leverett_Saltonstall"
+          },
+          {
+            "name": "george-walter",
+            "full_name": "Walter George",
+            "title": "D-GA; Chairman of the Senate Committee on Finance",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Walter_F._George"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "national-security-act",
+            "link": "https://en.wikipedia.org/wiki/National_Security_Act_of_1947",
+            "source": "Wikipedia",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          },
+          {
+            "media_name": "national-security-act-state",
+            "link": "https://history.state.gov/milestones/1945-1952/national-security-act",
+            "source": "State Department",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Lobbying senators to vote for National Security Act of 1947",
+          "(HST)"
+        ],
+        "tags": ["National Security Act", "lobbying", "Senate"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-01",
+        "start_date": "1947-07-01",
+        "end_date": "1947-07-01",
+        "start_time": "19:15",
+        "end_time": "22:00",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "truman-harry-s",
+            "full_name": "Harry S. Truman",
+            "title": "POTUS",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Harry_S._Truman"
+          },
+          {
+            "name": "eisenhower-dwight",
+            "full_name": "General Dwight Eisenhower",
+            "title": "Chief of Staff of the Army",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+          },
+          {
+            "name": "nimitz-chester",
+            "full_name": "Chester Nimitz",
+            "title": "Chief of Naval Operations",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Chester_W._Nimitz"
+          },
+          {
+            "name": "patterson-robert-porter-sr",
+            "full_name": "Robert Porter Patterson Sr.",
+            "title": "Secretary of War",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Robert_P._Patterson"
+          },
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "royall-kenneth",
+            "full_name": "Kenneth Royall",
+            "title": "Secretary of the Army",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Kenneth_Claiborne_Royall"
+          },
+          {
+            "name": "sullivan-john-l",
+            "full_name": "John L. Sullivan",
+            "title": "Under Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_L._Sullivan_(United_States_Navy)"
+          },
+          {
+            "name": "dupree-richard-r",
+            "full_name": "Mr. Richard R. Dupree",
+            "title": "CEO Procter & Gamble and retiring chairman of the Joint Army And Navy Munitions Board",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Richard_Redwood_Deupree"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "truman-bess-letter-1947-07-01",
+            "link": "https://www.trumanlibrary.gov/library/truman-papers/correspondence-harry-s-truman-bess-wallace-truman-1921-1959/july-1-1947?documentid=NA&pagenumber=2",
+            "source": "Truman Library",
+            "date": "1947-07-01",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Forrestal gave a dinner in honor of Mr. Richard R. Dupree (CEO Procter & Gamble and retiring chairman of the Joint Army And Navy Munitions Board)",
+          "and nineteen others"
+        ],
+        "tags": ["dinner party", "military leadership", "Joint Munitions Board"],
+        "missing_info": {
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-11",
+        "start_date": "1947-07-11",
+        "end_date": "1947-07-11",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "mccarthy-joseph",
+            "full_name": "Joseph McCarthy",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Joseph_McCarthy"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Thirteen freshman senators, including Joseph McCarthy"
+        ],
+        "tags": ["freshman senators", "political meeting"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-12",
+        "start_date": "1947-07-12",
+        "end_date": "1947-07-12",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          },
+          {
+            "name": "johnson-lyndon-b",
+            "full_name": "Lyndon B. Johnson",
+            "title": "D-TX",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Lyndon_B._Johnson"
+          },
+          {
+            "name": "spruance-raymond",
+            "full_name": "Admiral Raymond Spruance",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Raymond_A._Spruance"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Stag party thrown by Forrestal",
+          "other politicians and navy brass?"
+        ],
+        "tags": ["stag party", "political gathering", "navy"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-18",
+        "start_date": "1947-07-18",
+        "end_date": "1947-07-18",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "eisenhower-dwight-d",
+            "full_name": "General Dwight D. Eisenhower",
+            "title": "Chief of Staff of the Army",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Dwight_D._Eisenhower"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "presidential-succession-act",
+            "link": "https://legallegacy.wordpress.com/2015/07/18/july-18-1947-president-truman-signs-the-presidential-succession-act/",
+            "source": "Legal Legacy",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [],
+        "tags": ["Presidential Succession Act"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-19",
+        "start_date": "1947-07-19",
+        "end_date": "1947-07-19",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          }
+        ],
+        "media": [],
+        "notes": [],
+        "tags": [],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-22",
+        "start_date": "1947-07-22",
+        "end_date": "1947-07-22",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          }
+        ],
+        "media": [],
+        "notes": [],
+        "tags": [],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1947-07-27",
+        "start_date": "1947-07-27",
+        "end_date": "1947-07-27",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "forrestal-james",
+            "full_name": "James Forrestal",
+            "title": "Secretary of Defense",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Forrestal"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "forrestal-dod-bio",
+            "link": "https://history.defense.gov/Multimedia/Biographies/Article-View/Article/571293/james-v-forrestal/",
+            "source": "Department of Defense",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "National Security Act of 1947 (Enacted July 26, 1947)"
+        ],
+        "tags": ["National Security Act", "Secretary of Defense"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1949-01-19",
+        "start_date": "1949-01-19",
+        "end_date": "1949-01-20",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "nimitz-chester-w",
+            "full_name": "Admiral Chester W. Nimitz",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Chester_W._Nimitz"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Admiral Nimitz stayed aboard Sequoia for Truman inauguration"
+        ],
+        "tags": ["inauguration", "overnight stay"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1950-07-02",
+        "start_date": "1950-07-02",
+        "end_date": "1950-07-02",
+        "start_time": "",
+        "end_time": "",
+        "origin": "anchorage off Blakiston Island",
+        "destination": "Naval Gun Factory",
+        "passengers": [],
+        "media": [
+          {
+            "media_name": "truman-library-2012-783",
+            "link": "https://www.trumanlibrary.gov/photograph-records/2012-783",
+            "source": "Truman Library",
+            "date": "",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "The USS Sequoia accompanies the USS Williamsburg under way from anchorage off Blakiston Island, enroute to the Naval Gun Factory",
+          "Key Crisis Korean War"
+        ],
+        "tags": ["Korean War", "USS Williamsburg", "naval escort"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "passengers": []
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1950-08-03",
+        "start_date": "1950-08-03",
+        "end_date": "1950-08-03",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "acheson-dean",
+            "full_name": "Dean Acheson",
+            "title": "Secretary of State",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Dean_Acheson"
+          },
+          {
+            "name": "johnson-louis-arthur",
+            "full_name": "Louis Arthur Johnson",
+            "title": "Secretary of Defense",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Louis_A._Johnson"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Restructuring of NATO and Adoption of Unified NATO Command",
+          "On 3 August, Secretaries Acheson and Johnson held a dinner discussion aboard the President's yacht, Sequoia. The two men agreed that NATO's present command organization appeared \"absolutely hopeless\" and that improvement was imperative. Mr. Acheson wanted the United States to take the lead by organizing a unified command and sending more troops to Europe. Mr. Johnson voiced general agreement but said that such proposals were \"opposed by the General Staff\"-and he personally was disturbed by the insistence upon immediate action. Secretary Acheson replied that, for the moment, he favored nothing more than the organization of a skeleton command staff. After this staff began functioning, perhaps in November or December, the allies could try to create a unified command. Next morning, Secretary Johnson put these proposals before General Bradley and found him agreeable.",
+          "General MacArthur satisfied with troop \"police\" levels in Japan.",
+          "(Yacht Spin)"
+        ],
+        "tags": ["NATO", "unified command", "defense planning", "Cold War"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1952-03",
+        "start_date": "1952-03",
+        "end_date": "1952-03",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "kimball-dan",
+            "full_name": "Dan Kimball",
+            "title": "Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Dan_A._Kimball"
+          },
+          {
+            "name": "urbani-aldo",
+            "full_name": "General Aldo Urbani",
+            "title": "Chief of the Italian Air Force",
+            "role": "",
+            "bio": "http://www.generals.dk/general/Urbani/Aldo/Italy.html"
+          },
+          {
+            "name": "remondino-aldo",
+            "full_name": "General Aldo Remondino",
+            "title": "",
+            "role": "",
+            "bio": "https://it.wikipedia.org/wiki/Aldo_Remondino"
+          },
+          {
+            "name": "pelosi-giuseppe",
+            "full_name": "Lt. Col Giuseppe Pelosi",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "franchina-anael",
+            "full_name": "Major Anael Franchina",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "cassady-john-h",
+            "full_name": "Vice Admiral John H. Cassady",
+            "title": "Deputy CNO for Air",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_H._Cassady"
+          },
+          {
+            "name": "landry-robert",
+            "full_name": "Major General Robert Landry",
+            "title": "Air Force Aide to the President",
+            "role": "",
+            "bio": "https://www.af.mil/About-Us/Biographies/Display/Article/106440/major-general-robert-b-landry/"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "daily-press-1952-03-16",
+            "link": "https://www.newspapers.com/clip/63335532/daily-press/",
+            "source": "Daily Press",
+            "date": "1952-03-16",
+            "type": "",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Italian Air Force party",
+          "other admirals",
+          "Spin: Daily Press says \"the yacht is small, but pleasantly designed and comfortable, and snug.\""
+        ],
+        "tags": ["Italian Air Force", "international relations", "military diplomacy"],
+        "missing_info": {
+          "start_time": "",
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      },
+      {
+        "voyage": "truman-harry-s-1952-10-18",
+        "start_date": "1952-10-18",
+        "end_date": "1952-10-18",
+        "start_time": "19:00",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "whitehair-francis-p",
+            "full_name": "Francis P. Whitehair",
+            "title": "Under Secretary of the Navy",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Francis_P._Whitehair"
+          },
+          {
+            "name": "pepper-claude",
+            "full_name": "Claude Pepper",
+            "title": "attorney in private practice",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Claude_Pepper"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "pepper-diary-1952",
+            "link": "https://diginole.lib.fsu.edu/islandora/object/fsu%3A203974/datastream/OBJ/view/Transcript_of_Claude_Pepper_s_diary_for_1952.pdf",
+            "source": "Claude Pepper diary",
+            "date": "1952",
+            "type": "pdf",
+            "platform": "other"
+          }
+        ],
+        "notes": [
+          "Sandwich dinner",
+          "several men of Whitehair's staff and their wives"
+        ],
+        "tags": ["dinner party", "social gathering"],
+        "missing_info": {
+          "end_time": "",
+          "origin": "",
+          "destination": ""
+        }
+      }
+    ]
+  }
+}
