@@ -53,25 +53,52 @@ def _as_bool(s: str, default=False) -> bool:
 
 
 def parse_json_file(json_path):
-    """Parse JSON file in the new truman_translated.json format."""
+    """Parse JSON file in the voyage translation format."""
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    # Extract data from the format: {"truman-harry-s": {"term_start": ..., "voyages": [...], ...}}
+    # Extract data from the format: {"roosevelt-franklin": {"term_start": ..., "voyages": [...], ...}}
     presidents = []
     bundles = []
+
+    # Map president keys to full names and parties
+    president_info_map = {
+        "truman-harry": {"full_name": "Harry S. Truman", "party": "Democratic"},
+        "roosevelt-franklin": {"full_name": "Franklin D. Roosevelt", "party": "Democratic"},
+        "eisenhower-dwight": {"full_name": "Dwight D. Eisenhower", "party": "Republican"},
+        "kennedy-john": {"full_name": "John F. Kennedy", "party": "Democratic"},
+        "johnson-lyndon": {"full_name": "Lyndon B. Johnson", "party": "Democratic"},
+        "nixon-richard": {"full_name": "Richard Nixon", "party": "Republican"},
+        "ford-gerald": {"full_name": "Gerald Ford", "party": "Republican"},
+        "carter-jimmy": {"full_name": "Jimmy Carter", "party": "Democratic"},
+        "reagan-ronald": {"full_name": "Ronald Reagan", "party": "Republican"},
+    }
 
     for president_key, pres_data in data.items():
         if not isinstance(pres_data, dict):
             continue
 
-        # Create president info from the new format
+        # Get president details from the map or extract from key
+        pres_info = president_info_map.get(president_key, {})
+
+        # Extract full name from key if not in map (lastname-firstname -> Firstname Lastname)
+        if not pres_info.get("full_name"):
+            parts = president_key.split("-")
+            if len(parts) >= 2:
+                full_name = f"{parts[1].title()} {parts[0].title()}"
+                if len(parts) > 2:
+                    full_name = f"{' '.join(p.title() for p in parts[1:])} {parts[0].title()}"
+            else:
+                full_name = president_key.replace("-", " ").title()
+            pres_info["full_name"] = full_name
+
+        # Create president info from the JSON format
         president_info = {
             "president_slug": president_key,
-            "full_name": "Harry S. Truman",  # Could extract from key or make configurable
+            "full_name": pres_info.get("full_name", president_key.replace("-", " ").title()),
             "term_start": pres_data.get("term_start"),
             "term_end": pres_data.get("term_end"),
-            "party": "Democratic"  # Default for Truman
+            "party": pres_info.get("party", "Unknown")
         }
         presidents.append(president_info)
 
@@ -79,12 +106,50 @@ def parse_json_file(json_path):
         voyages = pres_data.get("voyages", [])
 
         for voyage in voyages:
-            # Each voyage now has its own passengers and media
+            # Transform the voyage data to match expected format
+            transformed_voyage = {
+                "voyage_slug": voyage.get("voyage", ""),
+                "start_date": voyage.get("start_date"),
+                "end_date": voyage.get("end_date"),
+                "start_time": voyage.get("start_time"),
+                "end_time": voyage.get("end_time"),
+                "origin": voyage.get("origin"),
+                "destination": voyage.get("destination"),
+                "notes": voyage.get("notes", []),
+                "tags": voyage.get("tags", []),
+                "missing_info": voyage.get("missing_info", {})
+            }
+
+            # Transform passengers to expected format
+            passengers = []
+            for p in voyage.get("passengers", []):
+                passenger = {
+                    "person_slug": p.get("name", ""),
+                    "full_name": p.get("full_name", ""),
+                    "title": p.get("title", ""),
+                    "bio_url": p.get("bio", "")
+                }
+                passengers.append(passenger)
+
+            # Transform media to expected format
+            media = []
+            for m in voyage.get("media", []):
+                media_item = {
+                    "media_slug": m.get("media_name", ""),
+                    "title": m.get("source", ""),
+                    "url": m.get("link", ""),
+                    "media_type": m.get("type", ""),
+                    "platform": m.get("platform", ""),
+                    "date": m.get("date", "")
+                }
+                media.append(media_item)
+
+            # Each voyage bundle contains the voyage data plus related passengers and media
             bundle = {
                 "president": president_info,
-                "voyage": voyage,
-                "passengers": voyage.get("passengers", []),
-                "media": voyage.get("media", [])
+                "voyage": transformed_voyage,
+                "passengers": passengers,
+                "media": media
             }
             bundles.append(bundle)
 

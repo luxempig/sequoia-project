@@ -102,6 +102,7 @@ logs
 *.crt
 keys/
 !keys/.gitkeep
+claude-api-keys.txt
 
 # Temporary files
 tmp/
