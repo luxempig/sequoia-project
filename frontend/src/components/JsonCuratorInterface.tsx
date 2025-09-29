@@ -40,10 +40,17 @@ interface PresidentData {
   term_end: string;
   info: string;
   voyages: Voyage[];
+  president?: {
+    full_name: string;
+    party: string;
+    slug: string;
+    term_start: string;
+    term_end: string;
+  };
 }
 
-interface TrumanData {
-  "truman-harry": PresidentData;
+interface AllPresidentsData {
+  [key: string]: PresidentData;
 }
 
 // Media explorer interfaces
@@ -57,8 +64,9 @@ interface FileItem {
 }
 
 const JsonCuratorInterface: React.FC = () => {
-  const [rawData, setRawData] = useState<TrumanData | null>(null);
+  const [rawData, setRawData] = useState<AllPresidentsData | null>(null);
   const [data, setData] = useState<PresidentData | null>(null);
+  const [selectedPresident, setSelectedPresident] = useState<string>('truman-harry');
   const [selectedVoyage, setSelectedVoyage] = useState<Voyage | null>(null);
   const [editMode, setEditMode] = useState<'view' | 'edit' | 'add'>('view');
   const [loading, setLoading] = useState(false);
@@ -121,26 +129,58 @@ const JsonCuratorInterface: React.FC = () => {
       }
       const jsonData = await response.json();
       setRawData(jsonData);
-      
-      // Extract Truman data and add president metadata
-      const trumanData = jsonData["truman-harry"];
-      if (trumanData) {
-        setData({
-          ...trumanData,
-          president: {
-            full_name: "Harry S. Truman",
-            party: "Democratic Party",
-            slug: "truman-harry",
-            term_start: trumanData.term_start,
-            term_end: trumanData.term_end
-          }
-        });
-      }
+
+      // Load the selected president's data
+      loadSelectedPresident(jsonData, selectedPresident);
     } catch (error) {
       console.error('Failed to load president data:', error);
       setError(`Failed to load data: ${error}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSelectedPresident = (allData: AllPresidentsData, presidentSlug: string) => {
+    const presidentData = allData[presidentSlug];
+    if (presidentData) {
+      setData({
+        ...presidentData,
+        president: {
+          full_name: getPresidentDisplayName(presidentSlug),
+          party: "Democratic Party", // Default, could be improved with actual party data
+          slug: presidentSlug,
+          term_start: presidentData.term_start,
+          term_end: presidentData.term_end
+        }
+      });
+      setSelectedVoyage(null); // Clear selected voyage when switching presidents
+    }
+  };
+
+  const getPresidentDisplayName = (slug: string): string => {
+    const nameMap: {[key: string]: string} = {
+      "truman-harry": "Harry S. Truman",
+      "roosevelt-franklin": "Franklin D. Roosevelt",
+      "carter-jimmy": "Jimmy Carter",
+      "reagan-ronald": "Ronald Reagan",
+      "bush-george-w": "George W. Bush",
+      "obama-barack": "Barack Obama",
+      "kennedy-john": "John F. Kennedy",
+      "johnson-lyndon": "Lyndon B. Johnson",
+      "hoover-herbert": "Herbert Hoover",
+      "eisenhower-dwight": "Dwight D. Eisenhower",
+      "nixon-richard": "Richard Nixon",
+      "ford-gerald": "Gerald Ford",
+      "dunning-william": "William Dunning",
+      "cadwalader-emily": "Emily Cadwalader"
+    };
+    return nameMap[slug] || slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const handlePresidentChange = (presidentSlug: string) => {
+    setSelectedPresident(presidentSlug);
+    if (rawData) {
+      loadSelectedPresident(rawData, presidentSlug);
     }
   };
 
@@ -537,15 +577,35 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
       <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-blue-800 mb-2">
-            Historical Curator - Harry S. Truman
-          </h1>
-          <p className="text-gray-600">
-            Democratic • {data.term_start} - {data.term_end}
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            {data.voyages.length} voyage{data.voyages.length !== 1 ? 's' : ''} recorded
-          </p>
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-blue-800 mb-2">
+                Historical Curator - {data.president?.full_name}
+              </h1>
+              <p className="text-gray-600">
+                {data.president?.party || "Party Unknown"} • {data.term_start} - {data.term_end}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                {data.voyages.length} voyage{data.voyages.length !== 1 ? 's' : ''} recorded
+              </p>
+            </div>
+            <div className="ml-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select President
+              </label>
+              <select
+                value={selectedPresident}
+                onChange={(e) => handlePresidentChange(e.target.value)}
+                className="w-56 border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {rawData && Object.keys(rawData).map(presidentSlug => (
+                  <option key={presidentSlug} value={presidentSlug}>
+                    {getPresidentDisplayName(presidentSlug)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Tab Navigation */}
