@@ -74,6 +74,19 @@ const JsonCuratorInterface: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState<'editor' | 'media'>('editor');
+  const [ingestionProgress, setIngestionProgress] = useState<{
+    isActive: boolean;
+    operationId: string | null;
+    progress: number;
+    currentStep: string;
+    status: 'initializing' | 'running' | 'completed' | 'failed';
+  }>({
+    isActive: false,
+    operationId: null,
+    progress: 0,
+    currentStep: '',
+    status: 'initializing'
+  });
 
   // Media explorer state
   const [currentPath, setCurrentPath] = useState('/');
@@ -177,10 +190,63 @@ const JsonCuratorInterface: React.FC = () => {
     return nameMap[slug] || slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const getChronologicallyOrderedPresidents = (): string[] => {
+    if (!rawData) return [];
+
+    const presidentsWithDates = Object.keys(rawData).map(slug => ({
+      slug,
+      termStart: rawData[slug].term_start
+    }));
+
+    // Sort by term start date
+    presidentsWithDates.sort((a, b) => {
+      // Handle different date formats and extract year for sorting
+      const getYear = (dateStr: string): number => {
+        if (!dateStr) return 9999; // Put entries with no date at end
+        // Extract year from formats like "March 4, 1933", "1933-03-04", "April 12, 1945"
+        const yearMatch = dateStr.match(/\d{4}/);
+        return yearMatch ? parseInt(yearMatch[0]) : 9999;
+      };
+
+      return getYear(a.termStart) - getYear(b.termStart);
+    });
+
+    return presidentsWithDates.map(p => p.slug);
+  };
+
   const handlePresidentChange = (presidentSlug: string) => {
     setSelectedPresident(presidentSlug);
     if (rawData) {
       loadSelectedPresident(rawData, presidentSlug);
+    }
+  };
+
+  const pollIngestionStatus = async (operationId: string) => {
+    try {
+      const response = await fetch(`/api/curator/ingest-status/${operationId}`);
+      if (response.ok) {
+        const status = await response.json();
+        setIngestionProgress({
+          isActive: status.status === 'running' || status.status === 'initializing',
+          operationId,
+          progress: status.progress || 0,
+          currentStep: status.current_step || '',
+          status: status.status
+        });
+
+        // Continue polling if still running
+        if (status.status === 'running' || status.status === 'initializing') {
+          setTimeout(() => pollIngestionStatus(operationId), 1000); // Poll every second
+        } else {
+          // Ingestion completed or failed
+          setTimeout(() => {
+            setIngestionProgress(prev => ({ ...prev, isActive: false }));
+          }, 3000); // Hide after 3 seconds
+        }
+      }
+    } catch (error) {
+      console.error('Failed to poll ingestion status:', error);
+      setIngestionProgress(prev => ({ ...prev, isActive: false }));
     }
   };
 
@@ -261,31 +327,34 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "truman-harry": updatedData
+          [selectedPresident]: updatedData
         })
       });
 
       if (saveResponse.ok) {
-        // Trigger automatic data ingestion pipeline
-        const ingestResponse = await fetch('/api/curator/trigger-ingestion', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            voyage_id: voyageWithUploadedMedia.voyage,
-            action: editMode === 'add' ? 'create' : 'update'
-          })
-        });
+        const saveResult = await saveResponse.json();
 
-        if (ingestResponse.ok) {
-          console.log('Data ingestion triggered successfully');
+        // Check if ingestion was triggered and get operation ID
+        if (saveResult.operation_id) {
+          setIngestionProgress({
+            isActive: true,
+            operationId: saveResult.operation_id,
+            progress: 0,
+            currentStep: 'Starting ingestion...',
+            status: 'initializing'
+          });
+
+          // Start polling for ingestion progress
+          pollIngestionStatus(saveResult.operation_id);
         }
 
         // Update local state
-        setRawData({
-          "truman-harry": updatedData
-        });
+        if (rawData) {
+          setRawData({
+            ...rawData,
+            [selectedPresident]: updatedData
+          });
+        }
         setData(updatedData);
 
         setEditMode('view');
@@ -598,7 +667,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
                 onChange={(e) => handlePresidentChange(e.target.value)}
                 className="w-56 border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {rawData && Object.keys(rawData).map(presidentSlug => (
+                {getChronologicallyOrderedPresidents().map(presidentSlug => (
                   <option key={presidentSlug} value={presidentSlug}>
                     {getPresidentDisplayName(presidentSlug)}
                   </option>
@@ -607,6 +676,43 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
             </div>
           </div>
         </div>
+
+        {/* Ingestion Progress Bar */}
+        {ingestionProgress.isActive && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold text-blue-800">Processing Voyage Data</h3>
+              <span className="text-sm text-gray-500">{ingestionProgress.progress}%</span>
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  ingestionProgress.status === 'failed' ? 'bg-red-500' :
+                  ingestionProgress.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
+                }`}
+                style={{ width: `${ingestionProgress.progress}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">{ingestionProgress.currentStep}</span>
+              <div className="flex items-center">
+                {ingestionProgress.status === 'running' && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                )}
+                <span className={`font-medium ${
+                  ingestionProgress.status === 'failed' ? 'text-red-600' :
+                  ingestionProgress.status === 'completed' ? 'text-green-600' : 'text-blue-600'
+                }`}>
+                  {ingestionProgress.status === 'initializing' ? 'Starting...' :
+                   ingestionProgress.status === 'running' ? 'Processing...' :
+                   ingestionProgress.status === 'completed' ? 'Completed!' : 'Failed'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="bg-white rounded-lg shadow-lg mb-6">
