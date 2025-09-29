@@ -261,6 +261,19 @@ else
     log "No frontend build archive found, skipping frontend deployment"
 fi
 
+# Ensure Google credentials exist (run even if backend didn't change)
+if [ ! -f "$BACKEND_DIR/keys/sequoia_credentials.json" ] && [ -n "$GOOGLE_CREDENTIALS" ]; then
+    log "Google credentials missing, creating from environment variable..."
+    cd $BACKEND_DIR
+    mkdir -p keys
+    echo "$GOOGLE_CREDENTIALS" > keys/sequoia_credentials.json
+    if [ -f "keys/sequoia_credentials.json" ] && [ -s "keys/sequoia_credentials.json" ]; then
+        log "Google credentials created successfully"
+    else
+        log "WARNING: Failed to create Google credentials file or file is empty"
+    fi
+fi
+
 # Health check
 sleep 5
 if [ "$BACKEND_CHANGED" = true ]; then
