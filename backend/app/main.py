@@ -69,9 +69,12 @@ def get_canonical_timeline_data():
     json_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     try:
+        print(f"DEBUG: Trying to load from: {json_path}")
+        print(f"DEBUG: File exists: {os.path.exists(json_path)}")
         if os.path.exists(json_path):
             with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            print(f"DEBUG: Loaded {len(data)} presidents")
             return data
         else:
             # Return empty structure if file doesn't exist
