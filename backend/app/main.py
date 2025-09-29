@@ -69,15 +69,15 @@ def get_canonical_timeline_data():
     json_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     try:
-        print(f"DEBUG: Trying to load from: {json_path}")
-        print(f"DEBUG: File exists: {os.path.exists(json_path)}")
+        logging.info(f"DEBUG: Trying to load from: {json_path}")
+        logging.info(f"DEBUG: File exists: {os.path.exists(json_path)}")
         if os.path.exists(json_path):
             with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            print(f"DEBUG: Loaded {len(data)} presidents")
+            logging.info(f"DEBUG: Loaded {len(data)} presidents")
             return data
         else:
-            print(f"DEBUG: File not found at {json_path}")
+            logging.info(f"DEBUG: File not found at {json_path}")
             # Return empty structure if file doesn't exist
             return {
                 "truman-harry-s": {
@@ -94,9 +94,9 @@ def get_canonical_timeline_data():
                 }
             }
     except Exception as e:
-        print(f"ERROR loading canonical timeline: {e}")
+        logging.error(f"ERROR loading canonical timeline: {e}")
         import traceback
-        traceback.print_exc()
+        logging.error(traceback.format_exc())
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"Failed to load canonical timeline data: {str(e)}")
 
