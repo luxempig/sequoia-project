@@ -603,7 +603,14 @@ async def save_president_data(request: Request):
 
         # Automatically trigger ingest after successful save
         try:
-            ingest_result = await trigger_canonical_ingest_with_tracking(status_tracker)
+            # For now, disable auto-ingest to avoid celery dependency issues
+            # ingest_result = await trigger_canonical_ingest_with_tracking(status_tracker)
+            # TODO: Re-enable once celery is properly deployed
+            ingest_result = {
+                "status": "success",
+                "message": "Data saved successfully (auto-ingest temporarily disabled)",
+                "summary": {}
+            }
 
             if ingest_result["status"] == "success":
                 status_tracker.complete(True)
