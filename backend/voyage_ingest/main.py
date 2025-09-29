@@ -109,6 +109,7 @@ def parse_json_file(json_path):
             # Transform the voyage data to match expected format
             transformed_voyage = {
                 "voyage_slug": voyage.get("voyage", ""),
+                "president_slug": president_key,  # Add president_slug from the parent key
                 "start_date": voyage.get("start_date"),
                 "end_date": voyage.get("end_date"),
                 "start_time": voyage.get("start_time"),
