@@ -66,8 +66,23 @@ export default function VoyageList() {
     const tagSet = new Set<string>();
     voyages.forEach(v => {
       if (v.tags) {
+        // Try to parse as JSON array first
+        try {
+          const parsed = JSON.parse(v.tags);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(tag => {
+              const trimmed = String(tag).trim();
+              if (trimmed) tagSet.add(trimmed);
+            });
+            return;
+          }
+        } catch {
+          // Not JSON, continue with comma-separated parsing
+        }
+
+        // Fallback to comma-separated parsing
         v.tags.split(',').forEach(tag => {
-          const trimmed = tag.trim();
+          const trimmed = tag.trim().replace(/^\[|\]$/g, '');
           if (trimmed) tagSet.add(trimmed);
         });
       }
@@ -131,7 +146,20 @@ export default function VoyageList() {
     if (selectedTags.size === 0) return voyages;
     return voyages.filter(v => {
       if (!v.tags) return false;
-      const voyageTags = v.tags.split(',').map(t => t.trim());
+
+      let voyageTags: string[] = [];
+
+      // Try to parse as JSON array first
+      try {
+        const parsed = JSON.parse(v.tags);
+        if (Array.isArray(parsed)) {
+          voyageTags = parsed.map(t => String(t).trim());
+        }
+      } catch {
+        // Fallback to comma-separated parsing
+        voyageTags = v.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, ''));
+      }
+
       return Array.from(selectedTags).some(tag => voyageTags.includes(tag));
     });
   }, [voyages, selectedTags]);

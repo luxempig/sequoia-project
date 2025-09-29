@@ -51,10 +51,23 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
   const significant = voyage.significant === 1 || voyage.significant === true;
   const royalty = voyage.royalty === 1 || voyage.royalty === true;
 
-  // Parse tags from comma-separated string
-  const tags = voyage.tags
-    ? voyage.tags.split(',').map(t => t.trim()).filter(Boolean)
-    : [];
+  // Parse tags from comma-separated string or JSON array
+  const tags = (() => {
+    if (!voyage.tags) return [];
+
+    // Try to parse as JSON array first (if stored as ["tag1", "tag2"])
+    try {
+      const parsed = JSON.parse(voyage.tags);
+      if (Array.isArray(parsed)) {
+        return parsed.map(t => String(t).trim()).filter(Boolean);
+      }
+    } catch {
+      // Not JSON, treat as comma-separated string
+    }
+
+    // Fallback to comma-separated parsing
+    return voyage.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, '')).filter(Boolean);
+  })();
 
   return (
     <div className="timeline-item">
@@ -77,12 +90,12 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
           )}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {tags.map(tag => {
+              {tags.map((tag, idx) => {
                 const color = getTagColor(tag);
                 return (
                   <span
-                    key={tag}
-                    className={`inline-flex px-2 py-0.5 text-xs font-medium rounded border ${color.bg} ${color.text} ${color.border}`}
+                    key={`${tag}-${idx}`}
+                    className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded border ${color.bg} ${color.text} ${color.border}`}
                   >
                     {tag}
                   </span>
