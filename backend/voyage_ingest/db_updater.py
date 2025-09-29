@@ -171,6 +171,10 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     
                     # Use a valid enum value for media_type (image, pdf, audio, video, other)
                     media_type = _ns(m.get("media_type")) or "other"  # fallback to 'other'
+                    # Map invalid types to 'other'
+                    valid_types = {"image", "pdf", "audio", "video", "other"}
+                    if media_type not in valid_types:
+                        media_type = "other"
                     
                     rows.append((
                         mslug, _ns(m.get("title")) or "Untitled",

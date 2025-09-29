@@ -300,9 +300,14 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
   };
 
   const saveVoyage = async (updatedVoyage: Voyage) => {
-    if (!data) return;
+    console.log('saveVoyage called', { updatedVoyage, data, selectedPresident });
+    if (!data) {
+      console.log('No data, returning early');
+      return;
+    }
 
     try {
+      console.log('Starting save process...');
       // First upload any media files
       const voyageWithUploadedMedia = await uploadMediaFiles(updatedVoyage);
 
@@ -321,6 +326,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
       };
 
       // Save the updated JSON data back to the system
+      console.log('Sending save request...', { selectedPresident, updatedData });
       const saveResponse = await fetch('/api/curator/save-president-data', {
         method: 'POST',
         headers: {
@@ -331,6 +337,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
         })
       });
 
+      console.log('Save response received:', saveResponse.status, saveResponse.statusText);
       if (saveResponse.ok) {
         const saveResult = await saveResponse.json();
 
@@ -998,6 +1005,7 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
   const [voyage, setVoyage] = useState<Voyage>(initialVoyage);
 
   const handleSave = () => {
+    console.log('handleSave clicked', voyage);
     onSave(voyage);
   };
 
