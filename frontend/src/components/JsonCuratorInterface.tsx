@@ -115,7 +115,7 @@ const JsonCuratorInterface: React.FC = () => {
   const loadPresidentData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/truman.json');
+      const response = await fetch('/api/curator/truman.json');
       if (!response.ok) {
         throw new Error('Failed to load president data');
       }
