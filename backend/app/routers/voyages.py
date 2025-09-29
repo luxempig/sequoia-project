@@ -56,8 +56,7 @@ def list_voyages(
                 conds.append("p.full_name ILIKE %s"); params.append(f"%{person}%")
 
             if president_slug:
-                joins.append("INNER JOIN sequoia.voyage_presidents vpr ON vpr.voyage_slug = v.voyage_slug")
-                conds.append("vpr.president_slug = %s"); params.append(president_slug)
+                conds.append("v.president_slug_from_voyage = %s"); params.append(president_slug)
 
             # Validate sort column to prevent SQL injection
             valid_sorts = {"start_date", "end_date", "title", "created_at", "updated_at"}
