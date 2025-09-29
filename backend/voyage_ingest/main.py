@@ -62,6 +62,7 @@ def parse_json_file(json_path):
     bundles = []
 
     # Map president keys to full names and parties
+    # Post-Carter presidents are not actual owners - their voyages should be assigned to "post-presidential"
     president_info_map = {
         "truman-harry": {"full_name": "Harry S. Truman", "party": "Democratic"},
         "roosevelt-franklin": {"full_name": "Franklin D. Roosevelt", "party": "Democratic"},
@@ -71,8 +72,14 @@ def parse_json_file(json_path):
         "nixon-richard": {"full_name": "Richard Nixon", "party": "Republican"},
         "ford-gerald": {"full_name": "Gerald Ford", "party": "Republican"},
         "carter-jimmy": {"full_name": "Jimmy Carter", "party": "Democratic"},
-        "reagan-ronald": {"full_name": "Ronald Reagan", "party": "Republican"},
+        # Reagan and later are NOT owners - map to post-presidential
+        "reagan-ronald": {"is_post_presidential": True},
+        "bush-george-w": {"is_post_presidential": True},
+        "obama-barack": {"is_post_presidential": True},
     }
+
+    # Track if we've added the post-presidential owner
+    post_presidential_added = False
 
     for president_key, pres_data in data.items():
         if not isinstance(pres_data, dict):
@@ -81,26 +88,45 @@ def parse_json_file(json_path):
         # Get president details from the map or extract from key
         pres_info = president_info_map.get(president_key, {})
 
-        # Extract full name from key if not in map (lastname-firstname -> Firstname Lastname)
-        if not pres_info.get("full_name"):
-            parts = president_key.split("-")
-            if len(parts) >= 2:
-                full_name = f"{parts[1].title()} {parts[0].title()}"
-                if len(parts) > 2:
-                    full_name = f"{' '.join(p.title() for p in parts[1:])} {parts[0].title()}"
-            else:
-                full_name = president_key.replace("-", " ").title()
-            pres_info["full_name"] = full_name
+        # Check if this is a post-presidential era voyage (Reagan onwards)
+        is_post_presidential = pres_info.get("is_post_presidential", False)
 
-        # Create president info from the JSON format
-        president_info = {
-            "president_slug": president_key,
-            "full_name": pres_info.get("full_name", president_key.replace("-", " ").title()),
-            "term_start": pres_data.get("term_start"),
-            "term_end": pres_data.get("term_end"),
-            "party": pres_info.get("party", "Unknown")
-        }
-        presidents.append(president_info)
+        if is_post_presidential:
+            # Add the post-presidential owner entry once
+            if not post_presidential_added:
+                president_info = {
+                    "president_slug": "post-presidential",
+                    "full_name": "Post-Presidential",
+                    "term_start": "January 20, 1981",
+                    "term_end": None,
+                    "party": "Private Owners"
+                }
+                presidents.append(president_info)
+                post_presidential_added = True
+            # Use post-presidential slug for these voyages
+            actual_president_slug = "post-presidential"
+        else:
+            # Extract full name from key if not in map (lastname-firstname -> Firstname Lastname)
+            if not pres_info.get("full_name"):
+                parts = president_key.split("-")
+                if len(parts) >= 2:
+                    full_name = f"{parts[1].title()} {parts[0].title()}"
+                    if len(parts) > 2:
+                        full_name = f"{' '.join(p.title() for p in parts[1:])} {parts[0].title()}"
+                else:
+                    full_name = president_key.replace("-", " ").title()
+                pres_info["full_name"] = full_name
+
+            # Create president info from the JSON format
+            president_info = {
+                "president_slug": president_key,
+                "full_name": pres_info.get("full_name", president_key.replace("-", " ").title()),
+                "term_start": pres_data.get("term_start"),
+                "term_end": pres_data.get("term_end"),
+                "party": pres_info.get("party", "Unknown")
+            }
+            presidents.append(president_info)
+            actual_president_slug = president_key
 
         # Extract voyages with embedded passengers and media
         voyages = pres_data.get("voyages", [])
@@ -109,7 +135,7 @@ def parse_json_file(json_path):
             # Transform the voyage data to match expected format
             transformed_voyage = {
                 "voyage_slug": voyage.get("voyage", ""),
-                "president_slug": president_key,  # Add president_slug from the parent key
+                "president_slug": actual_president_slug,  # Use actual owner (post-presidential for Reagan+)
                 "start_date": voyage.get("start_date"),
                 "end_date": voyage.get("end_date"),
                 "start_time": voyage.get("start_time"),
@@ -136,14 +162,20 @@ def parse_json_file(json_path):
             media = []
             for m in voyage.get("media", []):
                 media_item = {
-                    "media_slug": m.get("media_name", ""),
+                    # Don't set slug yet - let slugger.generate_media_slugs() create proper ones
                     "title": m.get("source", ""),
-                    "url": m.get("link", ""),
+                    "google_drive_link": m.get("link", ""),  # drive_sync expects "google_drive_link"
+                    "url": m.get("link", ""),  # also keep for potential other uses
                     "media_type": m.get("type", ""),
                     "platform": m.get("platform", ""),
-                    "date": m.get("date", "")
+                    "date": m.get("date", ""),
+                    "credit": m.get("source", "")  # use source as credit for S3 path organization
                 }
                 media.append(media_item)
+
+            # Generate proper media slugs for S3 organization
+            from voyage_ingest.slugger import generate_media_slugs
+            generate_media_slugs(media, transformed_voyage["voyage_slug"])
 
             # Each voyage bundle contains the voyage data plus related passengers and media
             bundle = {
@@ -258,8 +290,9 @@ def main():
             continue
 
         # 2) Media → S3 (additive; move on same-link rename if needed)
+        # Process synchronously (async_thumbnails=False) to generate thumbnails immediately
         s3_links, media_warnings = drive_sync.process_all_media(
-            bundle.get("media", []), vslug
+            bundle.get("media", []), vslug, async_thumbnails=False
         )
         for mw in media_warnings:
             LOG.warning("Media issue: %s", mw)

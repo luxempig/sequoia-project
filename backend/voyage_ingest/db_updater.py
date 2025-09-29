@@ -23,6 +23,47 @@ def _schema(cur):
     schema = os.environ.get("DB_SCHEMA", "sequoia")
     cur.execute(f"SET search_path = {schema}, public;")
 
+def _normalize_date(date_str: Optional[str]) -> Optional[str]:
+    """
+    Normalize dates to YYYY-MM-DD format.
+    - YYYY -> YYYY-01-01
+    - YYYY-MM -> YYYY-MM-01
+    - YYYY-MM-00 -> YYYY-MM-01 (invalid day 00 replaced with 01)
+    - YYYY-00-DD or YYYY-00-00 -> YYYY-01-01 (invalid month 00 replaced with 01)
+    - YYYY-MM-DD -> YYYY-MM-DD (unchanged if valid)
+    """
+    if not date_str:
+        return None
+    date_str = date_str.strip()
+    if not date_str:
+        return None
+
+    # Handle YYYY-MM-DD format (including cases with 00 for month or day)
+    match = re.match(r'^(\d{4})-(\d{2})-(\d{2})$', date_str)
+    if match:
+        year, month, day = match.groups()
+        # Replace 00 with 01 for month or day
+        if month == "00":
+            month = "01"
+        if day == "00":
+            day = "01"
+        return f"{year}-{month}-{day}"
+
+    # Year and month only - add day
+    elif re.match(r'^\d{4}-\d{2}$', date_str):
+        year, month = date_str.split("-")
+        # Replace 00 month with 01
+        if month == "00":
+            month = "01"
+        return f"{year}-{month}-01"
+
+    # Year only - add month and day
+    elif re.match(r'^\d{4}$', date_str):
+        return f"{date_str}-01-01"
+    else:
+        # Invalid format, return None
+        return None
+
 def reset_presidents_table_from_list(presidents: List[Dict]) -> None:
     """
     Replace entire presidents table content with the given list (from Doc headers).
@@ -97,7 +138,10 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
         with conn.cursor() as cur:
             _schema(cur)
 
-            # voyages
+            # voyages - normalize dates to YYYY-MM-DD format
+            start_date_normalized = _normalize_date(_ns(v.get("start_date")))
+            end_date_normalized = _normalize_date(_ns(v.get("end_date")))
+
             cur.execute("""
                 INSERT INTO voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
@@ -115,8 +159,8 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
             """, {
                 "voyage_slug": _ns(v.get("voyage_slug")),
                 "title": _ns(v.get("title")) or _ns(v.get("voyage_slug")) or "Untitled Voyage",
-                "start_date": _ns(v.get("start_date")),
-                "end_date": _ns(v.get("end_date")),
+                "start_date": start_date_normalized,
+                "end_date": end_date_normalized,
                 "start_time": _ns(v.get("start_time")),
                 "end_time": _ns(v.get("end_time")),
                 "origin": _ns(v.get("origin")),
@@ -163,14 +207,8 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     if not mslug:
                         continue
                     s3_orig, s3_pub = (s3_links.get(mslug, (None, None)) if mslug else (None, None))
-                    # Convert date string to proper format or None
-                    date_val = _ns(m.get("date"))
-                    if date_val and date_val.isdigit() and len(date_val) == 4:
-                        # If just a year like "1933", convert to "1933-01-01"
-                        date_val = f"{date_val}-01-01"
-                    elif date_val and not re.match(r'\d{4}-\d{2}-\d{2}', date_val):
-                        # If not in YYYY-MM-DD format, set to None
-                        date_val = None
+                    # Normalize media date using the same logic
+                    date_val = _normalize_date(_ns(m.get("date")))
 
                     # Use a valid enum value for media_type (image, pdf, audio, video, other)
                     media_type = _ns(m.get("media_type")) or "other"  # fallback to 'other'
@@ -197,36 +235,44 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                       google_drive_link=EXCLUDED.google_drive_link;
                 """, rows)
 
-            # joins
+            # joins - deduplicate passengers to avoid constraint violations
             if ppl:
                 rows = []
+                seen_persons = set()
                 for p in ppl:
-                    rows.append((vslug, _ns(p.get("slug") or p.get("person_slug")), _ns(p.get("role_title")) or "Guest", None))
-                execute_values(cur, """
-                    INSERT INTO voyage_passengers (voyage_slug, person_slug, capacity_role, notes)
-                    VALUES %s
-                    ON CONFLICT (voyage_slug, person_slug) DO UPDATE SET
-                      capacity_role=EXCLUDED.capacity_role, notes=EXCLUDED.notes;
-                """, rows)
+                    person_slug = _ns(p.get("slug") or p.get("person_slug"))
+                    if person_slug and person_slug not in seen_persons:
+                        seen_persons.add(person_slug)
+                        rows.append((vslug, person_slug, _ns(p.get("role_title")) or "Guest", None))
+                if rows:
+                    execute_values(cur, """
+                        INSERT INTO voyage_passengers (voyage_slug, person_slug, capacity_role, notes)
+                        VALUES %s
+                        ON CONFLICT (voyage_slug, person_slug) DO UPDATE SET
+                          capacity_role=EXCLUDED.capacity_role, notes=EXCLUDED.notes;
+                    """, rows)
             if med:
                 rows = []
+                seen_media = set()
                 for m in med:
                     mslug = _ns(m.get("slug"))
-                    # Skip media items without slugs
-                    if not mslug:
+                    # Skip media items without slugs or duplicates
+                    if not mslug or mslug in seen_media:
                         continue
+                    seen_media.add(mslug)
                     sort = None
                     if mslug:
                         parts = mslug.rsplit("-",1)
                         if len(parts)==2 and parts[1].isdigit():
                             sort = int(parts[1])
                     rows.append((vslug, mslug, sort, None))
-                execute_values(cur, """
-                    INSERT INTO voyage_media (voyage_slug, media_slug, sort_order, notes)
-                    VALUES %s
-                    ON CONFLICT (voyage_slug, media_slug) DO UPDATE SET
-                      sort_order=COALESCE(EXCLUDED.sort_order, voyage_media.sort_order), notes=EXCLUDED.notes;
-                """, rows)
+                if rows:
+                    execute_values(cur, """
+                        INSERT INTO voyage_media (voyage_slug, media_slug, sort_order, notes)
+                        VALUES %s
+                        ON CONFLICT (voyage_slug, media_slug) DO UPDATE SET
+                          sort_order=COALESCE(EXCLUDED.sort_order, voyage_media.sort_order), notes=EXCLUDED.notes;
+                    """, rows)
 
         conn.commit()
         LOG.info("DB upsert complete for voyage %s", vslug)
