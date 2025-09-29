@@ -177,7 +177,8 @@ def validate_bundle(bundle: Dict) -> List[str]:
 
     # Voyage fields
     _req(v, "voyage_slug", "voyage", errs)
-    _req(v, "title", "voyage", errs)
+    # Title is optional - can be auto-generated from voyage_slug if needed
+    # _req(v, "title", "voyage", errs)
     _req(v, "start_date", "voyage", errs)
 
     _date_flex(v, "start_date", "voyage", errs)
@@ -210,12 +211,13 @@ def validate_bundle(bundle: Dict) -> List[str]:
             if val and not val.isdigit():
                 errs.append(f"[{path}] {field} must be integer if provided")
 
-    # Media (title optional; must have credit + date + link)
+    # Media (title optional; credit, date, link are optional but recommended)
     for i, m in enumerate(med, start=1):
         path = f"media #{i}"
-        for k in ("credit", "date", "google_drive_link"):
-            if not (m.get(k) or "").strip():
-                errs.append(f"[{path}] missing required field: {k}")
+        # Media fields are now optional - just validate format if provided
+        # for k in ("credit", "date", "google_drive_link"):
+        #     if not (m.get(k) or "").strip():
+        #         errs.append(f"[{path}] missing required field: {k}")
         if (m.get("date") or "").strip() and not DATE_RE_FLEX.match(m.get("date")):
             errs.append(f"[{path}] invalid date for date: {m.get('date')} (YYYY / YYYY-MM / YYYY-MM-DD)")
         link = (m.get("google_drive_link") or "").strip()
