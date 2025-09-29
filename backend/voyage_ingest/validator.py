@@ -79,10 +79,32 @@ def _read_pres_fullname_to_slug() -> Dict[str, str]:
     global _PRES_FULL_TO_SLUG
     if _PRES_FULL_TO_SLUG is not None:
         return _PRES_FULL_TO_SLUG
+
     spreadsheet_id = os.environ.get("SPREADSHEET_ID", "").strip()
+
+    # If Sheets disabled, read from DB instead
     if not spreadsheet_id:
-        _PRES_FULL_TO_SLUG = {}
-        return _PRES_FULL_TO_SLUG
+        try:
+            from voyage_ingest import db_updater
+            import psycopg2
+            conn = db_updater._conn()
+            cur = conn.cursor()
+            db_updater._schema(cur)
+            cur.execute("SELECT full_name, president_slug FROM presidents;")
+            m: Dict[str, str] = {}
+            for row in cur.fetchall():
+                full, slug = row
+                if full and slug:
+                    m[full.strip().lower()] = slug.strip()
+            conn.close()
+            _PRES_FULL_TO_SLUG = m
+            return _PRES_FULL_TO_SLUG
+        except Exception as e:
+            LOG.warning("Failed to load presidents from DB: %s", e)
+            _PRES_FULL_TO_SLUG = {}
+            return _PRES_FULL_TO_SLUG
+
+    # Original Sheets-based logic
     title = os.environ.get("PRESIDENTS_SHEET_TITLE", "presidents").strip() or "presidents"
     svc = _sheets_service()
     try:
