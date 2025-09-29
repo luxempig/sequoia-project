@@ -159,6 +159,9 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 rows = []
                 for m in med:
                     mslug = _ns(m.get("slug"))
+                    # Skip media items without a slug (already warned by drive_sync)
+                    if not mslug:
+                        continue
                     s3_orig, s3_pub = (s3_links.get(mslug, (None, None)) if mslug else (None, None))
                     # Convert date string to proper format or None
                     date_val = _ns(m.get("date"))
@@ -168,14 +171,14 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     elif date_val and not re.match(r'\d{4}-\d{2}-\d{2}', date_val):
                         # If not in YYYY-MM-DD format, set to None
                         date_val = None
-                    
+
                     # Use a valid enum value for media_type (image, pdf, audio, video, other)
                     media_type = _ns(m.get("media_type")) or "other"  # fallback to 'other'
                     # Map invalid types to 'other'
                     valid_types = {"image", "pdf", "audio", "video", "other"}
                     if media_type not in valid_types:
                         media_type = "other"
-                    
+
                     rows.append((
                         mslug, _ns(m.get("title")) or "Untitled",
                         media_type, _ns(s3_orig), _ns(s3_pub),
