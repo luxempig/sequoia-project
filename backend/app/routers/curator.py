@@ -579,22 +579,29 @@ async def save_president_data(request: Request):
         status_tracker.add_output_line(f"Found {total_voyages} total voyages to process")
 
         status_tracker.update_progress("Creating backup of existing data...", 20)
-        # Save to the output.json file (source of truth)
+        # Save to the canonical_voyages.json file (source of truth)
         output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
-        # Create backup of existing output file
+        # Load existing data to merge with incoming changes
+        existing_data = {}
         if os.path.exists(output_path):
+            # Create backup of existing output file
             backup_path = f"{output_path}.backup.{int(time.time())}"
             with open(output_path, 'r', encoding='utf-8') as src:
+                file_content = src.read()
+                existing_data = json.loads(file_content)
                 with open(backup_path, 'w', encoding='utf-8') as dst:
-                    dst.write(src.read())
+                    dst.write(file_content)
             logger.info(f"Created backup at {backup_path}")
             status_tracker.add_output_line(f"Backup created: {os.path.basename(backup_path)}")
 
-        status_tracker.update_progress("Writing output.json data file...", 30)
-        # Write updated data to output.json file
+        # Merge incoming data with existing data (preserving other presidents)
+        merged_data = {**existing_data, **data}
+
+        status_tracker.update_progress("Writing canonical_voyages.json data file...", 30)
+        # Write merged data to canonical_voyages.json file
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(merged_data, f, indent=2, ensure_ascii=False)
 
         file_size = os.path.getsize(output_path)
         logger.info("Output.json voyage data saved successfully")
