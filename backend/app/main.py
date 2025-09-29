@@ -14,6 +14,8 @@ logging.basicConfig(
     ]
 )
 
+logger = logging.getLogger(__name__)
+
 from app.routers.meta        import router as meta_router
 from app.routers.voyages     import router as voyages_router
 from app.routers.media       import router as media_router
