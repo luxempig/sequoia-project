@@ -235,20 +235,48 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                   </div>
                   
                   {dayMedia.length > 0 ? (
-                    <div className="space-y-2">
-                      {dayMedia.slice(0, 2).map(media => (
-                        <div key={media.media_slug} className="bg-black text-white rounded-md p-3 shadow-sm">
-                          <div className="text-xs font-bold text-gray-200 mb-1">
-                            {media.media_type || 'Diaries / Logs'}
+                    <div className="grid grid-cols-2 gap-2">
+                      {dayMedia.slice(0, 4).map(media => {
+                        const thumbnailUrl = media.public_derivative_url || media.url;
+                        const hasImage = thumbnailUrl && (
+                          thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
+                          media.media_type?.toLowerCase() === 'image' ||
+                          media.media_type?.toLowerCase() === 'photo'
+                        );
+
+                        return (
+                          <div key={media.media_slug} className="bg-white rounded border border-gray-300 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                            {hasImage && thumbnailUrl ? (
+                              <img
+                                src={thumbnailUrl}
+                                alt={media.title || 'Voyage media'}
+                                className="w-full h-20 object-cover"
+                                loading="lazy"
+                                onError={(e) => {
+                                  // Hide image on error and show fallback
+                                  e.currentTarget.style.display = 'none';
+                                  const parent = e.currentTarget.parentElement;
+                                  if (parent) {
+                                    const fallback = document.createElement('div');
+                                    fallback.className = 'w-full h-20 bg-gray-200 flex items-center justify-center text-gray-500 text-xs';
+                                    fallback.textContent = media.media_type || 'Media';
+                                    parent.insertBefore(fallback, parent.firstChild);
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                                {media.media_type || 'Document'}
+                              </div>
+                            )}
+                            <div className="p-1.5">
+                              <div className="text-xs text-gray-700 line-clamp-2">
+                                {media.title || media.description_markdown?.slice(0, 30) || 'View media'}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-white mb-2">
-                            {media.title || media.description_markdown?.slice(0, 40) + '...' || 'Historical Document'}
-                          </div>
-                          <button className="text-xs bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-1 rounded font-bold uppercase tracking-wide">
-                            VIEW
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center text-gray-500 text-sm italic">
