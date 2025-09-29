@@ -8554,1014 +8554,6 @@
       }
     ]
   },
-  "reagan-ronald": {
-    "term_start": "January 20, 1981",
-    "term_end": "January 20, 1989",
-    "info": "Ronald Reagan (1981-1989)",
-    "voyages": [
-      {
-        "voyage": "reagan-ronald-1981-05-13",
-        "start_date": "1981-05-13",
-        "end_date": "1981-05-13",
-        "start_time": "",
-        "end_time": "",
-        "origin": "Florida",
-        "destination": "Washington",
-        "passengers": [],
-        "media": [
-          {
-            "media_name": "1981.05.13_The_Palm_Beach_Post_pg34",
-            "link": "https://drive.google.com/file/d/1ChdU4thddU2Aood3ZNX9ajvhVjhadjDo/view?usp=drive_link",
-            "source": "The Palm Beach Post",
-            "date": "1981-05-13",
-            "type": "jpg",
-            "platform": "drive"
-          }
-        ],
-        "notes": [
-          "Sequoia is moved from Florida to Washington during the summers at the behest of Reagan"
-        ],
-        "tags": [
-          "relocation",
-          "summer move"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no time specified",
-          "voyage.end_time": "no time specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1981-06-28",
-        "start_date": "1981-06-28",
-        "end_date": "1981-06-28",
-        "start_time": "",
-        "end_time": "",
-        "origin": "",
-        "destination": "Washington Marina",
-        "passengers": [
-          {
-            "name": "donaldson-sam",
-            "full_name": "Sam Donaldson",
-            "title": "ABC News Correspondent",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Sam_Donaldson"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Presidential yacht returned to Washington",
-          "Dixieland bands played",
-          "Sequoia came up the Potomac retrieved by a private trust fund",
-          "Sequoia will be ready for presidential use on July 4th",
-          "White House spokesman said there are no present plans for the President to use the Sequoia"
-        ],
-        "tags": [
-          "return",
-          "Washington Marina",
-          "July 4th preparation"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no time specified",
-          "voyage.end_time": "no time specified",
-          "voyage.origin": "no origin specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1983-02-02",
-        "start_date": "1983-02-02",
-        "end_date": "1983-02-02",
-        "start_time": "",
-        "end_time": "",
-        "origin": "",
-        "destination": "",
-        "passengers": [
-          {
-            "name": "gill-michael-doud",
-            "full_name": "Michael Doud Gill",
-            "title": "Republican power broker and President Eisenhower's nephew by marriage",
-            "role": "",
-            "bio": "https://www.washingtonpost.com/archive/local/2001/09/19/michael-gill-dies/44f4701a-4709-4f06-97d4-6131c37dce89/"
-          }
-        ],
-        "media": [
-          {
-            "media_name": "1983.02.02_The_Baltimore_Sun_pg1",
-            "link": "https://drive.google.com/file/d/1UDui7EFbzNzQaVp8KcTfNO7LVS3dq0Tw/view?usp=drive_link",
-            "source": "The Baltimore Sun",
-            "date": "1983-02-02",
-            "type": "jpg",
-            "platform": "drive"
-          }
-        ],
-        "notes": [
-          "Sequoia is operated by Michael Doud Gill"
-        ],
-        "tags": [
-          "operation",
-          "management"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no time specified",
-          "voyage.end_time": "no time specified",
-          "voyage.origin": "no origin specified",
-          "voyage.destination": "no destination specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1983-05-19",
-        "start_date": "1983-05-19",
-        "end_date": "1983-05-19",
-        "start_time": "18:00",
-        "end_time": "23:00",
-        "origin": "Potomac River",
-        "destination": "Potomac River",
-        "passengers": [
-          {
-            "name": "hope-bob",
-            "full_name": "Bob Hope",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Bob_Hope"
-          },
-          {
-            "name": "ball-lucille",
-            "full_name": "Lucille Ball",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Lucille_Ball"
-          },
-          {
-            "name": "diller-phyllis",
-            "full_name": "Phyllis Diller",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Phyllis_Diller"
-          },
-          {
-            "name": "arendsee-richard-w",
-            "full_name": "Richard W. Arendsee",
-            "title": "Founder of the Sequoia Trust Fund",
-            "role": "",
-            "bio": "https://www.nytimes.com/1983/04/01/us/fit-for-a-president-the-newly-refurbished-yacht-sequoia-only-languishes.html"
-          },
-          {
-            "name": "shafer-raymond-p",
-            "full_name": "Raymond P. Shafer",
-            "title": "Former Governor of Pennsylvania",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Raymond_P._Shafer"
-          },
-          {
-            "name": "burns-george",
-            "full_name": "George Burns",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "carter-lynda",
-            "full_name": "Lynda Carter",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "jillian-ann",
-            "full_name": "Ann Jillian",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "lynn-loretta",
-            "full_name": "Loretta Lynn",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "mandrell-barbara",
-            "full_name": "Barbara Mandrell",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "scott-george-c",
-            "full_name": "George C. Scott",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "kermit-the-frog",
-            "full_name": "Kermit the Frog",
-            "title": "",
-            "role": "",
-            "bio": ""
-          }
-        ],
-        "media": [
-          {
-            "media_name": "Photo from trumpy exhibit (0629)",
-            "link": "https://www.dropbox.com/s/en026hmw2qvvuji/%2ADSC_0629%20copy.JPG?dl=0",
-            "source": "Trumpy Exhibit",
-            "date": "",
-            "type": "JPG",
-            "platform": "drop"
-          },
-          {
-            "media_name": "alt photo from trumpy exhibit (0714)",
-            "link": "https://www.dropbox.com/s/616imnvlp87bjgi/%2ADSC_0714%20copy.JPG?dl=0",
-            "source": "Trumpy Exhibit",
-            "date": "",
-            "type": "JPG",
-            "platform": "drop"
-          },
-          {
-            "media_name": "Evening Sun Clipping",
-            "link": "https://www.dropbox.com/s/kfe2ajfqaqr9qgw/The_Evening_Sun_Mon__May_30__1983_.jpg?dl=0",
-            "source": "Evening Sun",
-            "date": "1983-05-30",
-            "type": "jpg",
-            "platform": "drop"
-          },
-          {
-            "media_name": "The Daily Item Clipping",
-            "link": "https://www.nytimes.com/1983/04/01/us/fit-for-a-president-the-newly-refurbished-yacht-sequoia-only-languishes.html",
-            "source": "The Daily Item",
-            "date": "1983-04-01",
-            "type": "html",
-            "platform": "other"
-          },
-          {
-            "media_name": "Hanford Sentinel clipping (UPI)",
-            "link": "https://www.dropbox.com/s/ox1pcj1hnepjixm/The_Hanford_Sentinel_Mon__May_23__1983_.jpg?dl=0",
-            "source": "Hanford Sentinel",
-            "date": "1983-05-23",
-            "type": "jpg",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "Bob Hope's 80th birthday party",
-          "NBC covered the event and aired it on May 23rd",
-          "NBC special"
-        ],
-        "tags": [
-          "birthday party",
-          "Bob Hope",
-          "NBC coverage",
-          "celebrities"
-        ],
-        "missing_info": {
-          "passenger.title": "multiple passengers have no title specified",
-          "passenger.bio": "multiple passengers have no bio URL",
-          "media.date": "some media files have no extractable date"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1984-04-01",
-        "start_date": "1984-04-01",
-        "end_date": "1984-09-01",
-        "start_time": "",
-        "end_time": "",
-        "origin": "St. Augustine, Florida",
-        "destination": "Washington DC",
-        "passengers": [
-          {
-            "name": "ford-susan",
-            "full_name": "Susan Ford",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Susan_Ford_Bales"
-          }
-        ],
-        "media": [
-          {
-            "media_name": "1984-06-03 - 1984-09-07 (logbook)",
-            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/1.%20Giles%20Kelly's%20Log%20book/Giles%20Kelly%20Logbook%20scans/Giles%20Kelly%20Logbook%20Organized%20by%20dates?preview=1984-06-03+-+1984-09-07+%28logbook%29.pdf",
-            "source": "Giles Kelly Logbook",
-            "date": "1984",
-            "type": "pdf",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "An American Odyssey tour",
-          "40 ports in 16 states",
-          "Susan Ford cut the ribbon",
-          "Visited Houston, St. Louis, Chicago, Peoria, Detroit, Cleveland, Oswego, Albany, West Point, New York City, and New Jersey"
-        ],
-        "tags": [
-          "tour",
-          "American Odyssey",
-          "40 ports",
-          "16 states"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no time specified",
-          "voyage.end_time": "no time specified",
-          "passenger.title": "Susan Ford has no title specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1985-05-15",
-        "start_date": "1985-05-15",
-        "end_date": "1985-05-15",
-        "start_time": "",
-        "end_time": "",
-        "origin": "Potomac River",
-        "destination": "Potomac River",
-        "passengers": [
-          {
-            "name": "casey-william-j",
-            "full_name": "William J. Casey",
-            "title": "Director CIA",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/William_J._Casey"
-          },
-          {
-            "name": "adelman-kenneth",
-            "full_name": "Kenneth Adelman",
-            "title": "Arms Control and Disarmament Agency Director",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Kenneth_Adelman"
-          },
-          {
-            "name": "lehrman-lewis-e",
-            "full_name": "Lewis E. \"Lew\" Lehrman",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Lewis_Lehrman"
-          },
-          {
-            "name": "haig-alexander",
-            "full_name": "Alexander Haig",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
-          },
-          {
-            "name": "bryant-anita",
-            "full_name": "Anita Bryant",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Anita_Bryant"
-          },
-          {
-            "name": "heckler-margaret",
-            "full_name": "Margaret Heckler",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Margaret_Heckler"
-          },
-          {
-            "name": "block-john",
-            "full_name": "John Block",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/John_Rusling_Block"
-          },
-          {
-            "name": "lucas-william",
-            "full_name": "William Lucas",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/William_R._Lucas"
-          },
-          {
-            "name": "abramoff-jack",
-            "full_name": "Jack Abramoff",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Jack_Abramoff"
-          }
-        ],
-        "media": [
-          {
-            "media_name": "WashPost Article",
-            "link": "https://www.washingtonpost.com/archive/lifestyle/1985/05/16/nautical-night-out/283f1ed4-ede6-4b7f-9321-e41964455d35/",
-            "source": "Washington Post",
-            "date": "1985-05-16",
-            "type": "html",
-            "platform": "other"
-          },
-          {
-            "media_name": "NYT Article",
-            "link": "https://www.nytimes.com/1985/05/15/us/briefing-here-comes-william-lucas.html",
-            "source": "New York Times",
-            "date": "1985-05-15",
-            "type": "html",
-            "platform": "other"
-          },
-          {
-            "media_name": "William Lucas and Lew Lehrman on Sequoia (1985-05-15)",
-            "link": "https://www.dropbox.com/s/dh4antshn95v5kl/William%20Lucas%20and%20Lew%20Lehrman%20on%20Sequoia%20%281985-05-15%29.jpeg?dl=0",
-            "source": "AP Photo",
-            "date": "1985-05-15",
-            "type": "jpeg",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "Dinner for Citizens for America (CFA)",
-          "Standing on the foredeck, Lehrman watched the sun set over Haines Point",
-          "According to historical weather data, the sun set at 20:13 that day",
-          "Evening/Dinner"
-        ],
-        "tags": [
-          "Citizens for America",
-          "dinner",
-          "political gathering"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no specific time, only Evening/Dinner mentioned",
-          "voyage.end_time": "no end time specified",
-          "passenger.title": "multiple passengers have no title specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1986-07-04",
-        "start_date": "1986-07-04",
-        "end_date": "1986-07-04",
-        "start_time": "09:00",
-        "end_time": "",
-        "origin": "New York Harbor, NY",
-        "destination": "New York Harbor, NY",
-        "passengers": [
-          {
-            "name": "chafee-john",
-            "full_name": "John Chafee",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "nunn-sam",
-            "full_name": "Sam Nunn",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "levin-carl",
-            "full_name": "Carl Levin",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "levin-mrs",
-            "full_name": "Mrs. Levin",
-            "title": "",
-            "role": "",
-            "bio": ""
-          }
-        ],
-        "media": [
-          {
-            "media_name": "NYT Article",
-            "link": "https://www.nytimes.com/1986/07/05/nyregion/liberty-weekend-the-ships-battling-boatlock-in-harbor.html",
-            "source": "New York Times",
-            "date": "1986-07-05",
-            "type": "html",
-            "platform": "other"
-          },
-          {
-            "media_name": "1. Sequoia - Statue Of Liberty 7:4:1986",
-            "link": "https://www.dropbox.com/s/6h9fzprkh7jc893/1.%20Sequoia%20-%20Statue%20Of%20Liberty%207%3A4%3A1986.jpg?dl=0",
-            "source": "DOD Photo",
-            "date": "1986-07-04",
-            "type": "jpg",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "International Naval Review celebrating the centennial of the Statue of Liberty",
-          "29 total passengers visible from photo",
-          "Sequoia was among several boats breaking the rules–sailing in and out of the parade route",
-          "Sequoia was given two warnings",
-          "If the Sequoia does not leave the security area immediately, it will be brought in and will be terminated"
-        ],
-        "tags": [
-          "Statue of Liberty",
-          "Naval Review",
-          "centennial",
-          "rule violation"
-        ],
-        "missing_info": {
-          "voyage.end_time": "no end time specified",
-          "passenger.title": "all passengers have no title specified",
-          "passenger.bio": "all passengers have no bio URL"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1986-09-08",
-        "start_date": "1986-09-08",
-        "end_date": "1986-09-08",
-        "start_time": "",
-        "end_time": "",
-        "origin": "",
-        "destination": "",
-        "passengers": [
-          {
-            "name": "pepper-claude",
-            "full_name": "Claude Pepper",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Claude_Pepper"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Claude Pepper with friends celebrating his 86th Birthday on the former Presidential Yacht, the USS Sequoia"
-        ],
-        "tags": [
-          "birthday",
-          "86th birthday",
-          "Claude Pepper"
-        ],
-        "missing_info": {
-          "voyage.start_time": "no time specified",
-          "voyage.end_time": "no time specified",
-          "voyage.origin": "no origin specified",
-          "voyage.destination": "no destination specified",
-          "passenger.title": "Claude Pepper has no title specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1987-00-00",
-        "start_date": "1987-00-00",
-        "end_date": "1987-00-00",
-        "start_time": "19:00",
-        "end_time": "22:10",
-        "origin": "Potomac",
-        "destination": "Potomac",
-        "passengers": [
-          {
-            "name": "wright-jim",
-            "full_name": "Speaker Wright",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Jim_Wright"
-          },
-          {
-            "name": "brooks-jack",
-            "full_name": "Jack Brooks",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "brooks-charlotte",
-            "full_name": "Charlotte Brooks",
-            "title": "",
-            "role": "",
-            "bio": ""
-          }
-        ],
-        "media": [],
-        "notes": [
-          "48 other guests"
-        ],
-        "tags": [
-          "congressional",
-          "speaker"
-        ],
-        "missing_info": {
-          "voyage.start_date": "exact date unknown",
-          "voyage.end_date": "exact date unknown",
-          "passenger.title": "All passengers have no titles specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1987-04-09",
-        "start_date": "1987-04-09",
-        "end_date": "1987-04-09",
-        "start_time": "18:45",
-        "end_time": "21:15",
-        "origin": "U.S. Park Service Pier",
-        "destination": "U.S. Park Service Pier",
-        "passengers": [
-          {
-            "name": "schultz-george",
-            "full_name": "George Schultz",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/George_Shultz"
-          },
-          {
-            "name": "howe-geoffrey",
-            "full_name": "Geoffrey Howe",
-            "title": "British Foreign Secretary and President EEC Council of Ministers",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Geoffrey_Howe"
-          },
-          {
-            "name": "freeman-chas",
-            "full_name": "Chas W. Freeman, Jr.",
-            "title": "Principal Deputy Assistant Secretary of State for African Affairs",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Chas_W._Freeman,_Jr."
-          },
-          {
-            "name": "roosevelt-selwa",
-            "full_name": "Selwa \"Lucky\" Roosevelt",
-            "title": "Chief of Protocol",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Selwa_Roosevelt"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "2 police Escort boats",
-          "10-other guests; 5-crew; 4-caterers; 5-security"
-        ],
-        "tags": [
-          "diplomatic",
-          "foreign-relations",
-          "british",
-          "state-department"
-        ],
-        "missing_info": {
-          "passenger.title": "George Schultz has no title specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1987-05-13",
-        "start_date": "1987-05-13",
-        "end_date": "1987-05-13",
-        "start_time": "16:35",
-        "end_time": "21:31",
-        "origin": "U.S. Park Service Pier",
-        "destination": "U.S. Park Service Pier",
-        "passengers": [
-          {
-            "name": "cerezo-vinicio",
-            "full_name": "Vinicio Cerezo",
-            "title": "President of Guatemala",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Vinicio_Cerezo"
-          },
-          {
-            "name": "meese-edwin",
-            "full_name": "Edwin Meese III",
-            "title": "Attorney General",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Edwin_Meese"
-          },
-          {
-            "name": "meese-ursula",
-            "full_name": "Ursula Meese",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "weinberger-caspar",
-            "full_name": "Caspar Weinberger",
-            "title": "Secretary of Defense",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Caspar_Weinberger"
-          },
-          {
-            "name": "weinberger-rebecca",
-            "full_name": "Rebecca \"Jane\" Weinberger",
-            "title": "",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Jane_Weinberger"
-          },
-          {
-            "name": "walker-william",
-            "full_name": "William Graham Walker",
-            "title": "Deputy Assistant Secretary of State in the Bureau of Inter-American Affairs",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/William_Walker_(diplomat)"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Dinner Cruise",
-          "Police escort",
-          "40 Guests, 5-Security personnel, 11-caterers, 4 Crew"
-        ],
-        "tags": [
-          "diplomatic",
-          "guatemala",
-          "dinner",
-          "inter-american"
-        ],
-        "missing_info": {
-          "passenger.title": "Ursula Meese and Rebecca Weinberger have no titles specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1987-05-19",
-        "start_date": "1987-05-19",
-        "end_date": "1987-05-19",
-        "start_time": "18:45",
-        "end_time": "21:40",
-        "origin": "U.S. Park Service Pier",
-        "destination": "U.S. Park Service Pier",
-        "passengers": [
-          {
-            "name": "bush-george",
-            "full_name": "George Bush",
-            "title": "Vice President",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/George_H._W._Bush"
-          },
-          {
-            "name": "shangkun-yang",
-            "full_name": "Yang Shangkun",
-            "title": "Vice Chairman of the Chinese Central Military Commission",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Yang_Shangkun"
-          },
-          {
-            "name": "paal-douglas",
-            "full_name": "Douglas H. Paal",
-            "title": "Reagan National Security Council - Director for Asian Affairs",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Douglas_H._Paal"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Sequoia showed the National Flag of the People's Republic of China during the cruise",
-          "24 other guests including Chinese diplomats",
-          "4 State Department personnel, 10 Security personnel, 8 Stewards, 4 Crew",
-          "Yang went on to describe his revolutionary history in intimate detail over the dinner table",
-          "Photo 1987-05-20 Bush-Yang aboard Sequoia"
-        ],
-        "tags": [
-          "diplomatic",
-          "china",
-          "vice-president",
-          "military",
-          "foreign-relations"
-        ],
-        "missing_info": {}
-      },
-      {
-        "voyage": "reagan-ronald-1987-05-21",
-        "start_date": "1987-05-21",
-        "end_date": "1987-05-21",
-        "start_time": "12:30",
-        "end_time": "13:53",
-        "origin": "U.S. Park Service Pier",
-        "destination": "U.S. Park Service Pier",
-        "passengers": [
-          {
-            "name": "baker-james",
-            "full_name": "James Addison Baker III",
-            "title": "Secretary of Treasury",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/James_Baker"
-          },
-          {
-            "name": "brock-william",
-            "full_name": "William \"Bill\" Emerson Brock III",
-            "title": "Secretary of Labor",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Bill_Brock"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Luncheon Cruise catered by Ridgeways",
-          "Japanese Delegation",
-          "12 Guests, 5-Security personnel, 3-caterers, 4 Crew, 1-Secret Service officer"
-        ],
-        "tags": [
-          "diplomatic",
-          "japan",
-          "luncheon",
-          "treasury",
-          "labor"
-        ],
-        "missing_info": {}
-      },
-      {
-        "voyage": "reagan-ronald-1987-05-23",
-        "start_date": "1987-05-23",
-        "end_date": "1987-05-23",
-        "start_time": "21:00",
-        "end_time": "23:45",
-        "origin": "U.S. Park Service Pier",
-        "destination": "U.S. Park Service Pier",
-        "passengers": [
-          {
-            "name": "yeutter-clayton",
-            "full_name": "Clayton Keith Yeutter",
-            "title": "USTR",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Clayton_Yeutter"
-          },
-          {
-            "name": "yeutter-jeanne",
-            "full_name": "Jeanne Yeutter",
-            "title": "",
-            "role": "",
-            "bio": ""
-          }
-        ],
-        "media": [],
-        "notes": [
-          "Desert Cruise on 10th Anniversary US Government's sale of Sequoia",
-          "6-Stewards, 3-Crew"
-        ],
-        "tags": [
-          "anniversary",
-          "ustr",
-          "desert-cruise"
-        ],
-        "missing_info": {
-          "passenger.title": "Jeanne Yeutter has no title specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1988-03-04",
-        "start_date": "1988-03-04",
-        "end_date": "1988-03-04",
-        "start_time": "12:30",
-        "end_time": "",
-        "origin": "N/A",
-        "destination": "N/A",
-        "passengers": [
-          {
-            "name": "verity-william",
-            "full_name": "William Verity Jr.",
-            "title": "Secretary of Commerce",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/William_Verity_Jr."
-          }
-        ],
-        "media": [
-          {
-            "media_name": "1988.03.04 commerce cruise",
-            "link": "https://www.dropbox.com/s/gy590jfqpsgmlmz/1988.03.04%20commerce%20cruise.pdf?dl=0",
-            "source": "Correspondence Between William H. Webster and William Verity",
-            "date": "1988-03-04",
-            "type": "pdf",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "Lunch to celebrate Commerce Department's 75th anniversary",
-          "Various Cabinet members and political supporters from the private sector"
-        ],
-        "tags": [
-          "commerce",
-          "anniversary",
-          "lunch",
-          "cabinet"
-        ],
-        "missing_info": {
-          "voyage.end_time": "end time not specified"
-        }
-      },
-      {
-        "voyage": "reagan-ronald-1988-03-30",
-        "start_date": "1988-03-30",
-        "end_date": "1988-10-30",
-        "start_time": "",
-        "end_time": "",
-        "origin": "",
-        "destination": "",
-        "passengers": [],
-        "media": [],
-        "notes": [
-          "Celebrate America! 1988 Homecoming Tour",
-          "Tour included 30 cities from Norfolk to Washington DC"
-        ],
-        "tags": [
-          "tour",
-          "homecoming",
-          "celebrate america",
-          "multi-city"
-        ],
-        "missing_info": {
-          "voyage.start_time": "start time not specified",
-          "voyage.end_time": "end time not specified",
-          "voyage.origin": "origin not specified",
-          "voyage.destination": "destination not specified",
-          "passengers": "no passengers listed"
-        }
-      }
-    ]
-  },
-  "bush-george-w": {
-    "term_start": "January 20, 2001",
-    "term_end": "January 20, 2009",
-    "info": "George W. Bush (2001-2009)",
-    "voyages": [
-      {
-        "voyage": "bush-george-w-2002-07-18",
-        "start_date": "2002-07-18",
-        "end_date": "2002-07-18",
-        "start_time": "",
-        "end_time": "",
-        "origin": "",
-        "destination": "",
-        "passengers": [
-          {
-            "name": "powell-colin",
-            "full_name": "Colin Powell",
-            "title": "Secretary of State",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Colin_Powell"
-          }
-        ],
-        "media": [],
-        "notes": [
-          "White House Fellows reception",
-          "Secretary Colin Powell, Department of State Reception on Presidential Yacht Sequoia"
-        ],
-        "tags": [
-          "state department",
-          "white house fellows",
-          "reception"
-        ],
-        "missing_info": {
-          "voyage.start_time": "start time not specified",
-          "voyage.end_time": "end time not specified",
-          "voyage.origin": "origin not specified",
-          "voyage.destination": "destination not specified"
-        }
-      }
-    ]
-  },
-  "obama-barack": {
-    "term_start": "January 20, 2009",
-    "term_end": "January 20, 2017",
-    "info": "Barack Obama (2009-2017)",
-    "voyages": [
-      {
-        "voyage": "obama-barack-2011-06-07",
-        "start_date": "2011-06-07",
-        "end_date": "2011-06-07",
-        "start_time": "12:00",
-        "end_time": "",
-        "origin": "gangplank marina",
-        "destination": "Potomac River",
-        "passengers": [
-          {
-            "name": "margrethe-queen",
-            "full_name": "Queen Margrethe II of Denmark",
-            "title": "Queen of Denmark",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Margrethe_II_of_Denmark"
-          },
-          {
-            "name": "henrik-prince",
-            "full_name": "H.R.H. Prince Henrik",
-            "title": "Prince of Denmark",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "engel-ditlev",
-            "full_name": "Ditlev Engel",
-            "title": "CEO of Vestas",
-            "role": "",
-            "bio": "https://da.wikipedia.org/wiki/Ditlev_Engel"
-          }
-        ],
-        "media": [
-          {
-            "media_name": "Danish Queen aboard Sequoia 6-7-2011",
-            "link": "https://www.dropbox.com/s/4nqupokmkjkaa2s/Danish%20Queen%20aboard%20Sequoia%206-7-2011%20.jpg?dl=0",
-            "source": "Photo of Danish Queen on Sequoia's port side",
-            "date": "2011-06-07",
-            "type": "jpg",
-            "platform": "drop"
-          },
-          {
-            "media_name": "2011-06-07_Queen_Margrethe_Reuters_photo",
-            "link": "https://www.dropbox.com/s/toqjgw8lz0ng2p1/2011-06-07_Queen_Margrethe_Reuters_photo.webp?dl=0",
-            "source": "Photo of Margrethe and Ditlev onboard",
-            "date": "2011-06-07",
-            "type": "webp",
-            "platform": "drop"
-          }
-        ],
-        "notes": [
-          "Departed from the gangplank marina for a lunchtime cruise"
-        ],
-        "tags": [
-          "danish royalty",
-          "state visit",
-          "lunch cruise",
-          "potomac river"
-        ],
-        "missing_info": {
-          "voyage.end_time": "end time not specified"
-        }
-      }
-    ]
-  },
   "kennedy-john": {
     "term_start": "January 20, 1961",
     "term_end": "November 22, 1963",
@@ -35496,6 +34488,1002 @@
           "passenger.title": "ford-susan has no title specified",
           "passenger.names": "30 additional guests not individually listed",
           "media.date": "unidentified letter has no extractable date"
+        }
+      }
+    ]
+  },
+  "post-presidential": {
+    "president": "post-presidential",
+    "full_name": "Post-Presidential",
+    "term_start": "1981-01-20",
+    "term_end": null,
+    "party": null,
+    "voyages": [
+      {
+        "voyage": "reagan-ronald-1981-05-13",
+        "start_date": "1981-05-13",
+        "end_date": "1981-05-13",
+        "start_time": "",
+        "end_time": "",
+        "origin": "Florida",
+        "destination": "Washington",
+        "passengers": [],
+        "media": [
+          {
+            "media_name": "1981.05.13_The_Palm_Beach_Post_pg34",
+            "link": "https://drive.google.com/file/d/1ChdU4thddU2Aood3ZNX9ajvhVjhadjDo/view?usp=drive_link",
+            "source": "The Palm Beach Post",
+            "date": "1981-05-13",
+            "type": "jpg",
+            "platform": "drive"
+          }
+        ],
+        "notes": [
+          "Sequoia is moved from Florida to Washington during the summers at the behest of Reagan"
+        ],
+        "tags": [
+          "relocation",
+          "summer move"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no time specified",
+          "voyage.end_time": "no time specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1981-06-28",
+        "start_date": "1981-06-28",
+        "end_date": "1981-06-28",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "Washington Marina",
+        "passengers": [
+          {
+            "name": "donaldson-sam",
+            "full_name": "Sam Donaldson",
+            "title": "ABC News Correspondent",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Sam_Donaldson"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Presidential yacht returned to Washington",
+          "Dixieland bands played",
+          "Sequoia came up the Potomac retrieved by a private trust fund",
+          "Sequoia will be ready for presidential use on July 4th",
+          "White House spokesman said there are no present plans for the President to use the Sequoia"
+        ],
+        "tags": [
+          "return",
+          "Washington Marina",
+          "July 4th preparation"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no time specified",
+          "voyage.end_time": "no time specified",
+          "voyage.origin": "no origin specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1983-02-02",
+        "start_date": "1983-02-02",
+        "end_date": "1983-02-02",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "gill-michael-doud",
+            "full_name": "Michael Doud Gill",
+            "title": "Republican power broker and President Eisenhower's nephew by marriage",
+            "role": "",
+            "bio": "https://www.washingtonpost.com/archive/local/2001/09/19/michael-gill-dies/44f4701a-4709-4f06-97d4-6131c37dce89/"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "1983.02.02_The_Baltimore_Sun_pg1",
+            "link": "https://drive.google.com/file/d/1UDui7EFbzNzQaVp8KcTfNO7LVS3dq0Tw/view?usp=drive_link",
+            "source": "The Baltimore Sun",
+            "date": "1983-02-02",
+            "type": "jpg",
+            "platform": "drive"
+          }
+        ],
+        "notes": [
+          "Sequoia is operated by Michael Doud Gill"
+        ],
+        "tags": [
+          "operation",
+          "management"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no time specified",
+          "voyage.end_time": "no time specified",
+          "voyage.origin": "no origin specified",
+          "voyage.destination": "no destination specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1983-05-19",
+        "start_date": "1983-05-19",
+        "end_date": "1983-05-19",
+        "start_time": "18:00",
+        "end_time": "23:00",
+        "origin": "Potomac River",
+        "destination": "Potomac River",
+        "passengers": [
+          {
+            "name": "hope-bob",
+            "full_name": "Bob Hope",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Bob_Hope"
+          },
+          {
+            "name": "ball-lucille",
+            "full_name": "Lucille Ball",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Lucille_Ball"
+          },
+          {
+            "name": "diller-phyllis",
+            "full_name": "Phyllis Diller",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Phyllis_Diller"
+          },
+          {
+            "name": "arendsee-richard-w",
+            "full_name": "Richard W. Arendsee",
+            "title": "Founder of the Sequoia Trust Fund",
+            "role": "",
+            "bio": "https://www.nytimes.com/1983/04/01/us/fit-for-a-president-the-newly-refurbished-yacht-sequoia-only-languishes.html"
+          },
+          {
+            "name": "shafer-raymond-p",
+            "full_name": "Raymond P. Shafer",
+            "title": "Former Governor of Pennsylvania",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Raymond_P._Shafer"
+          },
+          {
+            "name": "burns-george",
+            "full_name": "George Burns",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "carter-lynda",
+            "full_name": "Lynda Carter",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "jillian-ann",
+            "full_name": "Ann Jillian",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "lynn-loretta",
+            "full_name": "Loretta Lynn",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "mandrell-barbara",
+            "full_name": "Barbara Mandrell",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "scott-george-c",
+            "full_name": "George C. Scott",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "kermit-the-frog",
+            "full_name": "Kermit the Frog",
+            "title": "",
+            "role": "",
+            "bio": ""
+          }
+        ],
+        "media": [
+          {
+            "media_name": "Photo from trumpy exhibit (0629)",
+            "link": "https://www.dropbox.com/s/en026hmw2qvvuji/%2ADSC_0629%20copy.JPG?dl=0",
+            "source": "Trumpy Exhibit",
+            "date": "",
+            "type": "JPG",
+            "platform": "drop"
+          },
+          {
+            "media_name": "alt photo from trumpy exhibit (0714)",
+            "link": "https://www.dropbox.com/s/616imnvlp87bjgi/%2ADSC_0714%20copy.JPG?dl=0",
+            "source": "Trumpy Exhibit",
+            "date": "",
+            "type": "JPG",
+            "platform": "drop"
+          },
+          {
+            "media_name": "Evening Sun Clipping",
+            "link": "https://www.dropbox.com/s/kfe2ajfqaqr9qgw/The_Evening_Sun_Mon__May_30__1983_.jpg?dl=0",
+            "source": "Evening Sun",
+            "date": "1983-05-30",
+            "type": "jpg",
+            "platform": "drop"
+          },
+          {
+            "media_name": "The Daily Item Clipping",
+            "link": "https://www.nytimes.com/1983/04/01/us/fit-for-a-president-the-newly-refurbished-yacht-sequoia-only-languishes.html",
+            "source": "The Daily Item",
+            "date": "1983-04-01",
+            "type": "html",
+            "platform": "other"
+          },
+          {
+            "media_name": "Hanford Sentinel clipping (UPI)",
+            "link": "https://www.dropbox.com/s/ox1pcj1hnepjixm/The_Hanford_Sentinel_Mon__May_23__1983_.jpg?dl=0",
+            "source": "Hanford Sentinel",
+            "date": "1983-05-23",
+            "type": "jpg",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Bob Hope's 80th birthday party",
+          "NBC covered the event and aired it on May 23rd",
+          "NBC special"
+        ],
+        "tags": [
+          "birthday party",
+          "Bob Hope",
+          "NBC coverage",
+          "celebrities"
+        ],
+        "missing_info": {
+          "passenger.title": "multiple passengers have no title specified",
+          "passenger.bio": "multiple passengers have no bio URL",
+          "media.date": "some media files have no extractable date"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1984-04-01",
+        "start_date": "1984-04-01",
+        "end_date": "1984-09-01",
+        "start_time": "",
+        "end_time": "",
+        "origin": "St. Augustine, Florida",
+        "destination": "Washington DC",
+        "passengers": [
+          {
+            "name": "ford-susan",
+            "full_name": "Susan Ford",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Susan_Ford_Bales"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "1984-06-03 - 1984-09-07 (logbook)",
+            "link": "https://www.dropbox.com/home/Sequoia%20-%20History%20Project/1.%20Giles%20Kelly's%20Log%20book/Giles%20Kelly%20Logbook%20scans/Giles%20Kelly%20Logbook%20Organized%20by%20dates?preview=1984-06-03+-+1984-09-07+%28logbook%29.pdf",
+            "source": "Giles Kelly Logbook",
+            "date": "1984",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "An American Odyssey tour",
+          "40 ports in 16 states",
+          "Susan Ford cut the ribbon",
+          "Visited Houston, St. Louis, Chicago, Peoria, Detroit, Cleveland, Oswego, Albany, West Point, New York City, and New Jersey"
+        ],
+        "tags": [
+          "tour",
+          "American Odyssey",
+          "40 ports",
+          "16 states"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no time specified",
+          "voyage.end_time": "no time specified",
+          "passenger.title": "Susan Ford has no title specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1985-05-15",
+        "start_date": "1985-05-15",
+        "end_date": "1985-05-15",
+        "start_time": "",
+        "end_time": "",
+        "origin": "Potomac River",
+        "destination": "Potomac River",
+        "passengers": [
+          {
+            "name": "casey-william-j",
+            "full_name": "William J. Casey",
+            "title": "Director CIA",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_J._Casey"
+          },
+          {
+            "name": "adelman-kenneth",
+            "full_name": "Kenneth Adelman",
+            "title": "Arms Control and Disarmament Agency Director",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Kenneth_Adelman"
+          },
+          {
+            "name": "lehrman-lewis-e",
+            "full_name": "Lewis E. \"Lew\" Lehrman",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Lewis_Lehrman"
+          },
+          {
+            "name": "haig-alexander",
+            "full_name": "Alexander Haig",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
+          },
+          {
+            "name": "bryant-anita",
+            "full_name": "Anita Bryant",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Anita_Bryant"
+          },
+          {
+            "name": "heckler-margaret",
+            "full_name": "Margaret Heckler",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Margaret_Heckler"
+          },
+          {
+            "name": "block-john",
+            "full_name": "John Block",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/John_Rusling_Block"
+          },
+          {
+            "name": "lucas-william",
+            "full_name": "William Lucas",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_R._Lucas"
+          },
+          {
+            "name": "abramoff-jack",
+            "full_name": "Jack Abramoff",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Jack_Abramoff"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "WashPost Article",
+            "link": "https://www.washingtonpost.com/archive/lifestyle/1985/05/16/nautical-night-out/283f1ed4-ede6-4b7f-9321-e41964455d35/",
+            "source": "Washington Post",
+            "date": "1985-05-16",
+            "type": "html",
+            "platform": "other"
+          },
+          {
+            "media_name": "NYT Article",
+            "link": "https://www.nytimes.com/1985/05/15/us/briefing-here-comes-william-lucas.html",
+            "source": "New York Times",
+            "date": "1985-05-15",
+            "type": "html",
+            "platform": "other"
+          },
+          {
+            "media_name": "William Lucas and Lew Lehrman on Sequoia (1985-05-15)",
+            "link": "https://www.dropbox.com/s/dh4antshn95v5kl/William%20Lucas%20and%20Lew%20Lehrman%20on%20Sequoia%20%281985-05-15%29.jpeg?dl=0",
+            "source": "AP Photo",
+            "date": "1985-05-15",
+            "type": "jpeg",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Dinner for Citizens for America (CFA)",
+          "Standing on the foredeck, Lehrman watched the sun set over Haines Point",
+          "According to historical weather data, the sun set at 20:13 that day",
+          "Evening/Dinner"
+        ],
+        "tags": [
+          "Citizens for America",
+          "dinner",
+          "political gathering"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no specific time, only Evening/Dinner mentioned",
+          "voyage.end_time": "no end time specified",
+          "passenger.title": "multiple passengers have no title specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1986-07-04",
+        "start_date": "1986-07-04",
+        "end_date": "1986-07-04",
+        "start_time": "09:00",
+        "end_time": "",
+        "origin": "New York Harbor, NY",
+        "destination": "New York Harbor, NY",
+        "passengers": [
+          {
+            "name": "chafee-john",
+            "full_name": "John Chafee",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "nunn-sam",
+            "full_name": "Sam Nunn",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "levin-carl",
+            "full_name": "Carl Levin",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "levin-mrs",
+            "full_name": "Mrs. Levin",
+            "title": "",
+            "role": "",
+            "bio": ""
+          }
+        ],
+        "media": [
+          {
+            "media_name": "NYT Article",
+            "link": "https://www.nytimes.com/1986/07/05/nyregion/liberty-weekend-the-ships-battling-boatlock-in-harbor.html",
+            "source": "New York Times",
+            "date": "1986-07-05",
+            "type": "html",
+            "platform": "other"
+          },
+          {
+            "media_name": "1. Sequoia - Statue Of Liberty 7:4:1986",
+            "link": "https://www.dropbox.com/s/6h9fzprkh7jc893/1.%20Sequoia%20-%20Statue%20Of%20Liberty%207%3A4%3A1986.jpg?dl=0",
+            "source": "DOD Photo",
+            "date": "1986-07-04",
+            "type": "jpg",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "International Naval Review celebrating the centennial of the Statue of Liberty",
+          "29 total passengers visible from photo",
+          "Sequoia was among several boats breaking the rules–sailing in and out of the parade route",
+          "Sequoia was given two warnings",
+          "If the Sequoia does not leave the security area immediately, it will be brought in and will be terminated"
+        ],
+        "tags": [
+          "Statue of Liberty",
+          "Naval Review",
+          "centennial",
+          "rule violation"
+        ],
+        "missing_info": {
+          "voyage.end_time": "no end time specified",
+          "passenger.title": "all passengers have no title specified",
+          "passenger.bio": "all passengers have no bio URL"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1986-09-08",
+        "start_date": "1986-09-08",
+        "end_date": "1986-09-08",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "pepper-claude",
+            "full_name": "Claude Pepper",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Claude_Pepper"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Claude Pepper with friends celebrating his 86th Birthday on the former Presidential Yacht, the USS Sequoia"
+        ],
+        "tags": [
+          "birthday",
+          "86th birthday",
+          "Claude Pepper"
+        ],
+        "missing_info": {
+          "voyage.start_time": "no time specified",
+          "voyage.end_time": "no time specified",
+          "voyage.origin": "no origin specified",
+          "voyage.destination": "no destination specified",
+          "passenger.title": "Claude Pepper has no title specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1987-00-00",
+        "start_date": "1987-00-00",
+        "end_date": "1987-00-00",
+        "start_time": "19:00",
+        "end_time": "22:10",
+        "origin": "Potomac",
+        "destination": "Potomac",
+        "passengers": [
+          {
+            "name": "wright-jim",
+            "full_name": "Speaker Wright",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Jim_Wright"
+          },
+          {
+            "name": "brooks-jack",
+            "full_name": "Jack Brooks",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "brooks-charlotte",
+            "full_name": "Charlotte Brooks",
+            "title": "",
+            "role": "",
+            "bio": ""
+          }
+        ],
+        "media": [],
+        "notes": [
+          "48 other guests"
+        ],
+        "tags": [
+          "congressional",
+          "speaker"
+        ],
+        "missing_info": {
+          "voyage.start_date": "exact date unknown",
+          "voyage.end_date": "exact date unknown",
+          "passenger.title": "All passengers have no titles specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1987-04-09",
+        "start_date": "1987-04-09",
+        "end_date": "1987-04-09",
+        "start_time": "18:45",
+        "end_time": "21:15",
+        "origin": "U.S. Park Service Pier",
+        "destination": "U.S. Park Service Pier",
+        "passengers": [
+          {
+            "name": "schultz-george",
+            "full_name": "George Schultz",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/George_Shultz"
+          },
+          {
+            "name": "howe-geoffrey",
+            "full_name": "Geoffrey Howe",
+            "title": "British Foreign Secretary and President EEC Council of Ministers",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Geoffrey_Howe"
+          },
+          {
+            "name": "freeman-chas",
+            "full_name": "Chas W. Freeman, Jr.",
+            "title": "Principal Deputy Assistant Secretary of State for African Affairs",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Chas_W._Freeman,_Jr."
+          },
+          {
+            "name": "roosevelt-selwa",
+            "full_name": "Selwa \"Lucky\" Roosevelt",
+            "title": "Chief of Protocol",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Selwa_Roosevelt"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "2 police Escort boats",
+          "10-other guests; 5-crew; 4-caterers; 5-security"
+        ],
+        "tags": [
+          "diplomatic",
+          "foreign-relations",
+          "british",
+          "state-department"
+        ],
+        "missing_info": {
+          "passenger.title": "George Schultz has no title specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1987-05-13",
+        "start_date": "1987-05-13",
+        "end_date": "1987-05-13",
+        "start_time": "16:35",
+        "end_time": "21:31",
+        "origin": "U.S. Park Service Pier",
+        "destination": "U.S. Park Service Pier",
+        "passengers": [
+          {
+            "name": "cerezo-vinicio",
+            "full_name": "Vinicio Cerezo",
+            "title": "President of Guatemala",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Vinicio_Cerezo"
+          },
+          {
+            "name": "meese-edwin",
+            "full_name": "Edwin Meese III",
+            "title": "Attorney General",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Edwin_Meese"
+          },
+          {
+            "name": "meese-ursula",
+            "full_name": "Ursula Meese",
+            "title": "",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "weinberger-caspar",
+            "full_name": "Caspar Weinberger",
+            "title": "Secretary of Defense",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Caspar_Weinberger"
+          },
+          {
+            "name": "weinberger-rebecca",
+            "full_name": "Rebecca \"Jane\" Weinberger",
+            "title": "",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Jane_Weinberger"
+          },
+          {
+            "name": "walker-william",
+            "full_name": "William Graham Walker",
+            "title": "Deputy Assistant Secretary of State in the Bureau of Inter-American Affairs",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_Walker_(diplomat)"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Dinner Cruise",
+          "Police escort",
+          "40 Guests, 5-Security personnel, 11-caterers, 4 Crew"
+        ],
+        "tags": [
+          "diplomatic",
+          "guatemala",
+          "dinner",
+          "inter-american"
+        ],
+        "missing_info": {
+          "passenger.title": "Ursula Meese and Rebecca Weinberger have no titles specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1987-05-19",
+        "start_date": "1987-05-19",
+        "end_date": "1987-05-19",
+        "start_time": "18:45",
+        "end_time": "21:40",
+        "origin": "U.S. Park Service Pier",
+        "destination": "U.S. Park Service Pier",
+        "passengers": [
+          {
+            "name": "bush-george",
+            "full_name": "George Bush",
+            "title": "Vice President",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/George_H._W._Bush"
+          },
+          {
+            "name": "shangkun-yang",
+            "full_name": "Yang Shangkun",
+            "title": "Vice Chairman of the Chinese Central Military Commission",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Yang_Shangkun"
+          },
+          {
+            "name": "paal-douglas",
+            "full_name": "Douglas H. Paal",
+            "title": "Reagan National Security Council - Director for Asian Affairs",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Douglas_H._Paal"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Sequoia showed the National Flag of the People's Republic of China during the cruise",
+          "24 other guests including Chinese diplomats",
+          "4 State Department personnel, 10 Security personnel, 8 Stewards, 4 Crew",
+          "Yang went on to describe his revolutionary history in intimate detail over the dinner table",
+          "Photo 1987-05-20 Bush-Yang aboard Sequoia"
+        ],
+        "tags": [
+          "diplomatic",
+          "china",
+          "vice-president",
+          "military",
+          "foreign-relations"
+        ],
+        "missing_info": {}
+      },
+      {
+        "voyage": "reagan-ronald-1987-05-21",
+        "start_date": "1987-05-21",
+        "end_date": "1987-05-21",
+        "start_time": "12:30",
+        "end_time": "13:53",
+        "origin": "U.S. Park Service Pier",
+        "destination": "U.S. Park Service Pier",
+        "passengers": [
+          {
+            "name": "baker-james",
+            "full_name": "James Addison Baker III",
+            "title": "Secretary of Treasury",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/James_Baker"
+          },
+          {
+            "name": "brock-william",
+            "full_name": "William \"Bill\" Emerson Brock III",
+            "title": "Secretary of Labor",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Bill_Brock"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Luncheon Cruise catered by Ridgeways",
+          "Japanese Delegation",
+          "12 Guests, 5-Security personnel, 3-caterers, 4 Crew, 1-Secret Service officer"
+        ],
+        "tags": [
+          "diplomatic",
+          "japan",
+          "luncheon",
+          "treasury",
+          "labor"
+        ],
+        "missing_info": {}
+      },
+      {
+        "voyage": "reagan-ronald-1987-05-23",
+        "start_date": "1987-05-23",
+        "end_date": "1987-05-23",
+        "start_time": "21:00",
+        "end_time": "23:45",
+        "origin": "U.S. Park Service Pier",
+        "destination": "U.S. Park Service Pier",
+        "passengers": [
+          {
+            "name": "yeutter-clayton",
+            "full_name": "Clayton Keith Yeutter",
+            "title": "USTR",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Clayton_Yeutter"
+          },
+          {
+            "name": "yeutter-jeanne",
+            "full_name": "Jeanne Yeutter",
+            "title": "",
+            "role": "",
+            "bio": ""
+          }
+        ],
+        "media": [],
+        "notes": [
+          "Desert Cruise on 10th Anniversary US Government's sale of Sequoia",
+          "6-Stewards, 3-Crew"
+        ],
+        "tags": [
+          "anniversary",
+          "ustr",
+          "desert-cruise"
+        ],
+        "missing_info": {
+          "passenger.title": "Jeanne Yeutter has no title specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1988-03-04",
+        "start_date": "1988-03-04",
+        "end_date": "1988-03-04",
+        "start_time": "12:30",
+        "end_time": "",
+        "origin": "N/A",
+        "destination": "N/A",
+        "passengers": [
+          {
+            "name": "verity-william",
+            "full_name": "William Verity Jr.",
+            "title": "Secretary of Commerce",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/William_Verity_Jr."
+          }
+        ],
+        "media": [
+          {
+            "media_name": "1988.03.04 commerce cruise",
+            "link": "https://www.dropbox.com/s/gy590jfqpsgmlmz/1988.03.04%20commerce%20cruise.pdf?dl=0",
+            "source": "Correspondence Between William H. Webster and William Verity",
+            "date": "1988-03-04",
+            "type": "pdf",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Lunch to celebrate Commerce Department's 75th anniversary",
+          "Various Cabinet members and political supporters from the private sector"
+        ],
+        "tags": [
+          "commerce",
+          "anniversary",
+          "lunch",
+          "cabinet"
+        ],
+        "missing_info": {
+          "voyage.end_time": "end time not specified"
+        }
+      },
+      {
+        "voyage": "reagan-ronald-1988-03-30",
+        "start_date": "1988-03-30",
+        "end_date": "1988-10-30",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [],
+        "media": [],
+        "notes": [
+          "Celebrate America! 1988 Homecoming Tour",
+          "Tour included 30 cities from Norfolk to Washington DC"
+        ],
+        "tags": [
+          "tour",
+          "homecoming",
+          "celebrate america",
+          "multi-city"
+        ],
+        "missing_info": {
+          "voyage.start_time": "start time not specified",
+          "voyage.end_time": "end time not specified",
+          "voyage.origin": "origin not specified",
+          "voyage.destination": "destination not specified",
+          "passengers": "no passengers listed"
+        }
+      },
+      {
+        "voyage": "bush-george-w-2002-07-18",
+        "start_date": "2002-07-18",
+        "end_date": "2002-07-18",
+        "start_time": "",
+        "end_time": "",
+        "origin": "",
+        "destination": "",
+        "passengers": [
+          {
+            "name": "powell-colin",
+            "full_name": "Colin Powell",
+            "title": "Secretary of State",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Colin_Powell"
+          }
+        ],
+        "media": [],
+        "notes": [
+          "White House Fellows reception",
+          "Secretary Colin Powell, Department of State Reception on Presidential Yacht Sequoia"
+        ],
+        "tags": [
+          "state department",
+          "white house fellows",
+          "reception"
+        ],
+        "missing_info": {
+          "voyage.start_time": "start time not specified",
+          "voyage.end_time": "end time not specified",
+          "voyage.origin": "origin not specified",
+          "voyage.destination": "destination not specified"
+        }
+      },
+      {
+        "voyage": "obama-barack-2011-06-07",
+        "start_date": "2011-06-07",
+        "end_date": "2011-06-07",
+        "start_time": "12:00",
+        "end_time": "",
+        "origin": "gangplank marina",
+        "destination": "Potomac River",
+        "passengers": [
+          {
+            "name": "margrethe-queen",
+            "full_name": "Queen Margrethe II of Denmark",
+            "title": "Queen of Denmark",
+            "role": "",
+            "bio": "https://en.wikipedia.org/wiki/Margrethe_II_of_Denmark"
+          },
+          {
+            "name": "henrik-prince",
+            "full_name": "H.R.H. Prince Henrik",
+            "title": "Prince of Denmark",
+            "role": "",
+            "bio": ""
+          },
+          {
+            "name": "engel-ditlev",
+            "full_name": "Ditlev Engel",
+            "title": "CEO of Vestas",
+            "role": "",
+            "bio": "https://da.wikipedia.org/wiki/Ditlev_Engel"
+          }
+        ],
+        "media": [
+          {
+            "media_name": "Danish Queen aboard Sequoia 6-7-2011",
+            "link": "https://www.dropbox.com/s/4nqupokmkjkaa2s/Danish%20Queen%20aboard%20Sequoia%206-7-2011%20.jpg?dl=0",
+            "source": "Photo of Danish Queen on Sequoia's port side",
+            "date": "2011-06-07",
+            "type": "jpg",
+            "platform": "drop"
+          },
+          {
+            "media_name": "2011-06-07_Queen_Margrethe_Reuters_photo",
+            "link": "https://www.dropbox.com/s/toqjgw8lz0ng2p1/2011-06-07_Queen_Margrethe_Reuters_photo.webp?dl=0",
+            "source": "Photo of Margrethe and Ditlev onboard",
+            "date": "2011-06-07",
+            "type": "webp",
+            "platform": "drop"
+          }
+        ],
+        "notes": [
+          "Departed from the gangplank marina for a lunchtime cruise"
+        ],
+        "tags": [
+          "danish royalty",
+          "state visit",
+          "lunch cruise",
+          "potomac river"
+        ],
+        "missing_info": {
+          "voyage.end_time": "end time not specified"
         }
       }
     ]
