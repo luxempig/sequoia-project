@@ -80,6 +80,39 @@ class IngestStatus:
 class PresignRequest(BaseModel):
     s3_url: str
 
+@router.get("/debug-paths")
+def debug_paths():
+    """Debug endpoint to check file paths and existence."""
+    current_dir = os.path.dirname(__file__)
+    output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+
+    # Also check for the file in a few other likely locations
+    alt_paths = [
+        os.path.join(current_dir, "..", "..", "output.json"),
+        os.path.join(current_dir, "..", "..", "voyage_ingest", "output.json"),
+        "/home/ec2-user/sequoia-project/backend/voyage_ingest/timeline_translate/voyage_translate/output.json",
+        "/home/ec2-user/sequoia-project/output.json"
+    ]
+
+    result = {
+        "current_dir": current_dir,
+        "expected_output_path": output_path,
+        "output_exists": os.path.exists(output_path),
+        "alternative_paths": {}
+    }
+
+    for path in alt_paths:
+        result["alternative_paths"][path] = os.path.exists(path)
+
+    # List contents of expected directory
+    expected_dir = os.path.dirname(output_path)
+    if os.path.exists(expected_dir):
+        result["expected_dir_contents"] = os.listdir(expected_dir)
+    else:
+        result["expected_dir_contents"] = "Directory does not exist"
+
+    return result
+
 @router.get("/truman.json")
 def get_truman_data():
     """Serve the output.json data for the curator interface."""
@@ -87,11 +120,17 @@ def get_truman_data():
     output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
     try:
+        logger.info(f"Attempting to load output.json from: {output_path}")
+        logger.info(f"Current working directory: {os.getcwd()}")
+        logger.info(f"File exists: {os.path.exists(output_path)}")
+
         if os.path.exists(output_path):
             with open(output_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            logger.info(f"Successfully loaded output.json with {len(data)} presidents")
             return data
         else:
+            logger.warning(f"output.json not found at {output_path}")
             # Return empty structure if file doesn't exist
             return {
                 "truman-harry": {
