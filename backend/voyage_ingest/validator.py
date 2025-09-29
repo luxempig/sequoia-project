@@ -189,16 +189,16 @@ def validate_bundle(bundle: Dict) -> List[str]:
     if v.get("voyage_type"):
         _enum(v, "voyage_type", VALID_VOYAGE_TYPES, "voyage", errs)
 
-    # voyage_slug sanity (prefix check)
-    vslug = (v.get("voyage_slug") or "").strip()
-    sd = (v.get("start_date") or "").strip()
-    pres_full = (v.get("president") or "").strip().lower()
-    full_to_slug = _read_pres_fullname_to_slug()
-    expected_pres_slug = (v.get("president_slug") or "").strip().lower() or full_to_slug.get(pres_full, slugify(pres_full) if pres_full else "")
-    if sd and expected_pres_slug:
-        expected_prefix = f"{sd}-{expected_pres_slug}-"
-        if not vslug.startswith(expected_prefix):
-            errs.append(f"[voyage] voyage_slug should start with '{expected_prefix}' (got '{vslug}')")
+    # voyage_slug sanity (prefix check) - DISABLED to support flexible slug formats
+    # vslug = (v.get("voyage_slug") or "").strip()
+    # sd = (v.get("start_date") or "").strip()
+    # pres_full = (v.get("president") or "").strip().lower()
+    # full_to_slug = _read_pres_fullname_to_slug()
+    # expected_pres_slug = (v.get("president_slug") or "").strip().lower() or full_to_slug.get(pres_full, slugify(pres_full) if pres_full else "")
+    # if sd and expected_pres_slug:
+    #     expected_prefix = f"{sd}-{expected_pres_slug}-"
+    #     if not vslug.startswith(expected_prefix):
+    #         errs.append(f"[voyage] voyage_slug should start with '{expected_prefix}' (got '{vslug}')")
 
     # Passengers
     for i, p in enumerate(ppl, start=1):
