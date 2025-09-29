@@ -653,8 +653,8 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     """Enhanced ingest function with detailed progress tracking."""
     status_tracker.update_progress("Validating paths and dependencies...", 50)
 
-    script_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "main.py")
-    output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
+    script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
+    output_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
 
     if not os.path.exists(script_path):
         error_msg = f"Ingestion script not found at {script_path}"
@@ -693,12 +693,13 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     status_tracker.status = "running"
 
     try:
-        # Run the ingestion script with output.json file
+        # Run the ingestion script as a module from the backend directory
+        backend_dir = os.path.join(os.path.dirname(__file__), "..", "..")
         process = subprocess.Popen([
-            'python', script_path,
+            'python3', '-m', 'voyage_ingest.main',
             '--source', 'json',
             '--file', output_path
-        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        ], cwd=backend_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
         # Real-time output processing with timeout
         output_lines = []
