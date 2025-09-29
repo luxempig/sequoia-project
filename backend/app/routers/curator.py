@@ -84,7 +84,7 @@ class PresignRequest(BaseModel):
 def debug_paths():
     """Debug endpoint to check file paths and existence."""
     current_dir = os.path.dirname(__file__)
-    output_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+    output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     # Also check for the file in a few other likely locations
     alt_paths = [
@@ -117,7 +117,7 @@ def debug_paths():
 def get_canonical_timeline_data():
     """Serve the canonical timeline data from output.json for the curator interface."""
     # Use output.json as the source of truth (fullest timeline data)
-    output_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+    output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     try:
         logger.info(f"Attempting to load output.json from: {output_path}")
@@ -580,7 +580,7 @@ async def save_president_data(request: Request):
 
         status_tracker.update_progress("Creating backup of existing data...", 20)
         # Save to the output.json file (source of truth)
-        output_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+        output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
         # Create backup of existing output file
         if os.path.exists(output_path):
@@ -660,7 +660,7 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     status_tracker.update_progress("Validating paths and dependencies...", 50)
 
     script_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "main.py")
-    output_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+    output_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     if not os.path.exists(script_path):
         error_msg = f"Ingestion script not found at {script_path}"

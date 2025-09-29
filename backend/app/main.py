@@ -66,7 +66,7 @@ def get_canonical_timeline_data():
     import os
     import json
 
-    json_path = os.path.join(os.path.dirname(__file__), "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
+    json_path = os.path.join(os.path.dirname(__file__), "..", "canonical_voyages.json")
 
     try:
         if os.path.exists(json_path):
