@@ -200,7 +200,7 @@ term_end: 1945-04-12`;
               For Curators
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              USS Sequoia Master Document - Live MASTER_DOC.md content
+              Edit voyage data and trigger automatic ingestion to the database
             </p>
             {error ? (
               <p className="mt-1 text-xs text-red-500">
@@ -243,6 +243,32 @@ term_end: 1945-04-12`;
             >
               {saving ? '💾 Saving...' : hasUnsavedChanges ? '💾 Save Changes' : '✅ Saved'}
             </button>
+          </div>
+        </div>
+
+        {/* Guidance Panel */}
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">📖 How This Works</h3>
+          <div className="text-sm text-blue-800 space-y-2">
+            <p>
+              <strong>1. Edit the JSON data</strong> - Click "Edit Mode" to modify voyage information, media links, and passenger details
+            </p>
+            <p>
+              <strong>2. Save changes</strong> - Click "Save Changes" to write to canonical_voyages.json
+            </p>
+            <p>
+              <strong>3. Automatic ingest</strong> - After saving, the system automatically:
+              <ul className="ml-6 mt-1 list-disc">
+                <li>Validates all voyage data and dates</li>
+                <li>Downloads media from Dropbox/Google Drive to S3</li>
+                <li>Generates thumbnails for images and PDFs</li>
+                <li>Updates the database with all changes</li>
+                <li>Reflects changes on the public timeline immediately</li>
+              </ul>
+            </p>
+            <p className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
+              💡 <strong>Tip:</strong> Watch the progress bar at the top of the screen during ingestion. The process usually takes 1-3 minutes depending on the number of new media items.
+            </p>
           </div>
         </div>
 

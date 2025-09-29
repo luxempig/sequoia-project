@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import IngestProgressBar from "./IngestProgressBar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,6 +33,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Site-wide Ingest Progress Bar */}
+      <IngestProgressBar />
+
       {/* Navigation Header */}
       <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
