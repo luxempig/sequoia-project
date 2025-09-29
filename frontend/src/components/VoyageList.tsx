@@ -82,7 +82,7 @@ export default function VoyageList() {
 
         // Fallback to comma-separated parsing
         v.tags.split(',').forEach(tag => {
-          const trimmed = tag.trim().replace(/^\[|\]$/g, '');
+          const trimmed = tag.trim().replace(/^\[|\]$/g, '').replace(/^["']|["']$/g, '');
           if (trimmed) tagSet.add(trimmed);
         });
       }
@@ -157,7 +157,7 @@ export default function VoyageList() {
         }
       } catch {
         // Fallback to comma-separated parsing
-        voyageTags = v.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, ''));
+        voyageTags = v.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, '').replace(/^["']|["']$/g, ''));
       }
 
       return Array.from(selectedTags).some(tag => voyageTags.includes(tag));

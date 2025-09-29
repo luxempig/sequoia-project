@@ -85,10 +85,26 @@ def get_role_statistics():
             FROM sequoia.voyage_passengers
         """)
         totals = cur.fetchone()
-        
+
+        # Get unique titles count
+        cur.execute("""
+            SELECT COUNT(DISTINCT COALESCE(role_title, title)) as unique_titles
+            FROM sequoia.people
+            WHERE COALESCE(role_title, title) IS NOT NULL
+              AND COALESCE(role_title, title) != ''
+        """)
+        titles = cur.fetchone()
+
+        # Calculate average voyages per passenger
+        avg_voyages = 0
+        if totals["total_people"] > 0:
+            avg_voyages = round(totals["total_passenger_records"] / totals["total_people"])
+
         return {
             "total_people": totals["total_people"],
             "total_passenger_records": totals["total_passenger_records"],
+            "unique_titles": titles["unique_titles"],
+            "avg_voyages_per_passenger": avg_voyages,
             "by_role": [dict(row) for row in roles]
         }
 

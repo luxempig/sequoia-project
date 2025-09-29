@@ -1,20 +1,71 @@
-# Sequoia Project - Unified Repository
+# USS Sequoia Presidential Yacht Archive
 
-This is the unified repository for the Sequoia project, combining both frontend and backend codebases with automated deployment to EC2.
+A comprehensive digital archive of the USS Sequoia Presidential Yacht, documenting its rich history from 1933 to the present day. This project preserves and presents historical voyages, passengers, media, and documents from this iconic vessel that served as the presidential yacht for Herbert Hoover through Jimmy Carter.
+
+## About the USS Sequoia
+
+The USS Sequoia is a historic presidential yacht that served eight U.S. presidents and hosted countless dignitaries, world leaders, and distinguished guests. This archive aims to:
+
+- **Preserve History**: Document all known voyages with passengers, dates, locations, and historical context
+- **Curate Media**: Organize photos, documents, logs, and other historical materials
+- **Enable Research**: Provide searchable access to voyage records and passenger information
+- **Honor Legacy**: Celebrate the yacht's role in American presidential history
+
+## Project Overview
+
+This is a full-stack web application combining modern frontend technologies with a robust backend system for data management and automated content ingestion.
+
+## Features
+
+### Frontend (React/TypeScript)
+- **Voyage Timeline**: Interactive timeline view of all historical voyages
+- **Passenger Directory**: Searchable database of all passengers with biographical information
+- **Media Gallery**: High-quality images, documents, and historical materials
+- **Tag-based Filtering**: Filter voyages by themes, events, and categories
+- **President Grouping**: Voyages organized by presidential administrations
+- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
+
+### Backend (Python/FastAPI)
+- **Automated Ingest**: Process canonical JSON data into structured database
+- **Media Pipeline**: Download, process, and generate thumbnails from Drive/Dropbox
+- **S3 Integration**: Manage media storage in AWS S3 (public/private buckets)
+- **PostgreSQL Database**: Robust relational data model for voyages, passengers, media
+- **RESTful API**: Clean API endpoints for all data access
+- **Curator Interface**: Web-based editor for managing voyage data
+
+### Deployment & Infrastructure
+- **Auto-deploy**: GitHub Actions workflow deploys on push to main
+- **EC2 Hosting**: Production environment on AWS EC2
+- **Nginx**: Reverse proxy and static file serving
+- **PM2**: Process management for backend services
 
 ## Repository Structure
 
 ```
 sequoia-project/
-├── frontend/                 # React/TypeScript frontend
-├── backend/                  # Python FastAPI backend
-├── .github/workflows/        # GitHub Actions workflows
-├── deploy-unified.sh         # Unified deployment script
-├── setup-ec2.sh             # EC2 environment setup script
-├── ecosystem.config.js       # PM2 configuration
-├── nginx-sequoia.conf        # Nginx configuration
-├── webhook-server.js         # GitHub webhook server
-└── package.json             # Root package.json for monorepo management
+├── frontend/                     # React/TypeScript frontend
+│   ├── src/
+│   │   ├── components/          # React components (Timeline, Voyages, People, etc.)
+│   │   ├── api.ts               # API client
+│   │   └── types.ts             # TypeScript type definitions
+│   └── public/                  # Static assets
+├── backend/                      # Python FastAPI backend
+│   ├── app/                     # FastAPI application
+│   │   ├── routers/            # API route handlers
+│   │   └── db.py               # Database connection
+│   ├── voyage_ingest/           # Data ingestion system
+│   │   ├── main.py             # Main ingest orchestrator
+│   │   ├── validator.py        # JSON validation
+│   │   ├── drive_sync.py       # Media download/processing
+│   │   ├── db_updater.py       # Database upsert logic
+│   │   └── slugger.py          # Slug generation utilities
+│   ├── scripts/                 # Utility scripts
+│   │   ├── debug_voyage_media.py  # Debug media issues
+│   │   └── clear_s3_media.py      # S3 cleanup utility
+│   └── canonical_voyages.json   # Source of truth for all voyage data
+├── .github/workflows/           # CI/CD pipelines
+├── deploy-unified.sh            # Automated deployment script
+└── nginx-sequoia.conf           # Web server configuration
 ```
 
 ## Setup Instructions
@@ -188,9 +239,54 @@ tail -f /var/log/sequoia-deploy.log
 - Nginx configuration includes security headers and gzip compression
 - PM2 processes run with limited privileges
 
+## Data Model
+
+### Core Entities
+
+- **Presidents**: U.S. presidents and yacht owners (Hoover through Carter, plus post-presidential era)
+- **Voyages**: Individual trips with dates, locations, purposes, and tags
+- **People**: Passengers and crew with biographical information and roles
+- **Media**: Photos, documents, PDFs, and other historical materials
+- **Voyage-Passengers**: Many-to-many join with role/capacity information
+- **Voyage-Media**: Many-to-many join with captions and sort order
+
+### Data Ingestion Flow
+
+1. **Canonical JSON**: Single source of truth (`canonical_voyages.json`)
+2. **Validation**: Strict validation of dates, slugs, and required fields
+3. **Media Download**: Fetch files from Google Drive and Dropbox
+4. **S3 Upload**: Store originals (private) and thumbnails (public)
+5. **Database Upsert**: Insert or update voyages, passengers, media
+6. **Frontend API**: Serve data via RESTful endpoints
+
 ## Contributing
+
+### Development Workflow
 
 1. Create a feature branch from `main`
 2. Make your changes
 3. Test locally using `npm run dev`
-4. Push to GitHub - deployment will automatically trigger on merge to `main`
+4. Push to GitHub
+5. Create pull request
+6. On merge to `main`, auto-deploy triggers
+
+### Data Curation
+
+To add or update voyage data:
+
+1. Edit `backend/canonical_voyages.json` via curator interface or direct edit
+2. Ensure all dates follow `YYYY-MM-DD` format
+3. Add media links (Google Drive or Dropbox)
+4. Push changes - ingest runs automatically on deploy
+5. Verify on production site
+
+### Coding Standards
+
+- **Frontend**: ESLint + Prettier, TypeScript strict mode
+- **Backend**: Black formatter, type hints, docstrings
+- **Git**: Conventional commit messages
+- **Testing**: Test changes locally before pushing
+
+## Acknowledgments
+
+This project preserves the legacy of the USS Sequoia and honors all who sailed aboard her. Special thanks to historians, archivists, and contributors who have helped document this important piece of American presidential history.

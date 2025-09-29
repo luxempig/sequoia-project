@@ -66,7 +66,7 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
     }
 
     // Fallback to comma-separated parsing
-    return voyage.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, '')).filter(Boolean);
+    return voyage.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, '').replace(/^["']|["']$/g, '')).filter(Boolean);
   })();
 
   return (
