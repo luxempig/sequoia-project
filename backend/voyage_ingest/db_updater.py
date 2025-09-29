@@ -220,3 +220,18 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
         raise
     finally:
         conn.close()
+
+
+def get_all_voyage_slugs_from_db() -> List[str]:
+    """
+    Get all voyage slugs currently in the database.
+    Used for reconciliation when Sheets are disabled.
+    """
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        _schema(cur)
+        cur.execute("SELECT voyage_slug FROM voyages;")
+        return [row[0] for row in cur.fetchall() if row[0]]
+    finally:
+        conn.close()

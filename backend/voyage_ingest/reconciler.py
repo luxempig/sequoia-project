@@ -398,17 +398,29 @@ def prune_voyages_missing_from_doc_with_set(
     }
 
     spreadsheet_id = os.environ.get("SPREADSHEET_ID", "").strip()
-    if not spreadsheet_id:
-        raise RuntimeError("SPREADSHEET_ID must be set for global prune")
 
-    existing = _read_all_voyage_slugs_from_sheet(spreadsheet_id)
-    missing = sorted(existing - set(desired_voyage_slugs))
-    stats["missing_count"] = len(missing)
-    if not missing:
-        return stats
+    # If Sheets operations are disabled, only do DB/S3 pruning
+    if prune_sheets:
+        if not spreadsheet_id:
+            raise RuntimeError("SPREADSHEET_ID must be set for Sheets prune")
+        existing = _read_all_voyage_slugs_from_sheet(spreadsheet_id)
+        missing = sorted(existing - set(desired_voyage_slugs))
+        stats["missing_count"] = len(missing)
+        if not missing:
+            return stats
+    else:
+        # When Sheets disabled, only get missing voyages from DB
+        missing = []
+        if prune_db:
+            from voyage_ingest import db_updater
+            all_db_slugs = db_updater.get_all_voyage_slugs_from_db()
+            missing = sorted(set(all_db_slugs) - set(desired_voyage_slugs))
+            stats["missing_count"] = len(missing)
+        if not missing:
+            return stats
 
     # ---- Sheets prune
-    if prune_sheets:
+    if prune_sheets and spreadsheet_id:
         for vs in missing:
             if dry_run:
                 LOG.info("[DRY_RUN] Would delete Sheets rows for missing voyage: %s", vs)
