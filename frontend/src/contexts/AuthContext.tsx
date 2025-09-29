@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string): Promise<boolean> => {
     // Simple authentication - in production, this should be server-side
-    if (username === 'Mike' && password === 'Sequoia!') {
+    if (username === 'admin' && password === 'password') {
       setIsAuthenticated(true);
       localStorage.setItem('sequoia_authenticated', 'true');
       return true;
