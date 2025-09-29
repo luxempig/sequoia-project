@@ -57,16 +57,16 @@ def read_root():
     return {
         "message": "Welcome to the Sequoia API (slug schema)",
         "version": "truman-json-fix-v2025.09.14-23:06",
-        "endpoints": ["/truman.json", "/health", "/api/voyages", "/api/curator/truman.json"]
+        "endpoints": ["/canonical_timeline.json", "/health", "/api/voyages", "/api/curator/canonical_timeline.json"]
     }
 
-@app.get("/truman.json", tags=["data"])
-def get_truman_data():
-    """Serve the truman_translated.json file for the curator interface."""
+@app.get("/canonical_timeline.json", tags=["data"])
+def get_canonical_timeline_data():
+    """Serve the canonical timeline data from output.json for the curator interface."""
     import os
     import json
 
-    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "truman_translated.json")
+    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
     try:
         if os.path.exists(json_path):
@@ -91,7 +91,7 @@ def get_truman_data():
             }
     except Exception as e:
         from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Failed to load truman data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to load canonical timeline data: {str(e)}")
 
 
 @app.get("/health", tags=["health"])

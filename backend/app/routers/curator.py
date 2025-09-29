@@ -113,9 +113,9 @@ def debug_paths():
 
     return result
 
-@router.get("/truman.json")
-def get_truman_data():
-    """Serve the output.json data for the curator interface."""
+@router.get("/canonical_timeline.json")
+def get_canonical_timeline_data():
+    """Serve the canonical timeline data from output.json for the curator interface."""
     # Use output.json as the source of truth (fullest timeline data)
     output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
