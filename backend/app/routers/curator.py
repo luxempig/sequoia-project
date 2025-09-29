@@ -82,13 +82,13 @@ class PresignRequest(BaseModel):
 
 @router.get("/truman.json")
 def get_truman_data():
-    """Serve the canonical voyage data for the curator interface."""
-    # Use canonical voyages file as the source of truth
-    canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+    """Serve the output.json data for the curator interface."""
+    # Use output.json as the source of truth (fullest timeline data)
+    output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
     try:
-        if os.path.exists(canonical_path):
-            with open(canonical_path, 'r', encoding='utf-8') as f:
+        if os.path.exists(output_path):
+            with open(output_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             return data
         else:
@@ -102,7 +102,9 @@ def get_truman_data():
                 }
             }
     except Exception as e:
-        logger.error(f"Failed to load canonical voyage data: {e}")
+        logger.error(f"Failed to load output.json voyage data: {e}")
+        logger.error(f"Attempted path: {output_path}")
+        logger.error(f"File exists: {os.path.exists(output_path)}")
         raise HTTPException(status_code=500, detail=f"Failed to load voyage data: {str(e)}")
 
 @router.get("/master-doc")
@@ -538,26 +540,26 @@ async def save_president_data(request: Request):
         status_tracker.add_output_line(f"Found {total_voyages} total voyages to process")
 
         status_tracker.update_progress("Creating backup of existing data...", 20)
-        # Save to the canonical voyages file (source of truth)
-        canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+        # Save to the output.json file (source of truth)
+        output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
-        # Create backup of existing canonical file
-        if os.path.exists(canonical_path):
-            backup_path = f"{canonical_path}.backup.{int(time.time())}"
-            with open(canonical_path, 'r', encoding='utf-8') as src:
+        # Create backup of existing output file
+        if os.path.exists(output_path):
+            backup_path = f"{output_path}.backup.{int(time.time())}"
+            with open(output_path, 'r', encoding='utf-8') as src:
                 with open(backup_path, 'w', encoding='utf-8') as dst:
                     dst.write(src.read())
             logger.info(f"Created backup at {backup_path}")
             status_tracker.add_output_line(f"Backup created: {os.path.basename(backup_path)}")
 
-        status_tracker.update_progress("Writing canonical data file...", 30)
-        # Write updated data to canonical file
-        with open(canonical_path, 'w', encoding='utf-8') as f:
+        status_tracker.update_progress("Writing output.json data file...", 30)
+        # Write updated data to output.json file
+        with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-        file_size = os.path.getsize(canonical_path)
-        logger.info("Canonical voyage data saved successfully")
-        status_tracker.add_output_line(f"Canonical file saved ({file_size} bytes)")
+        file_size = os.path.getsize(output_path)
+        logger.info("Output.json voyage data saved successfully")
+        status_tracker.add_output_line(f"Output.json file saved ({file_size} bytes)")
         status_tracker.update_progress("Starting automatic ingest...", 40)
 
         # Automatically trigger ingest after successful save
@@ -612,7 +614,7 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     status_tracker.update_progress("Validating paths and dependencies...", 50)
 
     script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
-    canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+    output_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "timeline_translate", "voyage_translate", "output.json")
 
     if not os.path.exists(script_path):
         error_msg = f"Ingestion script not found at {script_path}"
@@ -623,27 +625,27 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
             "error": error_msg
         }
 
-    if not os.path.exists(canonical_path):
-        error_msg = f"Canonical voyages file not found at {canonical_path}"
+    if not os.path.exists(output_path):
+        error_msg = f"Output.json file not found at {output_path}"
         status_tracker.add_output_line(f"ERROR: {error_msg}")
         return {
             "status": "error",
-            "message": "Canonical voyages file not found",
+            "message": "Output.json file not found",
             "error": error_msg
         }
 
-    # Validate canonical file is readable JSON
+    # Validate output.json file is readable JSON
     try:
-        with open(canonical_path, 'r') as f:
-            canonical_data = json.load(f)
-        voyage_count = sum(len(p.get("voyages", [])) for p in canonical_data.values() if isinstance(p, dict))
-        status_tracker.add_output_line(f"Canonical file validated: {voyage_count} voyages found")
+        with open(output_path, 'r') as f:
+            output_data = json.load(f)
+        voyage_count = sum(len(p.get("voyages", [])) for p in output_data.values() if isinstance(p, dict))
+        status_tracker.add_output_line(f"Output.json file validated: {voyage_count} voyages found")
     except Exception as e:
-        error_msg = f"Invalid canonical file format: {str(e)}"
+        error_msg = f"Invalid output.json file format: {str(e)}"
         status_tracker.add_output_line(f"ERROR: {error_msg}")
         return {
             "status": "error",
-            "message": "Invalid canonical file format",
+            "message": "Invalid output.json file format",
             "error": error_msg
         }
 
@@ -651,11 +653,11 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     status_tracker.status = "running"
 
     try:
-        # Run the ingestion script with canonical JSON file
+        # Run the ingestion script with output.json file
         process = subprocess.Popen([
             'python', script_path,
             '--source', 'json',
-            '--file', canonical_path
+            '--file', output_path
         ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
         # Real-time output processing with timeout
