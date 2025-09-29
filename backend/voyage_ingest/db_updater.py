@@ -80,6 +80,12 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
     v = bundle["voyage"]; ppl = bundle.get("passengers", []) or []; med = bundle.get("media", []) or []
     vslug = v["voyage_slug"]
     pres_slug = (v.get("president_slug") or "").strip()
+    if not pres_slug:
+        # Fallback: try to get from bundle president info
+        pres_info = bundle.get("president", {})
+        pres_slug = pres_info.get("president_slug", "").strip()
+
+    LOG.info(f"DB upsert for voyage {vslug} with president_slug: {pres_slug}")
 
     def _ns(x): 
         if x is None: return None
