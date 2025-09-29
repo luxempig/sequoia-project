@@ -212,6 +212,9 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 rows = []
                 for m in med:
                     mslug = _ns(m.get("slug"))
+                    # Skip media items without slugs
+                    if not mslug:
+                        continue
                     sort = None
                     if mslug:
                         parts = mslug.rsplit("-",1)
