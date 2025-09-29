@@ -134,14 +134,12 @@ def _s3_url(bucket: str, key: str) -> str: return f"s3://{bucket}/{key}"
 def _public_http_url(bucket: str, key: str) -> str: return f"https://{bucket}.s3.amazonaws.com/{key}"
 
 def _s3_key_for_original(vslug: str, mslug: str, ext: str, credit: str) -> str:
-    source_slug = normalize_source(credit)
     pres_slug = president_from_voyage_slug(vslug)
-    return f"media/{pres_slug}/{source_slug}/{vslug}/{ext}/{mslug}.{ext}"
+    return f"media/{pres_slug}/{vslug}/{mslug}.{ext}"
 
 def _s3_key_for_derivative(vslug: str, mslug: str, ext: str, credit: str, kind: str) -> str:
-    source_slug = normalize_source(credit)
     pres_slug = president_from_voyage_slug(vslug)
-    return f"media/{pres_slug}/{source_slug}/{vslug}/{ext}/{mslug}_{kind}.jpg"
+    return f"media/{pres_slug}/{vslug}/{mslug}_{kind}.jpg"
 
 def _upload_bytes(bucket: str, key: str, data: bytes, content_type: Optional[str] = None) -> None:
     extra = {}
