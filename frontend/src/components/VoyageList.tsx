@@ -1,5 +1,5 @@
 import { api } from "../api";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import VoyageCard from "./VoyageCard";
 import HorizontalTimeline from "./HorizontalTimeline";
@@ -21,6 +21,27 @@ const Badge: React.FC<{ tone?: "amber" | "violet"; children: React.ReactNode }> 
   </span>
 );
 
+// Generate consistent color for each tag
+const getTagColor = (tag: string) => {
+  const colors = [
+    { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-300' },
+    { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' },
+    { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-300' },
+    { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-300' },
+    { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-300' },
+    { bg: 'bg-teal-100', text: 'text-teal-800', border: 'border-teal-300' },
+    { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300' },
+    { bg: 'bg-cyan-100', text: 'text-cyan-800', border: 'border-cyan-300' },
+  ];
+
+  // Hash tag name to get consistent color
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function VoyageList() {
   const [params, setParams] = useSearchParams();
 
@@ -30,6 +51,7 @@ export default function VoyageList() {
   const [pres, setPres] = useState(() => params.get("president_slug") || "");
   const [sig, setSig] = useState(params.get("significant") === "1");
   const [roy, setRoy] = useState(params.get("royalty") === "1");
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [presidents, setPrez] = useState<President[]>([]);
@@ -38,6 +60,20 @@ export default function VoyageList() {
 
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+
+  // Extract all distinct tags from voyages
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    voyages.forEach(v => {
+      if (v.tags) {
+        v.tags.split(',').forEach(tag => {
+          const trimmed = tag.trim();
+          if (trimmed) tagSet.add(trimmed);
+        });
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [voyages]);
 
   useEffect(() => {
     api
@@ -90,9 +126,19 @@ export default function VoyageList() {
     setParams(new URLSearchParams());
   };
 
+  // Filter voyages by selected tags
+  const filteredVoyages = useMemo(() => {
+    if (selectedTags.size === 0) return voyages;
+    return voyages.filter(v => {
+      if (!v.tags) return false;
+      const voyageTags = v.tags.split(',').map(t => t.trim());
+      return Array.from(selectedTags).some(tag => voyageTags.includes(tag));
+    });
+  }, [voyages, selectedTags]);
+
   // Group by presidency using denormalized field + map to name
   const presBySlug = new Map(presidents.map((p) => [p.president_slug, p.full_name]));
-  const grouped = voyages.reduce<Record<string, Voyage[]>>((acc, v) => {
+  const grouped = filteredVoyages.reduce<Record<string, Voyage[]>>((acc, v) => {
     const slug = v.president_slug_from_voyage || "non";
     const name = slug === "non" ? "Non-presidential" : (presBySlug.get(slug) || slug);
     (acc[name] ||= []).push(v);
@@ -140,27 +186,60 @@ export default function VoyageList() {
           <button
             type="button"
             onClick={() => setMore((o) => !o)}
-            className="text-sm px-3 py-1.5 border-2 border-amber-300/60 rounded-md bg-white/80 text-amber-900 hover:bg-white font-serif font-semibold"
+            className="text-sm px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 font-medium"
           >
-            More filters ▾
+            Filter by Tags {selectedTags.size > 0 && `(${selectedTags.size})`} ▾
           </button>
-          {!moreOpen && (
-            <span className="ml-2 inline-flex gap-1">
-              {sig && <Badge>Significant</Badge>}
-              {roy && <Badge tone="violet">Royalty</Badge>}
-            </span>
-          )}
 
           {moreOpen && (
-            <div className="absolute z-20 mt-2 w-56 bg-amber-50/95 text-amber-900 rounded-lg shadow-xl ring-2 ring-amber-200/60 p-4 space-y-3 backdrop-blur-sm">
-              <label className="flex items-center gap-2 text-sm font-serif font-semibold">
-                <input type="checkbox" checked={sig} onChange={(e) => setSig(e.target.checked)} />
-                <span>Significant Voyage</span>
-              </label>
-              <label className="flex items-center gap-2 text-sm font-serif font-semibold">
-                <input type="checkbox" checked={roy} onChange={(e) => setRoy(e.target.checked)} />
-                <span>Royalty Aboard</span>
-              </label>
+            <div className="absolute z-20 mt-2 w-64 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-96 overflow-y-auto">
+              <div className="p-3 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-gray-900">Voyage Tags</span>
+                  {selectedTags.size > 0 && (
+                    <button
+                      onClick={() => setSelectedTags(new Set())}
+                      className="text-xs text-gray-600 hover:text-gray-900"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="p-2">
+                {allTags.length === 0 ? (
+                  <p className="text-sm text-gray-500 p-2">No tags available</p>
+                ) : (
+                  allTags.map(tag => {
+                    const color = getTagColor(tag);
+                    const isSelected = selectedTags.has(tag);
+                    return (
+                      <label
+                        key={tag}
+                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            const newTags = new Set(selectedTags);
+                            if (e.target.checked) {
+                              newTags.add(tag);
+                            } else {
+                              newTags.delete(tag);
+                            }
+                            setSelectedTags(newTags);
+                          }}
+                          className="rounded border-gray-300"
+                        />
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded border ${color.bg} ${color.text} ${color.border}`}>
+                          {tag}
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -199,10 +278,10 @@ export default function VoyageList() {
       {loading && <p className="text-center text-gray-600 py-12">Loading voyages...</p>}
       {!loading && voyages.length === 0 && <p className="text-center text-gray-600 py-12">No voyages found.</p>}
 
-      {!loading && voyages.length > 0 && (
+      {!loading && filteredVoyages.length > 0 && (
         <>
           {viewMode === 'timeline' ? (
-            <HorizontalTimeline voyages={voyages} />
+            <HorizontalTimeline voyages={filteredVoyages} />
           ) : (
             <div className="timeline">
               {Object.entries(grouped).map(([hdr, items]) => (

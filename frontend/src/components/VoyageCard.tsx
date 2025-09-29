@@ -19,6 +19,25 @@ const Badge: React.FC<{ tone?: "amber" | "violet"; children: React.ReactNode }> 
   </span>
 );
 
+// Same tag color generator as in VoyageList
+const getTagColor = (tag: string) => {
+  const colors = [
+    { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-300' },
+    { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' },
+    { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-300' },
+    { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-300' },
+    { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-300' },
+    { bg: 'bg-teal-100', text: 'text-teal-800', border: 'border-teal-300' },
+    { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300' },
+    { bg: 'bg-cyan-100', text: 'text-cyan-800', border: 'border-cyan-300' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 const fmtRange = (start?: string | null, end?: string | null) => {
   if (!start) return "Date unknown";
   const a = dayjs(start);
@@ -31,6 +50,11 @@ const fmtRange = (start?: string | null, end?: string | null) => {
 const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }) => {
   const significant = voyage.significant === 1 || voyage.significant === true;
   const royalty = voyage.royalty === 1 || voyage.royalty === true;
+
+  // Parse tags from comma-separated string
+  const tags = voyage.tags
+    ? voyage.tags.split(',').map(t => t.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="timeline-item">
@@ -50,6 +74,21 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
           </div>
           {voyage.summary_markdown && (
             <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mt-2">{voyage.summary_markdown}</p>
+          )}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {tags.map(tag => {
+                const color = getTagColor(tag);
+                return (
+                  <span
+                    key={tag}
+                    className={`inline-flex px-2 py-0.5 text-xs font-medium rounded border ${color.bg} ${color.text} ${color.border}`}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
+            </div>
           )}
         </Link>
       </div>

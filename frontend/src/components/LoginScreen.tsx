@@ -26,10 +26,10 @@ const LoginScreen: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-left"
-        style={{ backgroundImage: "url(/leon.jpg)" }}
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/boat_login.png)" }}
       />
-      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-0 bg-black/30" />
 
       {/* Login Form */}
       <div className="relative z-10 bg-white rounded-lg p-8 w-full max-w-md mx-4 shadow-xl border border-gray-200">
@@ -49,7 +49,7 @@ const LoginScreen: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              placeholder="Enter username"
+              placeholder="admin"
               required
             />
           </div>
@@ -64,7 +64,7 @@ const LoginScreen: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              placeholder="Enter password"
+              placeholder="password"
               required
             />
           </div>
