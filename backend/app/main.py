@@ -77,6 +77,7 @@ def get_canonical_timeline_data():
             print(f"DEBUG: Loaded {len(data)} presidents")
             return data
         else:
+            print(f"DEBUG: File not found at {json_path}")
             # Return empty structure if file doesn't exist
             return {
                 "truman-harry-s": {
@@ -93,6 +94,9 @@ def get_canonical_timeline_data():
                 }
             }
     except Exception as e:
+        print(f"ERROR loading canonical timeline: {e}")
+        import traceback
+        traceback.print_exc()
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"Failed to load canonical timeline data: {str(e)}")
 
