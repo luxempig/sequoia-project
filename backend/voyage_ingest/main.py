@@ -262,7 +262,7 @@ def main():
         dry_run=dry_run,
         prune_db=True,
         prune_sheets=False,  # Sheets disabled
-        prune_s3=False,  # keep S3 additive globally (we only rename/move on same-link changes)
+        prune_s3=True,  # Delete S3 files for voyages removed from JSON (exact mirror)
     )
     LOG.info("Global reconcile of missing voyages (DB only): %s", global_prune_stats)
 
@@ -315,6 +315,9 @@ def main():
             db_deleted_people = db_stats.get("db_deleted_people", 0)
         except Exception as e:
             LOG.warning("DB prune failed for %s: %s", vslug, e)
+
+        # Note: Per-voyage S3 pruning not implemented yet - would need media-slug-specific deletion
+        # Currently only global voyage deletion triggers S3 cleanup (see global_prune_stats above)
 
         # 5) Upsert DB (idempotent)
         try:
