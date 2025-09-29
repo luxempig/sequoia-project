@@ -108,7 +108,7 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     tags=EXCLUDED.tags, president_slug_from_voyage=EXCLUDED.president_slug_from_voyage;
             """, {
                 "voyage_slug": _ns(v.get("voyage_slug")),
-                "title": _ns(v.get("title")),
+                "title": _ns(v.get("title")) or _ns(v.get("voyage_slug")) or "Untitled Voyage",
                 "start_date": _ns(v.get("start_date")),
                 "end_date": _ns(v.get("end_date")),
                 "start_time": _ns(v.get("start_time")),
