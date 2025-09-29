@@ -11,7 +11,7 @@ import PresidentDirectory from "./components/PresidentDirectory";
 import PresidentVoyages from "./components/PresidentVoyages";
 import PeopleDirectory from "./components/PeopleDirectory";
 import PersonDetail from "./components/PersonDetail";
-import JsonCuratorInterface from "./components/JsonCuratorInterface";
+// import JsonCuratorInterface from "./components/JsonCuratorInterface";
 import "./index.css";
 
 const AppContent: React.FC = () => {
@@ -42,7 +42,7 @@ const AppContent: React.FC = () => {
         <Route path="/people" element={<PeopleDirectory />} />
         <Route path="/people/:slug" element={<PersonDetail />} />
 
-        <Route path="/curators" element={<JsonCuratorInterface />} />
+        <Route path="/curators" element={<div>Curator interface temporarily disabled</div>} />
       </Routes>
     </BrowserRouter>
   );
