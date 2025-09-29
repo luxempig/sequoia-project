@@ -43,7 +43,7 @@ interface PresidentData {
 }
 
 interface TrumanData {
-  "truman-harry-s": PresidentData;
+  "truman-harry": PresidentData;
 }
 
 // Media explorer interfaces
@@ -123,14 +123,14 @@ const JsonCuratorInterface: React.FC = () => {
       setRawData(jsonData);
       
       // Extract Truman data and add president metadata
-      const trumanData = jsonData["truman-harry-s"];
+      const trumanData = jsonData["truman-harry"];
       if (trumanData) {
         setData({
           ...trumanData,
           president: {
             full_name: "Harry S. Truman",
             party: "Democratic Party",
-            slug: "truman-harry-s",
+            slug: "truman-harry",
             term_start: trumanData.term_start,
             term_end: trumanData.term_end
           }
@@ -178,7 +178,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
     const year = new Date().getFullYear();
     
     return {
-      voyage: `truman-harry-s-${year}-new-${voyageCount + 1}`,
+      voyage: `truman-harry-${year}-new-${voyageCount + 1}`,
       start_date: null,
       end_date: null,
       start_time: null,
@@ -221,7 +221,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "truman-harry-s": updatedData
+          "truman-harry": updatedData
         })
       });
 
@@ -244,7 +244,7 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
 
         // Update local state
         setRawData({
-          "truman-harry-s": updatedData
+          "truman-harry": updatedData
         });
         setData(updatedData);
 
