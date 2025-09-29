@@ -262,16 +262,23 @@ else
 fi
 
 # Ensure Google credentials exist (run even if backend didn't change)
-if [ ! -f "$BACKEND_DIR/keys/sequoia_credentials.json" ] && [ -n "$GOOGLE_CREDENTIALS" ]; then
-    log "Google credentials missing, creating from environment variable..."
-    cd $BACKEND_DIR
-    mkdir -p keys
-    echo "$GOOGLE_CREDENTIALS" > keys/sequoia_credentials.json
-    if [ -f "keys/sequoia_credentials.json" ] && [ -s "keys/sequoia_credentials.json" ]; then
-        log "Google credentials created successfully"
+log "Checking Google credentials... File exists: $([ -f "$BACKEND_DIR/keys/sequoia_credentials.json" ] && echo 'yes' || echo 'no'), Variable set: $([ -n "$GOOGLE_CREDENTIALS" ] && echo 'yes' || echo 'no')"
+if [ ! -f "$BACKEND_DIR/keys/sequoia_credentials.json" ]; then
+    if [ -n "$GOOGLE_CREDENTIALS" ]; then
+        log "Google credentials missing, creating from environment variable..."
+        cd $BACKEND_DIR
+        mkdir -p keys
+        echo "$GOOGLE_CREDENTIALS" > keys/sequoia_credentials.json
+        if [ -f "keys/sequoia_credentials.json" ] && [ -s "keys/sequoia_credentials.json" ]; then
+            log "Google credentials created successfully (size: $(stat -c%s keys/sequoia_credentials.json 2>/dev/null || stat -f%z keys/sequoia_credentials.json) bytes)"
+        else
+            log "WARNING: Failed to create Google credentials file or file is empty"
+        fi
     else
-        log "WARNING: Failed to create Google credentials file or file is empty"
+        log "WARNING: GOOGLE_CREDENTIALS environment variable is not set"
     fi
+else
+    log "Google credentials file already exists"
 fi
 
 # Health check
