@@ -92,6 +92,21 @@ SPREADSHEET_ID=1CDfPY4zi_pkfwyoYxOGPUoeD2ypkKTfFNe1z81klePQ
 # Paths and Settings
 GOOGLE_APPLICATION_CREDENTIALS="/home/ec2-user/sequoia-project/backend/keys/sequoia_credentials.json"
 PRESIDENTS_SHEET_TITLE="presidents"
+
+# Dropbox Configuration
+DROPBOX_ACCESS_TOKEN=$DROPBOX_ACCESS_TOKEN
+DROPBOX_TIMEOUT=60
+
+# Canonical voyage data file path
+CANONICAL_VOYAGES_FILE=canonical_voyages.json
+
+# Redis configuration for Celery
+REDIS_URL=redis://localhost:6379/0
+
+# Async processing settings
+ASYNC_THUMBNAILS=true
+CELERY_WORKER_CONCURRENCY=2
+CELERY_TASK_TIME_LIMIT=1800
 EOF
     
     # Create keys directory and Google credentials file

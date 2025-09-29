@@ -22,6 +22,7 @@ from app.routers.people      import router as people_router
 from app.routers.ingest      import router as ingest_router
 from app.routers.analytics   import router as analytics_router
 from app.routers.curator     import router as curator_router
+from app.routers.async_media import router as async_media_router
 
 s = get_settings()
 app = FastAPI(
@@ -49,6 +50,7 @@ app.include_router(people_router)
 app.include_router(ingest_router)
 app.include_router(analytics_router)
 app.include_router(curator_router, prefix="/api/curator", tags=["curator"])
+app.include_router(async_media_router, prefix="/api/async", tags=["async-media"])
 
 @app.get("/", tags=["root"])
 def read_root():

@@ -291,17 +291,21 @@ def _make_image_derivatives(img_bytes: bytes, max_long_edge_preview=1600, thumb_
         return buf_prev.getvalue(), buf_th.getvalue()
 
 # ------- Public API -------
-def process_all_media(media_items: List[Dict], voyage_slug: str) -> Tuple[Dict[str, Tuple[Optional[str], Optional[str]]], List[str]]:
+def process_all_media(media_items: List[Dict], voyage_slug: str, async_thumbnails: bool = True) -> Tuple[Dict[str, Tuple[Optional[str], Optional[str]]], List[str]]:
     """
     Download each media by link, upload original to S3:
       media/{pres}/{source}/{voyage}/{ext}/{slug}.{ext}
-    For images, also create preview/thumb JPEGs in public bucket.
+
+    If async_thumbnails=True (default), only uploads originals and queues derivative generation.
+    If async_thumbnails=False, creates derivatives synchronously (legacy behavior).
+
     Returns:
       s3_links: { media_slug: (s3_private_url, public_preview_url|None) }
       warnings: [ ... ]
     """
     s3_links: Dict[str, Tuple[Optional[str], Optional[str]]] = {}
     warnings: List[str] = []
+    async_media_batch = []  # For batch async processing
 
     for i, m in enumerate(media_items, start=1):
         mslug = (m.get("slug") or "").strip()
@@ -318,6 +322,7 @@ def process_all_media(media_items: List[Dict], voyage_slug: str) -> Tuple[Dict[s
         mime = None
         fname = ""
 
+        # Download media from source
         if "/file/d/" in link:  # Google Drive
             file_id = _parse_drive_file_id(link)
             if not file_id:
@@ -347,73 +352,104 @@ def process_all_media(media_items: List[Dict], voyage_slug: str) -> Tuple[Dict[s
         ext = _ext_from_name_or_mime(fname, mime)
         mtype = detect_media_type_from_ext(ext)
 
-        # Upload original
+        # Upload original to private bucket
         orig_key = _s3_key_for_original(voyage_slug, mslug, ext, credit)
         try:
             _upload_bytes(S3_PRIVATE_BUCKET, orig_key, blob, content_type=mime)
             s3_private = _s3_url(S3_PRIVATE_BUCKET, orig_key)
+            LOG.info("Uploaded original media %s -> %s", mslug, orig_key)
         except Exception as e:
             warnings.append(f"{mslug}: failed to upload original to s3://{S3_PRIVATE_BUCKET}/{orig_key}: {e}")
-            s3_private = None
+            s3_links[mslug] = (None, None)
+            continue
 
+        # Handle derivative generation
         public_url = None
-        if mtype == "image" and blob:
-            try:
-                prev, th = _make_image_derivatives(blob)
-                prev_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "preview")
-                th_key   = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
-                _upload_bytes(S3_PUBLIC_BUCKET, prev_key, prev, content_type="image/jpeg")
-                _upload_bytes(S3_PUBLIC_BUCKET, th_key,   th,   content_type="image/jpeg")
-                public_url = _public_http_url(S3_PUBLIC_BUCKET, prev_key)
-            except Exception as e:
-                warnings.append(f"{mslug}: failed to create/upload image derivatives: {e}")
-        elif mtype == "pdf" and blob:
-            try:
-                th = _make_pdf_thumbnail(blob)
-                if th:
-                    th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
-                    _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
-                    public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
-                else:
-                    warnings.append(f"{mslug}: could not generate PDF thumbnail (PyMuPDF not available or PDF issue)")
-            except Exception as e:
-                warnings.append(f"{mslug}: failed to create/upload PDF thumbnail: {e}")
-        elif mtype == "video" and blob:
-            try:
-                th = _make_video_thumbnail(blob)
-                if th:
-                    th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
-                    _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
-                    public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
-                else:
-                    warnings.append(f"{mslug}: could not generate video thumbnail (ffmpeg not available or video issue)")
-            except Exception as e:
-                warnings.append(f"{mslug}: failed to create/upload video thumbnail: {e}")
-        elif mtype == "audio" and blob:
-            try:
-                th = _make_audio_waveform(blob)
-                if th:
-                    th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
-                    _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
-                    public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
-                else:
-                    warnings.append(f"{mslug}: could not generate audio waveform (audio libraries not available)")
-            except Exception as e:
-                warnings.append(f"{mslug}: failed to create/upload audio waveform: {e}")
-        elif mtype == "other" and blob and mime:
-            # Try to handle office documents by converting to PDF first, then thumbnail
-            if any(office_type in mime.lower() for office_type in ['word', 'excel', 'powerpoint', 'presentation', 'spreadsheet', 'document']):
+
+        if async_thumbnails:
+            # Queue for async processing - don't block the ingest pipeline
+            if mtype in ["image", "pdf", "video", "audio"]:
+                async_media_batch.append({
+                    "media_slug": mslug,
+                    "ext": ext,
+                    "credit": credit,
+                    "s3_original_key": orig_key,
+                    "media_type": mtype
+                })
+                LOG.info("Queued %s for async derivative generation", mslug)
+            else:
+                LOG.info("Media type '%s' not supported for derivative generation: %s", mtype, mslug)
+        else:
+            # Synchronous processing (legacy behavior)
+            if mtype == "image" and blob:
                 try:
-                    th = _convert_office_to_pdf_and_thumbnail(blob, mime)
+                    prev, th = _make_image_derivatives(blob)
+                    prev_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "preview")
+                    th_key   = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
+                    _upload_bytes(S3_PUBLIC_BUCKET, prev_key, prev, content_type="image/jpeg")
+                    _upload_bytes(S3_PUBLIC_BUCKET, th_key,   th,   content_type="image/jpeg")
+                    public_url = _public_http_url(S3_PUBLIC_BUCKET, prev_key)
+                except Exception as e:
+                    warnings.append(f"{mslug}: failed to create/upload image derivatives: {e}")
+            elif mtype == "pdf" and blob:
+                try:
+                    th = _make_pdf_thumbnail(blob)
                     if th:
                         th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
                         _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
                         public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
-                    # Note: No warning if office conversion not implemented
+                    else:
+                        warnings.append(f"{mslug}: could not generate PDF thumbnail (PyMuPDF not available or PDF issue)")
                 except Exception as e:
-                    warnings.append(f"{mslug}: failed to create office document thumbnail: {e}")
+                    warnings.append(f"{mslug}: failed to create/upload PDF thumbnail: {e}")
+            elif mtype == "video" and blob:
+                try:
+                    th = _make_video_thumbnail(blob)
+                    if th:
+                        th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
+                        _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
+                        public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
+                    else:
+                        warnings.append(f"{mslug}: could not generate video thumbnail (ffmpeg not available or video issue)")
+                except Exception as e:
+                    warnings.append(f"{mslug}: failed to create/upload video thumbnail: {e}")
+            elif mtype == "audio" and blob:
+                try:
+                    th = _make_audio_waveform(blob)
+                    if th:
+                        th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
+                        _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
+                        public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
+                    else:
+                        warnings.append(f"{mslug}: could not generate audio waveform (audio libraries not available)")
+                except Exception as e:
+                    warnings.append(f"{mslug}: failed to create/upload audio waveform: {e}")
+            elif mtype == "other" and blob and mime:
+                # Try to handle office documents by converting to PDF first, then thumbnail
+                if any(office_type in mime.lower() for office_type in ['word', 'excel', 'powerpoint', 'presentation', 'spreadsheet', 'document']):
+                    try:
+                        th = _convert_office_to_pdf_and_thumbnail(blob, mime)
+                        if th:
+                            th_key = _s3_key_for_derivative(voyage_slug, mslug, ext, credit, "thumb")
+                            _upload_bytes(S3_PUBLIC_BUCKET, th_key, th, content_type="image/jpeg")
+                            public_url = _public_http_url(S3_PUBLIC_BUCKET, th_key)
+                        # Note: No warning if office conversion not implemented
+                    except Exception as e:
+                        warnings.append(f"{mslug}: failed to create office document thumbnail: {e}")
 
         s3_links[mslug] = (s3_private, public_url)
-        LOG.info("Processed media %s -> %s", mslug, orig_key)
+
+    # Submit async batch processing if enabled and we have media to process
+    if async_thumbnails and async_media_batch:
+        try:
+            from voyage_ingest.async_tasks.media_tasks import process_media_derivatives_batch
+
+            batch_task = process_media_derivatives_batch.delay(async_media_batch, voyage_slug)
+            LOG.info("Submitted batch async processing task %s for %d media items in voyage %s",
+                    batch_task.id, len(async_media_batch), voyage_slug)
+            warnings.append(f"Queued {len(async_media_batch)} media items for async derivative generation (task: {batch_task.id})")
+        except Exception as e:
+            LOG.error("Failed to submit async batch processing: %s", e)
+            warnings.append(f"Failed to queue async processing: {str(e)}")
 
     return s3_links, warnings

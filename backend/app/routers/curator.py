@@ -2,6 +2,9 @@ import os
 import time
 import json
 import subprocess
+import asyncio
+from datetime import datetime
+from typing import Dict, Optional
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import PlainTextResponse, JSONResponse
 from pydantic import BaseModel
@@ -12,38 +15,95 @@ import logging
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# In-memory status tracking for ingest operations
+ingest_status_store = {}
+
+class IngestStatus:
+    def __init__(self, operation_id: str):
+        self.operation_id = operation_id
+        self.status = "initializing"  # initializing, running, completed, failed
+        self.start_time = datetime.utcnow()
+        self.end_time = None
+        self.progress = 0  # 0-100
+        self.current_step = "Starting..."
+        self.steps_completed = 0
+        self.total_steps = 5  # estimate based on main.py workflow
+        self.output_lines = []
+        self.error_message = None
+        self.voyages_processed = 0
+        self.validation_errors = 0
+        self.media_warnings = 0
+
+    def update_progress(self, step: str, progress: int = None):
+        self.current_step = step
+        if progress is not None:
+            self.progress = min(100, max(0, progress))
+        logger.info(f"[{self.operation_id}] {step} (Progress: {self.progress}%)")
+
+    def add_output_line(self, line: str):
+        self.output_lines.append(f"[{datetime.utcnow().isoformat()[:19]}] {line}")
+        # Keep only last 100 lines to prevent memory issues
+        if len(self.output_lines) > 100:
+            self.output_lines = self.output_lines[-100:]
+
+    def complete(self, success: bool, error_message: str = None):
+        self.status = "completed" if success else "failed"
+        self.end_time = datetime.utcnow()
+        self.progress = 100 if success else self.progress
+        if error_message:
+            self.error_message = error_message
+
+    def to_dict(self):
+        duration = None
+        if self.end_time:
+            duration = (self.end_time - self.start_time).total_seconds()
+        elif self.status == "running":
+            duration = (datetime.utcnow() - self.start_time).total_seconds()
+
+        return {
+            "operation_id": self.operation_id,
+            "status": self.status,
+            "start_time": self.start_time.isoformat(),
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "duration_seconds": duration,
+            "progress": self.progress,
+            "current_step": self.current_step,
+            "steps_completed": self.steps_completed,
+            "total_steps": self.total_steps,
+            "voyages_processed": self.voyages_processed,
+            "validation_errors": self.validation_errors,
+            "media_warnings": self.media_warnings,
+            "recent_output": self.output_lines[-10:],  # Last 10 lines
+            "error_message": self.error_message
+        }
+
 class PresignRequest(BaseModel):
     s3_url: str
 
 @router.get("/truman.json")
 def get_truman_data():
-    """Serve the truman.json file for the curator interface."""
-    json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
+    """Serve the canonical voyage data for the curator interface."""
+    # Use canonical voyages file as the source of truth
+    canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
 
     try:
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
+        if os.path.exists(canonical_path):
+            with open(canonical_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             return data
         else:
             # Return empty structure if file doesn't exist
             return {
-                "truman-harry-s": {
-                    "president": {
-                        "president_slug": "truman-harry-s",
-                        "full_name": "Harry S. Truman",
-                        "term_start": "1945-04-12",
-                        "term_end": "1953-01-20",
-                        "party": "Democratic"
-                    },
-                    "voyages": [],
-                    "passengers": [],
-                    "media": []
+                "truman-harry": {
+                    "term_start": "April 12, 1945",
+                    "term_end": "January 20, 1953",
+                    "info": "Harry S. Truman (April 12, 1945 to January 20, 1953)",
+                    "voyages": []
                 }
             }
     except Exception as e:
-        logger.error(f"Failed to load truman data: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to load truman data: {str(e)}")
+        logger.error(f"Failed to load canonical voyage data: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load voyage data: {str(e)}")
 
 @router.get("/master-doc")
 async def get_master_doc():
@@ -456,75 +516,407 @@ async def upload_media(
 
 @router.post("/save-president-data")
 async def save_president_data(request: Request):
-    """Save updated president JSON data."""
+    """Save updated voyage data to canonical file and trigger automatic ingest."""
+    operation_id = f"curator_save_{int(time.time())}"
+    status_tracker = IngestStatus(operation_id)
+    ingest_status_store[operation_id] = status_tracker
+
     try:
+        status_tracker.update_progress("Loading and validating data...", 10)
         data = await request.json()
-        
-        # Save to the truman.json file
-        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
-        
-        # Create backup
-        if os.path.exists(json_path):
-            backup_path = f"{json_path}.backup.{int(time.time())}"
-            with open(json_path, 'r', encoding='utf-8') as src:
+
+        # Basic validation of the data structure
+        if not isinstance(data, dict):
+            raise ValueError("Invalid data format: expected JSON object")
+
+        # Count voyages for progress tracking
+        total_voyages = 0
+        for president_data in data.values():
+            if isinstance(president_data, dict) and "voyages" in president_data:
+                total_voyages += len(president_data.get("voyages", []))
+        status_tracker.voyages_processed = 0  # Reset counter
+        status_tracker.add_output_line(f"Found {total_voyages} total voyages to process")
+
+        status_tracker.update_progress("Creating backup of existing data...", 20)
+        # Save to the canonical voyages file (source of truth)
+        canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+
+        # Create backup of existing canonical file
+        if os.path.exists(canonical_path):
+            backup_path = f"{canonical_path}.backup.{int(time.time())}"
+            with open(canonical_path, 'r', encoding='utf-8') as src:
                 with open(backup_path, 'w', encoding='utf-8') as dst:
                     dst.write(src.read())
             logger.info(f"Created backup at {backup_path}")
-        
-        # Write updated data
-        with open(json_path, 'w', encoding='utf-8') as f:
+            status_tracker.add_output_line(f"Backup created: {os.path.basename(backup_path)}")
+
+        status_tracker.update_progress("Writing canonical data file...", 30)
+        # Write updated data to canonical file
+        with open(canonical_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-        
-        logger.info("President data saved successfully")
-        return {"status": "success", "message": "Data saved successfully"}
-        
+
+        file_size = os.path.getsize(canonical_path)
+        logger.info("Canonical voyage data saved successfully")
+        status_tracker.add_output_line(f"Canonical file saved ({file_size} bytes)")
+        status_tracker.update_progress("Starting automatic ingest...", 40)
+
+        # Automatically trigger ingest after successful save
+        try:
+            ingest_result = await trigger_canonical_ingest_with_tracking(status_tracker)
+
+            if ingest_result["status"] == "success":
+                status_tracker.complete(True)
+                return {
+                    "status": "success",
+                    "message": "Data saved and ingested successfully",
+                    "operation_id": operation_id,
+                    "voyages_processed": status_tracker.voyages_processed,
+                    "ingest_summary": ingest_result.get("summary", {})
+                }
+            else:
+                status_tracker.complete(False, ingest_result.get("error", "Unknown ingest error"))
+                return {
+                    "status": "warning",
+                    "message": "Data saved but ingest had issues",
+                    "operation_id": operation_id,
+                    "ingest_error": ingest_result.get("error", "Unknown error"),
+                    "ingest_summary": ingest_result.get("summary", {})
+                }
+        except Exception as ingest_error:
+            logger.error(f"Auto-ingest failed: {ingest_error}")
+            status_tracker.complete(False, str(ingest_error))
+            return {
+                "status": "warning",
+                "message": "Data saved successfully but automatic ingest failed",
+                "operation_id": operation_id,
+                "ingest_error": str(ingest_error)
+            }
+
     except Exception as e:
-        logger.error(f"Failed to save president data: {e}")
+        logger.error(f"Failed to save canonical voyage data: {e}")
+        status_tracker.complete(False, str(e))
         raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
+
+
+async def trigger_canonical_ingest():
+    """Helper function to trigger ingest from canonical voyages file (legacy version)."""
+    operation_id = f"trigger_{int(time.time())}"
+    status_tracker = IngestStatus(operation_id)
+    ingest_status_store[operation_id] = status_tracker
+
+    return await trigger_canonical_ingest_with_tracking(status_tracker)
+
+
+async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
+    """Enhanced ingest function with detailed progress tracking."""
+    status_tracker.update_progress("Validating paths and dependencies...", 50)
+
+    script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
+    canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+
+    if not os.path.exists(script_path):
+        error_msg = f"Ingestion script not found at {script_path}"
+        status_tracker.add_output_line(f"ERROR: {error_msg}")
+        return {
+            "status": "error",
+            "message": "Ingestion script not found",
+            "error": error_msg
+        }
+
+    if not os.path.exists(canonical_path):
+        error_msg = f"Canonical voyages file not found at {canonical_path}"
+        status_tracker.add_output_line(f"ERROR: {error_msg}")
+        return {
+            "status": "error",
+            "message": "Canonical voyages file not found",
+            "error": error_msg
+        }
+
+    # Validate canonical file is readable JSON
+    try:
+        with open(canonical_path, 'r') as f:
+            canonical_data = json.load(f)
+        voyage_count = sum(len(p.get("voyages", [])) for p in canonical_data.values() if isinstance(p, dict))
+        status_tracker.add_output_line(f"Canonical file validated: {voyage_count} voyages found")
+    except Exception as e:
+        error_msg = f"Invalid canonical file format: {str(e)}"
+        status_tracker.add_output_line(f"ERROR: {error_msg}")
+        return {
+            "status": "error",
+            "message": "Invalid canonical file format",
+            "error": error_msg
+        }
+
+    status_tracker.update_progress("Running voyage ingestion pipeline...", 60)
+    status_tracker.status = "running"
+
+    try:
+        # Run the ingestion script with canonical JSON file
+        process = subprocess.Popen([
+            'python', script_path,
+            '--source', 'json',
+            '--file', canonical_path
+        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+
+        # Real-time output processing with timeout
+        output_lines = []
+        start_time = time.time()
+        timeout = 600  # 10 minute timeout
+
+        while True:
+            try:
+                # Check for timeout
+                if time.time() - start_time > timeout:
+                    process.terminate()
+                    status_tracker.add_output_line("ERROR: Process terminated due to timeout (10 minutes)")
+                    return {
+                        "status": "error",
+                        "message": "Ingestion timed out after 10 minutes",
+                        "error": "Process timeout",
+                        "output": "\n".join(output_lines)
+                    }
+
+                # Read output line by line
+                line = process.stdout.readline()
+                if not line:
+                    if process.poll() is not None:
+                        break
+                    await asyncio.sleep(0.1)  # Brief pause if no output
+                    continue
+
+                line = line.strip()
+                if line:
+                    output_lines.append(line)
+                    status_tracker.add_output_line(line)
+
+                    # Parse progress indicators from output
+                    if "Processing voyage" in line and "/" in line:
+                        try:
+                            # Extract "x/y" pattern
+                            parts = line.split("Processing voyage")[1].split(":")[0].strip()
+                            current, total = map(int, parts.split("/"))
+                            progress = 60 + (current / total) * 30  # Map to 60-90% range
+                            status_tracker.update_progress(f"Processing voyage {current}/{total}", int(progress))
+                            status_tracker.voyages_processed = current
+                        except:
+                            pass  # Continue on parsing errors
+                    elif "validation error" in line.lower():
+                        status_tracker.validation_errors += 1
+                    elif "media issue" in line.lower() or "warning" in line.lower():
+                        status_tracker.media_warnings += 1
+                    elif "Completed successfully" in line:
+                        status_tracker.update_progress("Finalizing...", 95)
+
+            except Exception as e:
+                logger.warning(f"Error reading process output: {e}")
+                break
+
+        # Wait for process completion
+        return_code = process.wait()
+
+        # Parse final results
+        output_text = "\n".join(output_lines)
+
+        if return_code == 0:
+            logger.info("Canonical data ingestion completed successfully")
+            status_tracker.update_progress("Ingestion completed successfully", 100)
+
+            # Extract summary statistics from output
+            summary = {
+                "voyages_processed": status_tracker.voyages_processed,
+                "validation_errors": status_tracker.validation_errors,
+                "media_warnings": status_tracker.media_warnings,
+                "duration_seconds": time.time() - start_time
+            }
+
+            return {
+                "status": "success",
+                "message": "Canonical data ingestion completed successfully",
+                "output": output_text,
+                "summary": summary
+            }
+        else:
+            logger.error(f"Canonical ingestion failed with code {return_code}")
+            status_tracker.add_output_line(f"Process failed with exit code {return_code}")
+
+            # Extract error details
+            error_lines = [line for line in output_lines if "error" in line.lower() or "failed" in line.lower()]
+            main_error = error_lines[0] if error_lines else f"Process exited with code {return_code}"
+
+            return {
+                "status": "error",
+                "message": "Ingestion script ran with errors",
+                "error": main_error,
+                "output": output_text,
+                "summary": {
+                    "voyages_processed": status_tracker.voyages_processed,
+                    "validation_errors": status_tracker.validation_errors,
+                    "media_warnings": status_tracker.media_warnings,
+                    "duration_seconds": time.time() - start_time
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to run canonical ingestion: {e}")
+        status_tracker.add_output_line(f"EXCEPTION: {str(e)}")
+        return {
+            "status": "error",
+            "message": "Failed to execute ingestion script",
+            "error": str(e)
+        }
 
 
 @router.post("/trigger-ingestion")
 async def trigger_ingestion(request: Request):
-    """Trigger the voyage ingestion pipeline."""
+    """Trigger the voyage ingestion pipeline from canonical file."""
     try:
-        data = await request.json()
-        voyage_id = data.get('voyage_id')
-        action = data.get('action', 'update')
-        
-        logger.info(f"Triggering ingestion for voyage {voyage_id} (action: {action})")
-        
-        # Run the voyage ingestion script
-        script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
-        
-        if os.path.exists(script_path):
-            # Run the ingestion script
-            result = subprocess.run([
-                'python', script_path,
-                '--source', 'json',
-                '--file', os.path.join(os.path.dirname(__file__), "..", "..", "..", "truman_translated.json")
-            ], capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                logger.info("Data ingestion completed successfully")
-                return {
-                    "status": "success", 
-                    "message": "Data ingestion triggered successfully",
-                    "output": result.stdout
-                }
-            else:
-                logger.error(f"Ingestion failed: {result.stderr}")
-                return {
-                    "status": "warning",
-                    "message": "Ingestion script ran with errors", 
-                    "error": result.stderr
-                }
+        # Accept optional data but don't require it
+        data = {}
+        try:
+            data = await request.json()
+        except:
+            pass  # No JSON body provided, that's fine
+
+        logger.info("Triggering canonical voyage data ingestion")
+
+        result = await trigger_canonical_ingest()
+
+        if result["status"] == "success":
+            return result
         else:
-            logger.warning("Ingestion script not found, data saved but not ingested")
-            return {
-                "status": "warning",
-                "message": "Data saved but ingestion script not available"
-            }
-        
+            # Return the error but don't raise HTTPException so curator can handle gracefully
+            return result
+
     except Exception as e:
-        logger.error(f"Failed to trigger ingestion: {e}")
+        logger.error(f"Failed to trigger canonical ingestion: {e}")
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
+
+
+@router.get("/ingest-status/{operation_id}")
+async def get_ingest_status(operation_id: str):
+    """Get the current status of an ingest operation."""
+    if operation_id not in ingest_status_store:
+        raise HTTPException(status_code=404, detail="Operation not found")
+
+    status = ingest_status_store[operation_id]
+    return JSONResponse(content=status.to_dict())
+
+
+@router.get("/ingest-status")
+async def get_all_ingest_status():
+    """Get status of all recent ingest operations."""
+    # Return last 10 operations, newest first
+    recent_ops = list(ingest_status_store.items())[-10:]
+    recent_ops.reverse()
+
+    return {
+        "operations": [status.to_dict() for _, status in recent_ops],
+        "active_operations": len([s for s in ingest_status_store.values() if s.status == "running"]),
+        "total_operations": len(ingest_status_store)
+    }
+
+
+@router.delete("/ingest-status/{operation_id}")
+async def clear_ingest_status(operation_id: str):
+    """Clear a specific ingest operation from status tracking."""
+    if operation_id in ingest_status_store:
+        del ingest_status_store[operation_id]
+        return {"status": "success", "message": "Operation status cleared"}
+    else:
+        raise HTTPException(status_code=404, detail="Operation not found")
+
+
+@router.delete("/ingest-status")
+async def clear_all_ingest_status():
+    """Clear all completed ingest operations from status tracking."""
+    # Keep only running operations
+    running_ops = {k: v for k, v in ingest_status_store.items() if v.status == "running"}
+    cleared_count = len(ingest_status_store) - len(running_ops)
+    ingest_status_store.clear()
+    ingest_status_store.update(running_ops)
+
+    return {
+        "status": "success",
+        "message": f"Cleared {cleared_count} completed operations",
+        "remaining_operations": len(running_ops)
+    }
+
+
+@router.post("/trigger-manual-ingest")
+async def trigger_manual_ingest():
+    """Manually trigger canonical voyage ingest (for testing/admin use)."""
+    try:
+        operation_id = f"manual_{int(time.time())}"
+        logger.info(f"Manual canonical voyage data ingestion triggered [{operation_id}]")
+
+        # Create status tracker for manual operation
+        status_tracker = IngestStatus(operation_id)
+        ingest_status_store[operation_id] = status_tracker
+
+        result = await trigger_canonical_ingest_with_tracking(status_tracker)
+
+        # Update final status
+        if result["status"] == "success":
+            status_tracker.complete(True)
+        else:
+            status_tracker.complete(False, result.get("error", "Unknown error"))
+
+        result["operation_id"] = operation_id
+        return result
+
+    except Exception as e:
+        logger.error(f"Manual ingestion trigger failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Manual ingest failed: {str(e)}")
+
+
+@router.get("/pipeline-health")
+async def get_pipeline_health():
+    """Get overall health status of the voyage pipeline."""
+    try:
+        script_path = os.path.join(os.path.dirname(__file__), "..", "..", "voyage_ingest", "main.py")
+        canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+
+        health_status = {
+            "overall_status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "components": {
+                "ingest_script": {
+                    "status": "available" if os.path.exists(script_path) else "missing",
+                    "path": script_path
+                },
+                "canonical_file": {
+                    "status": "available" if os.path.exists(canonical_path) else "missing",
+                    "path": canonical_path,
+                    "size_bytes": os.path.getsize(canonical_path) if os.path.exists(canonical_path) else 0
+                },
+                "active_operations": len([s for s in ingest_status_store.values() if s.status == "running"]),
+                "recent_errors": len([s for s in ingest_status_store.values() if s.status == "failed"]),
+            }
+        }
+
+        # Validate canonical file structure if it exists
+        if os.path.exists(canonical_path):
+            try:
+                with open(canonical_path, 'r') as f:
+                    canonical_data = json.load(f)
+                health_status["components"]["canonical_file"]["voyages_count"] = sum(
+                    len(p.get("voyages", [])) for p in canonical_data.values() if isinstance(p, dict)
+                )
+                health_status["components"]["canonical_file"]["presidents_count"] = len(canonical_data)
+            except Exception as e:
+                health_status["components"]["canonical_file"]["validation_error"] = str(e)
+                health_status["overall_status"] = "degraded"
+
+        # Check for missing components
+        if not os.path.exists(script_path) or not os.path.exists(canonical_path):
+            health_status["overall_status"] = "unhealthy"
+
+        return health_status
+
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "overall_status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": str(e)
+        }
