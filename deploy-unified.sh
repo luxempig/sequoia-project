@@ -85,9 +85,9 @@ PRIVATE_BUCKET=sequoia-canonical
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
-# Google Sheets Integration (local values)
-DOC_ID=1brCftArb50GHRZfxDuvCJJkXFAfIE_UoP45xZV0TSdU
-SPREADSHEET_ID=1CDfPY4zi_pkfwyoYxOGPUoeD2ypkKTfFNe1z81klePQ
+# Google Sheets Integration (disabled - no longer needed)
+# DOC_ID=1brCftArb50GHRZfxDuvCJJkXFAfIE_UoP45xZV0TSdU
+# SPREADSHEET_ID=1CDfPY4zi_pkfwyoYxOGPUoeD2ypkKTfFNe1z81klePQ
 
 # Paths and Settings
 GOOGLE_APPLICATION_CREDENTIALS="/home/ec2-user/sequoia-project/backend/keys/sequoia_credentials.json"
