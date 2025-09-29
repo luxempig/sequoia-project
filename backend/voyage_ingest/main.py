@@ -174,7 +174,7 @@ def main():
     load_dotenv()
 
     doc_id = os.environ.get("DOC_ID", "").strip()
-    spreadsheet_id = os.environ.get("SPREADSHEET_ID", "").strip()
+    spreadsheet_id = os.environ.get("SPREADSHEET_ID", "").strip()  # No longer required
     dry_run = _as_bool(os.environ.get("DRY_RUN"), default=False)
 
     # Handle different input sources
@@ -185,7 +185,7 @@ def main():
         if not os.path.exists(args.file):
             LOG.error(f"JSON file not found: {args.file}")
             return
-        LOG.info("=== Voyage Ingest (JSON) ===  DRY_RUN=%s  FILE=%s  SHEET=%s", dry_run, args.file, spreadsheet_id)
+        LOG.info("=== Voyage Ingest (JSON, Sheets disabled) ===  DRY_RUN=%s  FILE=%s", dry_run, args.file)
 
         # Parse JSON file into presidents + voyage bundles
         presidents, bundles = parse_json_file(args.file)
@@ -204,12 +204,8 @@ def main():
         LOG.error("No voyages found in the document.")
         return
 
-    # ---------------- Reset presidents (Sheets + DB) from headers ----------------
-    try:
-        sheets_updater.reset_presidents_sheet(spreadsheet_id, presidents)
-    except Exception as e:
-        LOG.error("Failed to reset presidents in Sheets: %s", e)
-        return
+    # ---------------- Reset presidents (DB only, skipping Sheets) ----------------
+    LOG.info("Skipping Google Sheets operations (sheets disabled)")
     try:
         db_updater.reset_presidents_table_from_list(presidents)
     except Exception as e:
@@ -232,10 +228,10 @@ def main():
         desired_voyage_slugs=desired_slugs,
         dry_run=dry_run,
         prune_db=True,
-        prune_sheets=True,
+        prune_sheets=False,  # Sheets disabled
         prune_s3=False,  # keep S3 additive globally (we only rename/move on same-link changes)
     )
-    LOG.info("Global reconcile of missing voyages (Sheets/DB only): %s", global_prune_stats)
+    LOG.info("Global reconcile of missing voyages (DB only): %s", global_prune_stats)
 
     # ---------------- Per-voyage processing ----------------
     for idx, bundle in enumerate(bundles, start=1):
@@ -267,22 +263,15 @@ def main():
         for mw in media_warnings:
             LOG.warning("Media issue: %s", mw)
 
-        # 3) Upsert Sheets (voyages/passengers/media & joins)
-        try:
-            sheets_updater.update_all(spreadsheet_id, bundle, s3_links)
-        except Exception as e:
-            LOG.error("Sheets update failed for %s: %s", vslug, e)
+        # 3) Skipping Sheets upsert (sheets disabled)
+        # sheets_updater.update_all(spreadsheet_id, bundle, s3_links)
 
-        # 4) Per-voyage prune of joins (Sheets/DB) AFTER upserts to ensure exact match with Doc
+        # 4) Per-voyage prune of joins (DB only, Sheets disabled)
         sheets_deleted_vm = sheets_deleted_vp = 0
         db_deleted_vm = db_deleted_vp = db_deleted_media = db_deleted_people = 0
 
-        try:
-            sheet_stats = reconciler.diff_and_prune_sheets(bundle, dry_run=dry_run)
-            sheets_deleted_vm = sheet_stats.get("deleted_voyage_media", 0)
-            sheets_deleted_vp = sheet_stats.get("deleted_voyage_passengers", 0)
-        except Exception as e:
-            LOG.warning("Sheets prune failed for %s: %s", vslug, e)
+        # Skipping Sheets prune (sheets disabled)
+        # reconciler.diff_and_prune_sheets(bundle, dry_run=dry_run)
 
         try:
             db_stats = reconciler.diff_and_prune_db(bundle, dry_run=dry_run, prune_masters=not dry_run)
@@ -338,13 +327,9 @@ def main():
             f"missing_count={global_prune_stats.get('missing_count', 0)}",
         ])
 
-    # 8) Write ingest_log
+    # 8) Skipping ingest_log write to Sheets (sheets disabled)
     if log_rows:
-        try:
-            sheets_updater.append_ingest_log(spreadsheet_id, log_rows)
-            LOG.info("Wrote %d log row(s) to 'ingest_log'.", len(log_rows))
-        except Exception as e:
-            LOG.warning("Failed to write ingest_log: %s", e)
+        LOG.info("Skipped writing %d log row(s) to Sheets ingest_log (sheets disabled).", len(log_rows))
 
     if total_errors:
         LOG.warning("Completed with %d validation error(s). See logs above.", total_errors)
