@@ -121,9 +121,15 @@ EOF
         exit 1
     fi
     
+    # Clear Python cache to ensure fresh code loads
+    log "Clearing Python cache..."
+    find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
     # Restart backend with PM2
     log "Restarting backend..."
-    pm2 restart sequoia-backend || pm2 start ../ecosystem.config.js --name sequoia-backend
+    pm2 delete sequoia-backend 2>/dev/null || true
+    pm2 start ../ecosystem.config.js --name sequoia-backend
 fi
 
 # Deploy frontend if build archive exists
