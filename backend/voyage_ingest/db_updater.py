@@ -180,7 +180,7 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     rows.append((
                         _ns(p.get("slug") or p.get("person_slug")),
                         _ns(p.get("full_name")),
-                        _ns(p.get("role_title")),
+                        _ns(p.get("title") or p.get("role_title")),  # Use 'title' from JSON, fallback to 'role_title'
                         _ns(p.get("organization")),
                         int(p["birth_year"]) if _ns(p.get("birth_year")) else None,
                         int(p["death_year"]) if _ns(p.get("death_year")) else None,
@@ -243,7 +243,9 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     person_slug = _ns(p.get("slug") or p.get("person_slug"))
                     if person_slug and person_slug not in seen_persons:
                         seen_persons.add(person_slug)
-                        rows.append((vslug, person_slug, _ns(p.get("role_title")) or "Guest", None))
+                        # Use 'title' from JSON for capacity_role, fallback to 'role_title', default to 'Guest'
+                        capacity_role = _ns(p.get("title") or p.get("role_title")) or "Guest"
+                        rows.append((vslug, person_slug, capacity_role, None))
                 if rows:
                     execute_values(cur, """
                         INSERT INTO voyage_passengers (voyage_slug, person_slug, capacity_role, notes)
