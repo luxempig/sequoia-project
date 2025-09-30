@@ -7,8 +7,6 @@ import LoginScreen from "./components/LoginScreen";
 import HomePage from "./components/HomePage";
 import VoyageList from "./components/VoyageList";
 import VoyageDetail from "./components/VoyageDetail";
-import PresidentDirectory from "./components/PresidentDirectory";
-import PresidentVoyages from "./components/PresidentVoyages";
 import PeopleDirectory from "./components/PeopleDirectory";
 import PersonDetail from "./components/PersonDetail";
 import JsonCuratorInterface from "./components/JsonCuratorInterface";
@@ -35,10 +33,7 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/voyages" element={<VoyageList />} />
         <Route path="/voyages/:slug" element={<VoyageDetail />} />
-        
-        <Route path="/presidents" element={<PresidentDirectory />} />
-        <Route path="/presidents/:slug" element={<PresidentVoyages />} />
-        
+
         <Route path="/people" element={<PeopleDirectory />} />
         <Route path="/people/:slug" element={<PersonDetail />} />
 
