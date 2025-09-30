@@ -215,24 +215,27 @@ export default function VoyageList() {
           <span>Vessel Owner:</span>
           <select value={pres} onChange={(e) => setPres(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent">
             <option value="">All Owners/Presidents</option>
-            {presidents.map((p) => (
-              <option key={p.president_slug} value={p.president_slug}>
-                {p.full_name}
-              </option>
-            ))}
+            {presidents
+              .filter((p) => !['reagan-ronald', 'bush-george-w', 'obama-barack', 'post-presidential'].includes(p.president_slug))
+              .map((p) => (
+                <option key={p.president_slug} value={p.president_slug}>
+                  {p.full_name}
+                </option>
+              ))}
           </select>
         </label>
 
-        <div ref={moreRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setMore((o) => !o)}
-            className="text-sm px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 font-medium"
-          >
-            Filter by Tags {selectedTags.size > 0 && `(${selectedTags.size})`} ▾
-          </button>
+        {viewMode === 'list' && (
+          <div ref={moreRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setMore((o) => !o)}
+              className="text-sm px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 font-medium"
+            >
+              Filter by Tags {selectedTags.size > 0 && `(${selectedTags.size})`} ▾
+            </button>
 
-          {moreOpen && (
+            {moreOpen && (
             <div className="absolute z-20 mt-2 w-64 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-96 overflow-y-auto">
               <div className="p-3 border-b border-gray-200">
                 <div className="flex justify-between items-center">
@@ -282,8 +285,9 @@ export default function VoyageList() {
                 )}
               </div>
             </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 ml-auto">
           <div className="flex rounded-md border border-gray-300 bg-white">
