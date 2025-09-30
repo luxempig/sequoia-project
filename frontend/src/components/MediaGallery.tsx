@@ -68,7 +68,7 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
         // Filter to only displayable media if requested
         if (filterDisplayable) {
           mediaData = mediaData.filter(m => {
-            const url = m.url || m.public_derivative_url || m.s3_url || m.google_drive_link || '';
+            const url = m.url || m.public_derivative_url || m.s3_url || '';
             return url.includes('drive.google.com') ||
                    url.includes('dropbox.com') ||
                    url.includes('s3.amazonaws.com') ||

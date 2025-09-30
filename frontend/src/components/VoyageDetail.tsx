@@ -52,7 +52,7 @@ export default function VoyageDetail() {
 
   // Separate media by type: Drive/Dropbox/S3 vs other sources
   const displayableMedia = media.filter(m => {
-    const url = m.url || m.public_derivative_url || m.s3_url || m.google_drive_link || '';
+    const url = m.url || m.public_derivative_url || m.s3_url || '';
     return url.includes('drive.google.com') ||
            url.includes('dropbox.com') ||
            url.includes('s3.amazonaws.com') ||
@@ -60,7 +60,7 @@ export default function VoyageDetail() {
   });
 
   const sourceLinks = media.filter(m => {
-    const url = m.url || m.public_derivative_url || m.s3_url || m.google_drive_link || '';
+    const url = m.url || m.public_derivative_url || m.s3_url || '';
     return url && !(
       url.includes('drive.google.com') ||
       url.includes('dropbox.com') ||
@@ -130,7 +130,7 @@ export default function VoyageDetail() {
                       <p className="text-xs text-gray-500 mb-2">Date: {source.date}</p>
                     )}
                     <a
-                      href={source.url || source.google_drive_link || source.s3_url || '#'}
+                      href={source.url || source.s3_url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
