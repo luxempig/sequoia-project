@@ -124,6 +124,18 @@ export default function VoyageList() {
       .finally(() => setLoading(false));
   }, [params]);
 
+  // Auto-apply filters when date or owner changes
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (sig) p.set("significant", "1");
+    if (roy) p.set("royalty", "1");
+    if (df) p.set("date_from", df);
+    if (dt) p.set("date_to", dt);
+    if (pres) p.set("president_slug", pres);
+    setParams(p);
+  }, [df, dt, pres, q, sig, roy]);
+
   const apply = (e?: React.FormEvent) => {
     e?.preventDefault();
     const p = new URLSearchParams();
@@ -199,9 +211,9 @@ export default function VoyageList() {
         </label>
 
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-          <span>President:</span>
+          <span>Vessel Owner:</span>
           <select value={pres} onChange={(e) => setPres(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-            <option value="">All Administrations</option>
+            <option value="">All Owners/Presidents</option>
             {presidents.map((p) => (
               <option key={p.president_slug} value={p.president_slug}>
                 {p.full_name}
@@ -308,6 +320,9 @@ export default function VoyageList() {
 
       {!loading && filteredVoyages.length > 0 && (
         <>
+          <div className="mb-4 text-sm text-gray-700 font-medium">
+            Showing {filteredVoyages.length} voyage{filteredVoyages.length === 1 ? '' : 's'}
+          </div>
           {viewMode === 'timeline' ? (
             <HorizontalTimeline voyages={filteredVoyages} />
           ) : (

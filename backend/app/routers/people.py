@@ -97,13 +97,13 @@ def get_role_statistics():
 
         # Calculate average voyages per passenger
         avg_voyages = 0
-        if totals["total_people"] > 0:
-            avg_voyages = round(totals["total_passenger_records"] / totals["total_people"])
+        if totals and totals["total_people"] > 0:
+            avg_voyages = round(totals["total_passenger_records"] / totals["total_people"], 1)
 
         return {
-            "total_people": totals["total_people"],
-            "total_passenger_records": totals["total_passenger_records"],
-            "unique_titles": titles["unique_titles"],
+            "total_people": totals["total_people"] if totals else 0,
+            "total_passenger_records": totals["total_passenger_records"] if totals else 0,
+            "unique_titles": titles["unique_titles"] if titles else 0,
             "avg_voyages_per_passenger": avg_voyages,
             "by_role": [dict(row) for row in roles]
         }
