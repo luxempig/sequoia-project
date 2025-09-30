@@ -5,7 +5,7 @@ import subprocess
 import asyncio
 from datetime import datetime
 from typing import Dict, Optional
-from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import PlainTextResponse, JSONResponse
 from pydantic import BaseModel
 import boto3
@@ -556,7 +556,7 @@ async def upload_media(
 
 
 @router.post("/save-president-data")
-async def save_president_data(request: Request):
+async def save_president_data(request: Request, background_tasks: BackgroundTasks):
     """Save updated voyage data to canonical file and trigger automatic ingest."""
     operation_id = f"curator_save_{int(time.time())}"
     status_tracker = IngestStatus(operation_id)
@@ -608,43 +608,34 @@ async def save_president_data(request: Request):
         status_tracker.add_output_line(f"Output.json file saved ({file_size} bytes)")
         status_tracker.update_progress("Starting automatic ingest...", 40)
 
-        # Automatically trigger ingest after successful save
-        try:
-            # Re-enable auto-ingest pipeline
-            ingest_result = await trigger_canonical_ingest_with_tracking(status_tracker)
+        # Trigger ingest in background and return immediately
+        background_tasks.add_task(run_ingest_in_background, status_tracker)
 
-            if ingest_result["status"] == "success":
-                status_tracker.complete(True)
-                return {
-                    "status": "success",
-                    "message": "Data saved and ingested successfully",
-                    "operation_id": operation_id,
-                    "voyages_processed": status_tracker.voyages_processed,
-                    "ingest_summary": ingest_result.get("summary", {})
-                }
-            else:
-                status_tracker.complete(False, ingest_result.get("error", "Unknown ingest error"))
-                return {
-                    "status": "warning",
-                    "message": "Data saved but ingest had issues",
-                    "operation_id": operation_id,
-                    "ingest_error": ingest_result.get("error", "Unknown error"),
-                    "ingest_summary": ingest_result.get("summary", {})
-                }
-        except Exception as ingest_error:
-            logger.error(f"Auto-ingest failed: {ingest_error}")
-            status_tracker.complete(False, str(ingest_error))
-            return {
-                "status": "warning",
-                "message": "Data saved successfully but automatic ingest failed",
-                "operation_id": operation_id,
-                "ingest_error": str(ingest_error)
-            }
+        return {
+            "status": "processing",
+            "message": "Data saved, ingestion in progress",
+            "operation_id": operation_id
+        }
 
     except Exception as e:
         logger.error(f"Failed to save canonical voyage data: {e}")
         status_tracker.complete(False, str(e))
         raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
+
+
+async def run_ingest_in_background(status_tracker: IngestStatus):
+    """Background task to run ingest after save."""
+    try:
+        ingest_result = await trigger_canonical_ingest_with_tracking(status_tracker)
+        if ingest_result["status"] == "success":
+            status_tracker.complete(True)
+            logger.info(f"Background ingest completed successfully for operation {status_tracker.operation_id}")
+        else:
+            status_tracker.complete(False, ingest_result.get("error", "Unknown ingest error"))
+            logger.error(f"Background ingest failed for operation {status_tracker.operation_id}: {ingest_result.get('error')}")
+    except Exception as e:
+        logger.error(f"Background ingest exception for operation {status_tracker.operation_id}: {e}")
+        status_tracker.complete(False, str(e))
 
 
 async def trigger_canonical_ingest():
