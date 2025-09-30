@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { Voyage, MediaItem } from "../types";
 import { api } from "../api";
+import { looksLikeImage, looksLikeVideo } from "../utils/media";
 
 interface TimelineData {
   [year: string]: {
@@ -24,6 +25,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   const [currentMonth, setCurrentMonth] = useState<string>("");
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [mediaData, setMediaData] = useState<{ [voyageSlug: string]: MediaItem[] }>({});
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Organize voyages by year/month/day
   useEffect(() => {
@@ -139,6 +141,15 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     return <div className="text-center py-8 text-gray-500">No timeline data available</div>;
   }
 
+  const handleMediaClick = (media: MediaItem) => {
+    const url = media.url || media.public_derivative_url || media.s3_url || '';
+    if (looksLikeImage(url)) {
+      setLightboxSrc(url);
+    } else if (looksLikeVideo(url) || url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-200 to-gray-300 p-6 rounded-lg shadow-lg" style={{
       background: 'linear-gradient(135deg, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%)'
@@ -246,15 +257,19 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                   {dayMedia.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
                       {dayMedia.slice(0, 4).map(media => {
+                        const url = media.url || media.public_derivative_url || media.s3_url || '';
                         const thumbnailUrl = media.public_derivative_url || media.url;
-                        const hasImage = thumbnailUrl && (
-                          thumbnailUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
-                          media.media_type?.toLowerCase() === 'image' ||
-                          media.media_type?.toLowerCase() === 'photo'
-                        );
+                        const isImage = looksLikeImage(url);
+                        const isVideo = looksLikeVideo(url);
+                        const hasImage = thumbnailUrl && (isImage || media.media_type?.toLowerCase() === 'photo');
 
                         return (
-                          <div key={media.media_slug} className="bg-white rounded border border-gray-300 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                          <button
+                            key={media.media_slug}
+                            onClick={() => handleMediaClick(media)}
+                            className="bg-white rounded border border-gray-300 shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer text-left"
+                            title={media.title || 'Click to view'}
+                          >
                             {hasImage && thumbnailUrl ? (
                               <img
                                 src={thumbnailUrl}
@@ -273,9 +288,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                                   }
                                 }}
                               />
+                            ) : isVideo ? (
+                              <div className="w-full h-20 bg-gray-800 flex items-center justify-center text-white text-xs">
+                                ▶ {media.media_type || 'Video'}
+                              </div>
                             ) : (
                               <div className="w-full h-20 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
-                                {media.media_type || 'Document'}
+                                📄 {media.media_type || 'Document'}
                               </div>
                             )}
                             <div className="p-1.5">
@@ -283,7 +302,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                                 {media.title || media.description_markdown?.slice(0, 30) || 'View media'}
                               </div>
                             </div>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -301,15 +320,15 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       {/* Navigation Arrows */}
       <div className="flex justify-between mt-6">
-        <button 
+        <button
           onClick={() => navigateMonth('prev')}
           className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={years.indexOf(currentYear) === 0 && months.indexOf(currentMonth) === 0}
         >
           ← Previous
         </button>
-        
-        <button 
+
+        <button
           onClick={() => navigateMonth('next')}
           className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={years.indexOf(currentYear) === years.length - 1 && months.indexOf(currentMonth) === months.length - 1}
@@ -317,6 +336,31 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           Next →
         </button>
       </div>
+
+      {/* Lightbox for images */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxSrc(null)}
+              className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 shadow"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <img
+              src={lightboxSrc}
+              alt="Media"
+              className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
