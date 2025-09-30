@@ -98,7 +98,7 @@ def parse_json_file(json_path):
                     "president_slug": "post-presidential",
                     "full_name": "Post-Presidential",
                     "term_start": "January 20, 1981",
-                    "term_end": None,
+                    "term_end": "December 31, 9999",  # Far future date for ongoing ownership
                     "party": "Private Owners"
                 }
                 presidents.append(president_info)
