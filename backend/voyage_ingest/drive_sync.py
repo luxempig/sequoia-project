@@ -143,14 +143,19 @@ def _s3_key_for_derivative(vslug: str, mslug: str, ext: str, credit: str, kind: 
 
 def _upload_bytes(bucket: str, key: str, data: bytes, content_type: Optional[str] = None) -> None:
     extra = {}
-    if content_type: extra["ContentType"] = content_type
+    if content_type:
+        extra["ContentType"] = content_type
+    # Set Content-Disposition to inline so files display in browser instead of downloading
+    extra["ContentDisposition"] = "inline"
     _s3().put_object(Bucket=bucket, Key=key, Body=data, **extra)
 
 def _copy_object(src_bucket: str, src_key: str, dst_bucket: str, dst_key: str, content_type: Optional[str] = None) -> None:
     extra = {"CopySource": {"Bucket": src_bucket, "Key": src_key}, "Bucket": dst_bucket, "Key": dst_key}
+    extra["MetadataDirective"] = "REPLACE"
     if content_type:
-        extra["MetadataDirective"] = "REPLACE"
         extra["ContentType"] = content_type
+    # Set Content-Disposition to inline so files display in browser
+    extra["ContentDisposition"] = "inline"
     _s3().copy_object(**extra)
 
 def _delete_object(bucket: str, key: str) -> None:

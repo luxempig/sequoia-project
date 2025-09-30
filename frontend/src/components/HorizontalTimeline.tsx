@@ -70,13 +70,22 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       .flatMap(dayData => dayData.voyages.map(v => v.voyage_slug));
 
     Promise.all(
-      voyageSlugs.map(slug => 
+      voyageSlugs.map(slug =>
         api.getVoyageMedia(slug).catch(() => [])
       )
     ).then(results => {
       const mediaMap: { [voyageSlug: string]: MediaItem[] } = {};
       voyageSlugs.forEach((slug, index) => {
-        mediaMap[slug] = results[index] || [];
+        // Filter to only show Drive/Dropbox media in timeline
+        const allMedia = results[index] || [];
+        const driveDropboxMedia = allMedia.filter(m => {
+          const url = m.url || m.public_derivative_url || m.s3_url || '';
+          return url.includes('drive.google.com') ||
+                 url.includes('dropbox.com') ||
+                 url.includes('s3.amazonaws.com') ||
+                 url.includes('sequoia-');
+        });
+        mediaMap[slug] = driveDropboxMedia;
       });
       setMediaData(mediaMap);
     });

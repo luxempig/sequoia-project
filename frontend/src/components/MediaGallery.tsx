@@ -51,7 +51,7 @@ const toTile = (m: MediaItem): Tile | null => {
   return { id: m.media_slug, kind: "other", url, caption };
 };
 
-const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
+const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }> = ({ voyageSlug, filterDisplayable = false }) => {
   const [raw, setRaw] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [openSrc, setOpenSrc] = useState<string | null>(null);
@@ -61,12 +61,28 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
     setLoading(true);
     api
       .getVoyageMedia(voyageSlug)
-      .then((data) => alive && setRaw(Array.isArray(data) ? data : []))
+      .then((data) => {
+        if (!alive) return;
+        let mediaData = Array.isArray(data) ? data : [];
+
+        // Filter to only displayable media if requested
+        if (filterDisplayable) {
+          mediaData = mediaData.filter(m => {
+            const url = m.url || m.public_derivative_url || m.s3_url || m.google_drive_link || '';
+            return url.includes('drive.google.com') ||
+                   url.includes('dropbox.com') ||
+                   url.includes('s3.amazonaws.com') ||
+                   url.includes('sequoia-');
+          });
+        }
+
+        setRaw(mediaData);
+      })
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [voyageSlug]);
+  }, [voyageSlug, filterDisplayable]);
 
   const tiles = useMemo(
     () => raw.map(toTile).filter(Boolean) as Tile[],
