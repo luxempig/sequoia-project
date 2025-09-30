@@ -96,18 +96,35 @@ def generate_media_slugs(items: List[dict], voyage_slug: str) -> None:
 
 # Parse the president slug segment from voyage_slug
 def president_from_voyage_slug(voyage_slug: str) -> str:
+    """
+    Extract president slug from voyage_slug.
+    Format: president-name-YYYY-MM-DD (e.g., roosevelt-franklin-1935-01-01)
+    Returns: president-name portion (e.g., roosevelt-franklin)
+    """
     s = (voyage_slug or "").strip().lower()
-    if not s or len(s) < 12 or s[4] != "-" or s[7] != "-" or s[10] != "-":
+    if not s:
         return "unknown-president"
-    rest = s[11:]
-    known = _read_president_slugs_from_env_sheet()
-    if known:
-        best = None
-        for pres in known:
-            if rest.startswith(pres + "-") or rest == pres:
-                if best is None or len(pres) > len(best):
-                    best = pres
-        if best:
-            return best
-    # fallback: first token
-    return rest.split("-", 1)[0] if "-" in rest else rest or "unknown-president"
+
+    # Voyage slug format is: president-name-YYYY-MM-DD
+    # We need to extract everything before the date portion
+    parts = s.split("-")
+    if len(parts) < 5:
+        return "unknown-president"
+
+    # Check if last 3 parts are YYYY-MM-DD (date format)
+    try:
+        year = int(parts[-3])
+        month = int(parts[-2])
+        day = int(parts[-1])
+        if 1900 <= year <= 2100 and 0 <= month <= 12 and 0 <= day <= 31:
+            # Valid date found - everything before it is the president slug
+            president_slug = "-".join(parts[:-3])
+            return president_slug if president_slug else "unknown-president"
+    except (ValueError, IndexError):
+        pass
+
+    # Fallback: assume first 2 parts are president slug (lastname-firstname pattern)
+    if len(parts) >= 2:
+        return "-".join(parts[:2])
+
+    return "unknown-president"
