@@ -133,6 +133,7 @@ export default function VoyageList() {
     if (df) p.set("date_from", df);
     if (dt) p.set("date_to", dt);
     if (pres) p.set("president_slug", pres);
+    p.set("limit", "500"); // Fetch all voyages
     setParams(p);
   }, [df, dt, pres, q, sig, roy]);
 
