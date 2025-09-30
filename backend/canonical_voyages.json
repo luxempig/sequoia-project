@@ -1873,11 +1873,11 @@
             "bio": "https://en.wikipedia.org/wiki/Henry_L._Roosevelt"
           },
           {
-            "name": "roosevelt-eleanor-morrow",
+            "name": "roosevelt-eleanor",
             "full_name": "Eleanor Roosevelt",
-            "title": "",
+            "title": "First Lady",
             "role": "",
-            "bio": ""
+            "bio": "https://en.wikipedia.org/wiki/Eleanor_Roosevelt"
           },
           {
             "name": "douglas-lewis",
@@ -1970,7 +1970,7 @@
         "destination": "Mount Vernon, VA",
         "passengers": [
           {
-            "name": "roosevelt-franklin-delano",
+            "name": "roosevelt-franklin",
             "full_name": "Franklin Delano Roosevelt",
             "title": "POTUS",
             "role": "",
@@ -1998,16 +1998,16 @@
             "bio": "https://en.wikipedia.org/wiki/Cary_T._Grayson"
           },
           {
-            "name": "grayson-alice-gertrude",
+            "name": "grayson-alice",
             "full_name": "Alice Gertrude Grayson",
-            "title": "",
+            "title": "Mrs. Grayson",
             "role": "",
             "bio": ""
           },
           {
-            "name": "lehand-marguerite-alice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice \"Missy\" LeHand",
-            "title": "",
+            "title": "Private Sec. to Pres.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Marguerite_LeHand"
           },
@@ -2026,7 +2026,7 @@
             "bio": ""
           },
           {
-            "name": "gennerich-august-adolph",
+            "name": "gennerich-august",
             "full_name": "August \"Gus\" Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -2040,9 +2040,9 @@
             "bio": "https://en.wikipedia.org/wiki/James_Roosevelt"
           },
           {
-            "name": "roosevelt-betsey-cushing",
+            "name": "roosevelt-betsey",
             "full_name": "Betsey Cushing Roosevelt Whitney",
-            "title": "",
+            "title": "Mrs. James Roosevelt",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Betsey_Cushing_Roosevelt_Whitney"
           },
@@ -2101,7 +2101,7 @@
         "destination": "DC Navy Yard",
         "passengers": [
           {
-            "name": "roosevelt-franklin-delano",
+            "name": "roosevelt-franklin",
             "full_name": "Franklin Delano Roosevelt",
             "title": "POTUS",
             "role": "",
@@ -2150,9 +2150,9 @@
             "bio": "https://en.wikipedia.org/wiki/Louis_Howe"
           },
           {
-            "name": "lehand-marguerite-alice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice \"Missy\" LeHand",
-            "title": "",
+            "title": "Private Sec. to Pres.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Marguerite_LeHand"
           },
@@ -2178,7 +2178,7 @@
             "bio": ""
           },
           {
-            "name": "gennerich-august-adolph",
+            "name": "gennerich-august",
             "full_name": "August \"Gus\" Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -2260,13 +2260,6 @@
             "name": "holmes-mary",
             "full_name": "Mary Holmes",
             "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "early-helen",
-            "full_name": "Helen Early",
-            "title": "Stephen Early's daughter",
             "role": "",
             "bio": ""
           },
@@ -2364,13 +2357,6 @@
             "title": "",
             "role": "",
             "bio": ""
-          },
-          {
-            "name": "roosevelt-eleanor",
-            "full_name": "Eleanor Roosevelt",
-            "title": "First Lady",
-            "role": "",
-            "bio": "https://en.wikipedia.org/wiki/Eleanor_Roosevelt"
           },
           {
             "name": "gardner-sallie",
@@ -4377,11 +4363,11 @@
             "bio": "https://en.wikipedia.org/wiki/Marguerite_LeHand"
           },
           {
-            "name": "fox-george",
+            "name": "fox-georgea",
             "full_name": "George A. Fox",
-            "title": "Chief Pharmacist, US Navy medic",
+            "title": "Chief Pharmacist",
             "role": "",
-            "bio": ""
+            "bio": "http://www.fdrlibrary.marist.edu/archives/collections/franklin/index.php?p=creators/creator&id=82"
           },
           {
             "name": "gennerich-august",
@@ -5403,7 +5389,7 @@
             "bio": "http://www.fdrlibrary.marist.edu/archives/collections/franklin/index.php?p=creators/creator&id=82"
           },
           {
-            "name": "gennerich-augustadolph",
+            "name": "gennerich-august",
             "full_name": "August Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -5509,9 +5495,9 @@
             "bio": "https://en.wikipedia.org/wiki/James_Farley"
           },
           {
-            "name": "robinson-josepht",
+            "name": "robinson-joseph-taylor",
             "full_name": "Joseph Taylor Robinson",
-            "title": "Senator (D-AR; Majority Leader)",
+            "title": "Senator (D-AR), Majority Leader",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Joseph_Taylor_Robinson"
           },
@@ -5530,7 +5516,7 @@
             "bio": "https://en.wikipedia.org/wiki/Jo_Byrns"
           },
           {
-            "name": "gennerich-augustadolph",
+            "name": "gennerich-august",
             "full_name": "August Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -5651,14 +5637,14 @@
             "bio": "https://en.wikipedia.org/wiki/Homer_Stille_Cummings"
           },
           {
-            "name": "cummings-marycecilia",
+            "name": "cummings-mary",
             "full_name": "Mary Cecilia Cummings",
-            "title": "Mrs. Cummings",
+            "title": "née Waterbury",
             "role": "",
             "bio": ""
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
@@ -5672,7 +5658,7 @@
             "bio": "https://en.wikipedia.org/wiki/Wilson_Brown_(admiral)"
           },
           {
-            "name": "roosevelt-betseycushing",
+            "name": "roosevelt-betsey",
             "full_name": "Betsey Cushing Roosevelt Whitney",
             "title": "Mrs. James Roosevelt",
             "role": "",
@@ -5686,7 +5672,7 @@
             "bio": "https://en.wikipedia.org/wiki/Franklin_Delano_Roosevelt_Jr."
           },
           {
-            "name": "gennerich-augustadolph",
+            "name": "gennerich-august",
             "full_name": "August Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -5808,30 +5794,30 @@
             "bio": ""
           },
           {
-            "name": "roosevelt-henryl",
+            "name": "roosevelt-henry",
             "full_name": "Henry L. Roosevelt",
-            "title": "Col.",
+            "title": "Assistant Secretary of the Navy",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Henry_L._Roosevelt"
           },
           {
-            "name": "mcintire-rosst",
+            "name": "mcintire-ross",
             "full_name": "Ross T. McIntire",
-            "title": "Dr. (Physician to the President)",
+            "title": "Physician to the President",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Ross_T._McIntire"
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Marguerite_LeHand"
           },
           {
-            "name": "tully-graceg",
+            "name": "tully-grace-g",
             "full_name": "Grace G. Tully",
-            "title": "",
+            "title": "Assistant to Missy LeHand",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Grace_Tully"
           }
@@ -5943,7 +5929,7 @@
             "bio": ""
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
@@ -6075,14 +6061,14 @@
             "bio": "https://en.wikipedia.org/wiki/Alben_W._Barkley"
           },
           {
-            "name": "hopkins-harryl",
+            "name": "hopkins-harry",
             "full_name": "Harry L. Hopkins",
-            "title": "",
+            "title": "Administrator of the Federal Emergency Relief Administration",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Harry_Hopkins"
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
@@ -6096,7 +6082,7 @@
             "bio": "https://en.wikipedia.org/wiki/Wilson_Brown_(admiral)"
           },
           {
-            "name": "gennerich-augustadolph",
+            "name": "gennerich-august",
             "full_name": "August Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -6221,7 +6207,7 @@
             "bio": "https://en.wikipedia.org/wiki/Franklin_D._Roosevelt"
           },
           {
-            "name": "morgenthau-henryjr",
+            "name": "morgenthau-henry",
             "full_name": "Henry Morgenthau Jr.",
             "title": "Sec. of the Treasury",
             "role": "",
@@ -6249,16 +6235,16 @@
             "bio": "https://en.wikipedia.org/wiki/Felix_Frankfurter"
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Marguerite_LeHand"
           },
           {
-            "name": "tully-graceg",
+            "name": "tully-grace-g",
             "full_name": "Grace G. Tully",
-            "title": "",
+            "title": "Assistant to Missy LeHand",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Grace_Tully"
           },
@@ -6270,7 +6256,7 @@
             "bio": "https://en.wikipedia.org/wiki/Wilson_Brown_(admiral)"
           },
           {
-            "name": "gennerich-augustadolph",
+            "name": "gennerich-august",
             "full_name": "August Adolph Gennerich",
             "title": "Secret Service",
             "role": "",
@@ -6367,7 +6353,7 @@
             "bio": ""
           },
           {
-            "name": "lehand-margueritealice",
+            "name": "lehand-marguerite",
             "full_name": "Marguerite Alice LeHand",
             "title": "",
             "role": "",
@@ -8880,9 +8866,9 @@
             "bio": "https://en.wikipedia.org/wiki/Lyndon_B._Johnson"
           },
           {
-            "name": "johnson-ladybird",
+            "name": "johnson-lady-bird",
             "full_name": "Lady Bird Johnson",
-            "title": "",
+            "title": "Second Lady",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Lady_Bird_Johnson"
           },
@@ -10216,7 +10202,7 @@
             "bio": ""
           },
           {
-            "name": "lynda",
+            "name": "johnson-lynda",
             "full_name": "Lynda",
             "title": "",
             "role": "",
@@ -11563,9 +11549,9 @@
             "bio": "https://en.wikipedia.org/wiki/Lyndon_B._Johnson"
           },
           {
-            "name": "johnson-ladybird",
+            "name": "johnson-lady-bird",
             "full_name": "Lady Bird Johnson",
-            "title": "Mrs.",
+            "title": "Second Lady",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Lady_Bird_Johnson"
           },
@@ -14094,7 +14080,7 @@
             "bio": ""
           },
           {
-            "name": "pickle-jj",
+            "name": "pickle-j-j",
             "full_name": "J.J. Pickle",
             "title": "Congressman",
             "role": "",
@@ -14192,13 +14178,6 @@
           },
           {
             "name": "mahon-grandchild-one",
-            "full_name": "Mahon grandchild",
-            "title": "",
-            "role": "",
-            "bio": ""
-          },
-          {
-            "name": "mahon-grandchild-two",
             "full_name": "Mahon grandchild",
             "title": "",
             "role": "",
@@ -14591,7 +14570,7 @@
             "bio": ""
           },
           {
-            "name": "pickle-jj",
+            "name": "pickle-j-j",
             "full_name": "J.J. Pickle",
             "title": "Congressman",
             "role": "",
@@ -15319,7 +15298,7 @@
             "bio": "https://en.wikipedia.org/wiki/Mark_Sullivan_(journalist)"
           },
           {
-            "name": "boone-joel-t",
+            "name": "boone-joel",
             "full_name": "Captain Joel T. Boone",
             "title": "White House physician",
             "role": "",
@@ -17759,23 +17738,23 @@
             "bio": "https://en.wikipedia.org/wiki/Bebe_Rebozo"
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           },
           {
-            "name": "buchanan-patrick-j",
+            "name": "buchanan-patrick",
             "full_name": "Patrick J. Buchanan",
-            "title": "",
+            "title": "Special Assistant",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Pat_Buchanan"
           },
           {
-            "name": "tkach-walter-r",
+            "name": "tkach-walter",
             "full_name": "Walter R. Tkach",
-            "title": "",
+            "title": "Major General, Personal Physician",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Walter_R._Tkach"
           },
@@ -18461,7 +18440,7 @@
             "bio": "https://en.wikipedia.org/wiki/Melvin_Laird"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -18828,7 +18807,7 @@
         "destination": "Washington Navy Yard",
         "passengers": [
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -20249,7 +20228,7 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -20356,7 +20335,7 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -20800,7 +20779,7 @@
             "full_name": "Tricia Nixon",
             "title": "",
             "role": "",
-            "bio": ""
+            "bio": "https://en.wikipedia.org/wiki/Tricia_Nixon_Cox"
           }
         ],
         "media": [
@@ -20871,9 +20850,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "nixon-eisenhower-julie",
+            "name": "eisenhower-julie",
             "full_name": "Julie Nixon Eisenhower",
-            "title": "",
+            "title": "Mrs.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Julie_Nixon_Eisenhower"
           },
@@ -20885,9 +20864,9 @@
             "bio": "https://en.wikipedia.org/wiki/David_Eisenhower"
           },
           {
-            "name": "nixon-cox-tricia",
+            "name": "cox-tricia",
             "full_name": "Tricia Nixon Cox",
-            "title": "",
+            "title": "Mrs.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Tricia_Nixon_Cox"
           }
@@ -21285,9 +21264,9 @@
             "bio": "https://en.wikipedia.org/wiki/David_Eisenhower"
           },
           {
-            "name": "nixon-julie",
+            "name": "eisenhower-julie",
             "full_name": "Julie Nixon",
-            "title": "",
+            "title": "Mrs. David Eisenhower",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Julie_Nixon_Eisenhower"
           },
@@ -21664,7 +21643,7 @@
             "bio": "https://en.wikipedia.org/wiki/Spiro_Agnew"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -22879,7 +22858,7 @@
             "bio": "https://en.wikipedia.org/wiki/Peter_Flanigan"
           },
           {
-            "name": "rogers-william-p",
+            "name": "rogers-william",
             "full_name": "William P. Rogers",
             "title": "Secretary of State",
             "role": "",
@@ -22927,9 +22906,9 @@
             "bio": "https://en.wikipedia.org/wiki/Homer_S._Hill"
           },
           {
-            "name": "hughes-james-d",
+            "name": "hughes-james",
             "full_name": "James D. Hughes",
-            "title": "Brigadier General, Military assistant to the president",
+            "title": "General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/James_D._Hughes"
           }
@@ -23122,7 +23101,7 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "connally-john",
+            "name": "connally-john-b",
             "full_name": "John B. Connally",
             "title": "Secretary of the Treasury",
             "role": "",
@@ -23482,7 +23461,7 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
             "title": "Attorney General",
             "role": "",
@@ -23582,7 +23561,7 @@
         "destination": "",
         "passengers": [
           {
-            "name": "stans-maurice",
+            "name": "stans-maurice-hubert",
             "full_name": "Maurice Hubert Stans",
             "title": "Secretary of Commerce",
             "role": "",
@@ -24003,9 +23982,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haldeman-h-r",
+            "name": "haldeman-hr",
             "full_name": "H. R. Haldeman",
-            "title": "",
+            "title": "Chief of Staff",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/H._R._Haldeman"
           },
@@ -24165,9 +24144,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           }
@@ -24262,9 +24241,9 @@
             "bio": "https://en.wikipedia.org/wiki/Brent_Scowcroft"
           },
           {
-            "name": "haldeman-h-r",
+            "name": "haldeman-hr",
             "full_name": "H. R. Haldeman",
-            "title": "",
+            "title": "Chief of Staff",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/H._R._Haldeman"
           }
@@ -24326,7 +24305,7 @@
             "bio": "https://en.wikipedia.org/wiki/John_Krol"
           },
           {
-            "name": "rogers-william-p",
+            "name": "rogers-william",
             "full_name": "William P. Rogers",
             "title": "Secretary of State",
             "role": "",
@@ -24452,9 +24431,9 @@
             "bio": "https://en.wikipedia.org/wiki/Edward_F._Cox"
           },
           {
-            "name": "nixon-tricia",
+            "name": "cox-tricia",
             "full_name": "Tricia Nixon Cox",
-            "title": "",
+            "title": "Mrs.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Tricia_Nixon_Cox"
           }
@@ -24859,9 +24838,9 @@
             "bio": "https://en.wikipedia.org/wiki/H._R._Haldeman"
           },
           {
-            "name": "mitchell-john",
+            "name": "mitchell-john-n",
             "full_name": "John N. Mitchell",
-            "title": "attorney for Mudge, Rose, Guthrie, and Alexander",
+            "title": "Attorney General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/John_N._Mitchell"
           },
@@ -25724,9 +25703,9 @@
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           },
           {
-            "name": "connally-john",
+            "name": "connally-john-b",
             "full_name": "John B. Connally",
-            "title": "Special Advisor",
+            "title": "Secretary of the Treasury",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/John_Connally"
           }
@@ -26165,9 +26144,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "Miss",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           }
@@ -26233,16 +26212,16 @@
             "bio": "https://en.wikipedia.org/wiki/Leonid_Brezhnev"
           },
           {
-            "name": "rogers-william-p",
+            "name": "rogers-william",
             "full_name": "William P. Rogers",
             "title": "Secretary of State",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/William_P._Rogers"
           },
           {
-            "name": "kissinger-henry-a",
+            "name": "kissinger-henry",
             "full_name": "Henry A. Kissinger",
-            "title": "Assistant",
+            "title": "Assistant for NSA",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Henry_Kissinger"
           },
@@ -26254,9 +26233,9 @@
             "bio": "https://en.wikipedia.org/wiki/Ron_Ziegler"
           },
           {
-            "name": "shultz-george-p",
+            "name": "shultz-george",
             "full_name": "George P. Shultz",
-            "title": "Secretary of the Treasury",
+            "title": "Director, OMB",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/George_Shultz"
           },
@@ -26540,9 +26519,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haig-alexander-m-jr",
+            "name": "haig-alexander",
             "full_name": "Alexander M. Haig, Jr.",
-            "title": "General",
+            "title": "Deputy Assistant Major General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           }
@@ -26584,9 +26563,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "kissinger-henry-a",
+            "name": "kissinger-henry",
             "full_name": "Henry A. Kissinger",
-            "title": "Mr.",
+            "title": "Assistant for NSA",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Henry_Kissinger"
           }
@@ -26682,9 +26661,9 @@
         "destination": "Washington Navy Yard",
         "passengers": [
           {
-            "name": "kissinger-henry-a",
+            "name": "kissinger-henry",
             "full_name": "Henry A. Kissinger",
-            "title": "",
+            "title": "Assistant for NSA",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Henry_Kissinger"
           },
@@ -26810,9 +26789,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haig-alexander-m-jr",
+            "name": "haig-alexander",
             "full_name": "Alexander M. Haig, Jr.",
-            "title": "",
+            "title": "Deputy Assistant Major General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           }
@@ -26856,9 +26835,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haig-alexander-m-jr",
+            "name": "haig-alexander",
             "full_name": "Alexander M. Haig, Jr.",
-            "title": "",
+            "title": "Deputy Assistant Major General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           },
@@ -26923,9 +26902,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haig-alexander-m-jr",
+            "name": "haig-alexander",
             "full_name": "Alexander M. Haig, Jr.",
-            "title": "",
+            "title": "Deputy Assistant Major General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           }
@@ -27001,9 +26980,9 @@
             "bio": "https://en.wikipedia.org/wiki/Richard_Nixon"
           },
           {
-            "name": "haig-alexander-m-jr",
+            "name": "haig-alexander",
             "full_name": "Alexander M. Haig, Jr.",
-            "title": "",
+            "title": "Deputy Assistant Major General",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           }
@@ -27067,9 +27046,9 @@
             "bio": ""
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           }
@@ -27146,9 +27125,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           },
@@ -27904,9 +27883,9 @@
             "bio": "https://en.wikipedia.org/wiki/David_Eisenhower"
           },
           {
-            "name": "nixon-julie",
+            "name": "eisenhower-julie",
             "full_name": "Julie Nixon Eisenhower",
-            "title": "",
+            "title": "Mrs.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Julie_Nixon_Eisenhower"
           },
@@ -27972,7 +27951,7 @@
             "bio": "https://en.wikipedia.org/wiki/Alexander_Haig"
           },
           {
-            "name": "todd-stephen",
+            "name": "todd-t-stephen",
             "full_name": "T. Stephen Todd",
             "title": "Lt. Cdr., military aide",
             "role": "",
@@ -29259,9 +29238,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "nixon-julie",
+            "name": "eisenhower-julie",
             "full_name": "Julie Nixon",
-            "title": "",
+            "title": "Mrs. David Eisenhower",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Julie_Nixon_Eisenhower"
           },
@@ -29682,9 +29661,9 @@
             "bio": "https://en.wikipedia.org/wiki/Pat_Nixon"
           },
           {
-            "name": "cox-edward-f",
+            "name": "cox-edward",
             "full_name": "Edward F. Cox",
-            "title": "",
+            "title": "Mr.",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Edward_F._Cox"
           },
@@ -29703,16 +29682,16 @@
             "bio": "https://en.wikipedia.org/wiki/David_Eisenhower"
           },
           {
-            "name": "nixon-julie",
+            "name": "eisenhower-julie",
             "full_name": "Julie Nixon",
-            "title": "",
+            "title": "Mrs. David Eisenhower",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Julie_Nixon_Eisenhower"
           },
           {
-            "name": "woods-rose-mary",
+            "name": "woods-rose",
             "full_name": "Rose Mary Woods",
-            "title": "executive assistant",
+            "title": "Personal Secretary",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Rose_Mary_Woods"
           }
@@ -30849,9 +30828,9 @@
             "bio": "https://en.wikipedia.org/wiki/Frederick_B._Dent"
           },
           {
-            "name": "hartmann-robertt",
+            "name": "hartmann-robert",
             "full_name": "Robert T. Hartmann",
-            "title": "",
+            "title": "Counselor to the President",
             "role": "",
             "bio": "https://en.wikipedia.org/wiki/Robert_T._Hartmann"
           },
@@ -30912,7 +30891,7 @@
             "bio": "https://www.fordlibrarymuseum.gov/library/guides/findingaid/connorjfiles.asp"
           },
           {
-            "name": "friedersdorf-maxl",
+            "name": "friedersdorf-max-l",
             "full_name": "Max L. Friedersdorf",
             "title": "",
             "role": "",
@@ -32017,7 +31996,7 @@
         "destination": "Washington Navy Yard",
         "passengers": [
           {
-            "name": "schlesinger-james",
+            "name": "schlesinger-jamesr",
             "full_name": "James R. Schlesinger",
             "title": "",
             "role": "",
@@ -32913,7 +32892,7 @@
         "destination": "Mt. Vernon",
         "passengers": [
           {
-            "name": "rockefeller-nelson-mrs",
+            "name": "rockefeller-happy",
             "full_name": "Mrs. Nelson A. Rockefeller",
             "title": "",
             "role": "",
@@ -34210,11 +34189,11 @@
             "bio": "https://en.wikipedia.org/wiki/John_Jacob_Rhodes"
           },
           {
-            "name": "rhodes-mrs",
+            "name": "rhodes-elizabeth",
             "full_name": "Mrs. John J. Rhodes",
             "title": "",
             "role": "",
-            "bio": ""
+            "bio": "https://www.legacy.com/obituaries/azcentral/obituary.aspx?n=elizabeth-rhodes-betty&pid=163794598&fhid=18255"
           },
           {
             "name": "bartlett-charles",
