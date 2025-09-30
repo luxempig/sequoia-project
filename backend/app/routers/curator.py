@@ -693,11 +693,13 @@ async def trigger_canonical_ingest_with_tracking(status_tracker: IngestStatus):
     try:
         # Run the ingestion script as a module from the backend directory
         backend_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+        env = os.environ.copy()
+        env['PYTHONDONTWRITEBYTECODE'] = '1'  # Disable bytecode to ensure fresh code loads
         process = subprocess.Popen([
             'python3', '-m', 'voyage_ingest.main',
             '--source', 'json',
             '--file', output_path
-        ], cwd=backend_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        ], cwd=backend_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, env=env)
 
         # Real-time output processing with timeout
         output_lines = []
