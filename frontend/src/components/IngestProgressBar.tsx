@@ -39,8 +39,9 @@ const IngestProgressBar: React.FC = () => {
             const recentOp = data.operations?.[0];
             if (recentOp && (recentOp.status === 'completed' || recentOp.status === 'failed')) {
               setProgress(recentOp);
-              // Auto-hide after 5 seconds
-              setTimeout(() => setIsVisible(false), 5000);
+              // Auto-hide after 10 seconds for success, 8 seconds for failure
+              const hideDelay = recentOp.status === 'completed' ? 10000 : 8000;
+              setTimeout(() => setIsVisible(false), hideDelay);
             }
           }
         }
@@ -101,11 +102,15 @@ const IngestProgressBar: React.FC = () => {
               <span className="text-2xl">{getStatusIcon()}</span>
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
-                  {progress.status === 'completed' ? 'Ingest Completed' :
+                  {progress.status === 'completed' ? 'Congratulations!' :
                    progress.status === 'failed' ? 'Ingest Failed' :
                    'Ingesting Voyage Data'}
                 </h3>
-                <p className="text-xs text-gray-600">{progress.current_step}</p>
+                <p className="text-xs text-gray-600">
+                  {progress.status === 'completed'
+                    ? 'Your changes are now reflected on the site!'
+                    : progress.current_step}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4 text-xs text-gray-600">
