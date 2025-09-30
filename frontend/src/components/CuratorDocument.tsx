@@ -44,42 +44,34 @@ const CuratorDocument: React.FC = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [originalContent, setOriginalContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [ingestProgress, setIngestProgress] = useState<{
+    active: boolean;
+    message: string;
+    percent: number;
+  } | null>(null);
 
   useEffect(() => {
     const loadContent = async () => {
       try {
-        // Try to fetch from backend API first
-        const response = await fetch('/api/curator/master-doc');
+        // Load canonical_voyages.json
+        const response = await fetch('/api/curator/canonical-voyages');
         if (response.ok) {
-          const docContent = await response.text();
-          setContent(docContent);
-          setOriginalContent(docContent);
-          parseContent(docContent);
+          const jsonData = await response.json();
+          const jsonContent = JSON.stringify(jsonData, null, 2);
+          setContent(jsonContent);
+          setOriginalContent(jsonContent);
           setError(null);
         } else {
-          console.error('Failed to load MASTER_DOC from backend, status:', response.status);
-          setError(`Failed to load MASTER_DOC (HTTP ${response.status})`);
-          const errorContent = `## ERROR: Failed to load MASTER_DOC
+          console.error('Failed to load canonical_voyages.json from backend, status:', response.status);
+          setError(`Failed to load canonical_voyages.json (HTTP ${response.status})`);
+          const errorContent = JSON.stringify({
+            "error": "Failed to load canonical_voyages.json",
+            "status": response.status,
+            "note": "Please check that backend is running and canonical_voyages.json exists"
+          }, null, 2);
 
-Could not load the master document from backend API.
-Status: ${response.status}
-
-Please check:
-- Backend is running
-- /api/curator/master-doc endpoint is accessible
-- MASTER_DOC.md file exists in backend/tools/
-
-## Sample Entry (Fallback)
-
-president_slug: roosevelt-franklin
-full_name: Franklin D. Roosevelt
-party: Democratic
-term_start: 1933-03-04
-term_end: 1945-04-12`;
-          
           setContent(errorContent);
           setOriginalContent(errorContent);
-          parseContent(errorContent);
         }
       } catch (error) {
         console.error('Failed to load content:', error);
@@ -93,48 +85,43 @@ term_end: 1945-04-12`;
   }, []);
 
   const parseContent = (text: string) => {
-    // Simple parser for the structured document format
-    const sections = text.split('---').map(s => s.trim()).filter(Boolean);
-    const parsed: VoyageData[] = [];
-    let currentEntry: VoyageData = {};
+    // Validate JSON and extract summary info for display
+    try {
+      const data = JSON.parse(text);
+      const parsed: VoyageData[] = [];
 
-    sections.forEach(section => {
-      const lines = section.split('\n').filter(l => l.trim());
-      
-      lines.forEach(line => {
-        const trimmed = line.trim();
-        
-        if (trimmed.startsWith('## President')) {
-          if (Object.keys(currentEntry).length > 0) {
-            parsed.push(currentEntry);
-          }
-          currentEntry = {};
-        } else if (trimmed.startsWith('## Voyage')) {
-          // Continue with current entry
-        } else if (trimmed.startsWith('## Passengers')) {
-          // Continue with current entry
-        } else if (trimmed.startsWith('## Media')) {
-          // Continue with current entry
-        } else if (trimmed.includes(':')) {
-          const [key, ...valueParts] = trimmed.split(':');
-          const value = valueParts.join(':').trim();
-          
-          if (key.includes('president_slug') || key.includes('full_name') || key.includes('party')) {
-            if (!currentEntry.president) currentEntry.president = {} as any;
-            (currentEntry.president as any)[key] = value;
-          } else if (key.includes('title') || key.includes('start_date') || key.includes('origin')) {
-            if (!currentEntry.voyage) currentEntry.voyage = {} as any;
-            (currentEntry.voyage as any)[key] = value;
-          }
+      // Extract basic info from canonical_voyages.json structure
+      Object.entries(data).forEach(([presidentSlug, presidentData]: [string, any]) => {
+        if (presidentData && typeof presidentData === 'object' && presidentData.voyages) {
+          presidentData.voyages.forEach((voyage: any) => {
+            parsed.push({
+              president: {
+                president_slug: presidentSlug,
+                full_name: presidentData.full_name || presidentSlug,
+                party: presidentData.party || '',
+                term_start: presidentData.term_start || '',
+                term_end: presidentData.term_end || '',
+                wikipedia_url: presidentData.wikipedia_url,
+                tags: presidentData.tags
+              },
+              voyage: {
+                title: voyage.title || '',
+                start_date: voyage.start_date || '',
+                origin: voyage.origin,
+                vessel_name: voyage.vessel_name,
+                summary: voyage.summary_markdown,
+                tags: voyage.tags
+              }
+            });
+          });
         }
       });
-    });
 
-    if (Object.keys(currentEntry).length > 0) {
-      parsed.push(currentEntry);
+      setParsedData(parsed);
+    } catch (e) {
+      // Invalid JSON, clear parsed data
+      setParsedData([]);
     }
-    
-    setParsedData(parsed);
   };
 
   const handleContentChange = (newContent: string) => {
@@ -147,21 +134,38 @@ term_end: 1945-04-12`;
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch('/api/curator/master-doc', {
+      // Validate JSON before saving
+      let jsonData;
+      try {
+        jsonData = JSON.parse(content);
+      } catch (parseError) {
+        throw new Error(`Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
+      }
+
+      // Save to canonical_voyages.json and trigger ingest
+      const response = await fetch('/api/curator/save-president-data', {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'application/json',
         },
-        body: content,
+        body: JSON.stringify(jsonData),
       });
 
       if (response.ok) {
+        const result = await response.json();
         setOriginalContent(content);
         setHasUnsavedChanges(false);
         setLastSaved(new Date());
         setError(null);
+
+        // Start polling for ingest progress
+        if (result.operation_id) {
+          setIngestProgress({ active: true, message: 'Starting ingest...', percent: 0 });
+          pollIngestStatus(result.operation_id);
+        }
       } else {
-        throw new Error(`Save failed: HTTP ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Save failed: ${errorData.detail || `HTTP ${response.status}`}`);
       }
     } catch (error) {
       console.error('Failed to save:', error);
@@ -169,6 +173,37 @@ term_end: 1945-04-12`;
     } finally {
       setSaving(false);
     }
+  };
+
+  const pollIngestStatus = async (operationId: string) => {
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/curator/ingest-status/${operationId}`);
+        if (response.ok) {
+          const status = await response.json();
+
+          setIngestProgress({
+            active: status.status === 'running' || status.status === 'pending',
+            message: status.current_step || status.status,
+            percent: status.progress_percent || 0
+          });
+
+          if (status.status === 'completed') {
+            setTimeout(() => setIngestProgress(null), 3000); // Clear after 3 seconds
+          } else if (status.status === 'failed') {
+            setError(`Ingest failed: ${status.error || 'Unknown error'}`);
+            setIngestProgress(null);
+          } else if (status.status === 'running' || status.status === 'pending') {
+            // Continue polling
+            setTimeout(poll, 2000);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to poll ingest status:', e);
+      }
+    };
+
+    poll();
   };
 
   const handleRevert = () => {
@@ -183,7 +218,7 @@ term_end: 1945-04-12`;
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading master document...</p>
+            <p className="mt-2 text-gray-600">Loading canonical_voyages.json...</p>
           </div>
         </div>
       </Layout>
@@ -193,6 +228,24 @@ term_end: 1945-04-12`;
   return (
     <Layout>
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Ingest Progress Bar */}
+        {ingestProgress?.active && (
+          <div className="mb-6 bg-blue-50 border border-blue-300 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-900">
+                🔄 {ingestProgress.message}
+              </span>
+              <span className="text-sm text-blue-700">{ingestProgress.percent}%</span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                style={{ width: `${ingestProgress.percent}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="md:flex md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">

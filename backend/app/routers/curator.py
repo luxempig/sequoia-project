@@ -344,19 +344,41 @@ term_end: 1945-04-12"""
         return PlainTextResponse(fallback_content, media_type="text/plain; charset=utf-8")
 
 
+@router.get("/canonical-voyages")
+async def get_canonical_voyages():
+    """Get the canonical_voyages.json data for editing."""
+    try:
+        canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+
+        if not os.path.exists(canonical_path):
+            raise HTTPException(status_code=404, detail="canonical_voyages.json not found")
+
+        with open(canonical_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        return data
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in canonical_voyages.json: {e}")
+        raise HTTPException(status_code=500, detail=f"Invalid JSON format: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to load canonical_voyages.json: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load file: {str(e)}")
+
+
 @router.post("/master-doc")
 async def save_master_doc(request: Request):
-    """Save the MASTER_DOC.md content from the curator interface."""
+    """Save the MASTER_DOC.md content from the curator interface (legacy format - not used by ingest)."""
     try:
         # Read the raw body as text content
         content = await request.body()
         content = content.decode('utf-8')
-        
+
         if not content:
             raise HTTPException(status_code=400, detail="Content is required")
-            
+
         master_doc_path = os.path.join(os.path.dirname(__file__), "..", "..", "tools", "MASTER_DOC.md")
-        
+
         # Create backup of existing file
         if os.path.exists(master_doc_path):
             backup_path = f"{master_doc_path}.backup.{int(time.time())}"
@@ -364,14 +386,19 @@ async def save_master_doc(request: Request):
                 with open(backup_path, 'w', encoding='utf-8') as dst:
                     dst.write(src.read())
             logger.info(f"Created backup at {backup_path}")
-        
+
         # Write new content
         with open(master_doc_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        
+
         logger.info(f"Successfully saved MASTER_DOC.md ({len(content)} characters)")
-        return {"status": "success", "message": "MASTER_DOC.md saved successfully"}
-        
+
+        # Note: MASTER_DOC.md is a legacy format. For automatic ingest, edit canonical_voyages.json directly.
+        return {
+            "status": "success",
+            "message": "MASTER_DOC.md saved successfully (Note: This is a legacy format and won't trigger ingest. Edit canonical_voyages.json for automatic ingestion.)"
+        }
+
     except Exception as e:
         logger.error(f"Failed to save MASTER_DOC.md: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save document: {str(e)}")
