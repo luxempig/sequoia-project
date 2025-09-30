@@ -88,10 +88,10 @@ def get_role_statistics():
 
         # Get unique titles count
         cur.execute("""
-            SELECT COUNT(DISTINCT COALESCE(role_title, title)) as unique_titles
+            SELECT COUNT(DISTINCT role_title) as unique_titles
             FROM sequoia.people
-            WHERE COALESCE(role_title, title) IS NOT NULL
-              AND COALESCE(role_title, title) != ''
+            WHERE role_title IS NOT NULL
+              AND role_title != ''
         """)
         titles = cur.fetchone()
 
