@@ -9,7 +9,7 @@ import VoyageList from "./components/VoyageList";
 import VoyageDetail from "./components/VoyageDetail";
 import PeopleDirectory from "./components/PeopleDirectory";
 import PersonDetail from "./components/PersonDetail";
-import CuratorDocument from "./components/CuratorDocument";
+import JsonCuratorInterface from "./components/JsonCuratorInterface";
 import "./index.css";
 
 const AppContent: React.FC = () => {
@@ -37,7 +37,7 @@ const AppContent: React.FC = () => {
         <Route path="/people" element={<PeopleDirectory />} />
         <Route path="/people/:slug" element={<PersonDetail />} />
 
-        <Route path="/curators" element={<CuratorDocument />} />
+        <Route path="/curators" element={<JsonCuratorInterface />} />
       </Routes>
     </BrowserRouter>
   );
