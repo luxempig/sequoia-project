@@ -29,7 +29,7 @@ Any unauthorized use, reproduction, or distribution of the Software may result i
 For permission to use this Software for commercial purposes or any use beyond evaluation, contact:
 
 **Daniel Freymann**  
-Email: [Your contact email]
+Email: ddfreymann@gmail.com
 
 ### Disclaimer
 
