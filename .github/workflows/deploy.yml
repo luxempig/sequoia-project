@@ -30,28 +30,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Build frontend
-      run: |
-        cd frontend
-        rm -rf node_modules/.cache build dist 2>/dev/null || true
-        npm install
-        npm run build
-        echo "Build completed, checking for Isabel..."
-        grep -r "ISABEL" build/ || echo "Isabel not found in build"
-        tar -czf ../frontend-build.tar.gz -C build .
-
-    - name: Upload frontend build
-      run: |
-        echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/ec2_key.pem
-        chmod 600 /tmp/ec2_key.pem
-        scp -i /tmp/ec2_key.pem -o StrictHostKeyChecking=no frontend-build.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/sequoia-project/
-        rm /tmp/ec2_key.pem
-
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -63,6 +41,18 @@ jobs:
           cd /home/ec2-user/sequoia-project
           git fetch origin
           git reset --hard origin/main
+
+          # Build frontend directly on EC2
+          cd frontend
+          rm -rf node_modules/.cache build dist 2>/dev/null || true
+          npm install
+          npm run build
+
+          # Create tarball for deploy script
+          cd ..
+          tar -czf frontend-build.tar.gz -C frontend/build .
+
+          # Run deployment script
           chmod +x deploy-unified.sh
           ./deploy-unified.sh
       env:
