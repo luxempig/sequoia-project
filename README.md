@@ -1,292 +1,417 @@
 # USS Sequoia Presidential Yacht Archive
 
-A comprehensive digital archive of the USS Sequoia Presidential Yacht, documenting its rich history from 1933 to the present day. This project preserves and presents historical voyages, passengers, media, and documents from this iconic vessel that served as the presidential yacht for Herbert Hoover through Jimmy Carter.
+A comprehensive digital archive documenting the USS Sequoia Presidential Yacht's rich history from 1933 to present. This full-stack web application preserves and presents historical voyages, passengers, media, and documents from the iconic vessel that served eight U.S. presidents from Herbert Hoover through Jimmy Carter.
 
-## About the USS Sequoia
+**Live Site:** https://uss-sequoia.com
 
-The USS Sequoia is a historic presidential yacht that served eight U.S. presidents and hosted countless dignitaries, world leaders, and distinguished guests. This archive aims to:
+## Project Status
 
-- **Preserve History**: Document all known voyages with passengers, dates, locations, and historical context
-- **Curate Media**: Organize photos, documents, logs, and other historical materials
-- **Enable Research**: Provide searchable access to voyage records and passenger information
-- **Honor Legacy**: Celebrate the yacht's role in American presidential history
+**Production Ready** - Fully deployed and operational with automated deployment pipeline, nightly data ingestion, and curator interface for ongoing content management.
 
-## Project Overview
+### Current Statistics
+- **460+ voyages** documented across 9 presidential administrations
+- **362+ media items** (photos, documents, logs)
+- **496+ unique passenger titles** (presidents, dignitaries, crew, guests)
+- **Automated nightly ingestion** at 3 AM EST
 
-This is a full-stack web application combining modern frontend technologies with a robust backend system for data management and automated content ingestion.
+## Key Features
 
-## Features
+### 1. Interactive Voyage Timeline
+**Location:** `frontend/src/components/HorizontalTimeline.tsx`
 
-### Frontend (React/TypeScript)
-- **Voyage Timeline**: Interactive timeline view of all historical voyages
-- **Passenger Directory**: Searchable database of all passengers with biographical information
-- **Media Gallery**: High-quality images, documents, and historical materials
-- **Tag-based Filtering**: Filter voyages by themes, events, and categories
-- **President Grouping**: Voyages organized by presidential administrations
-- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
+- Chronological timeline view of all voyages
+- Filter by vessel owner/president, date range, significance, and royalty
+- Clickable media thumbnails with lightbox for images, new tab for videos/documents
+- Visual indicators for media types (▶ videos, 📄 documents)
+- Real-time voyage count display
 
-### Backend (Python/FastAPI)
-- **Automated Ingest**: Process canonical JSON data into structured database
-- **Media Pipeline**: Download, process, and generate thumbnails from Drive/Dropbox
-- **S3 Integration**: Manage media storage in AWS S3 (public/private buckets)
-- **PostgreSQL Database**: Robust relational data model for voyages, passengers, media
-- **RESTful API**: Clean API endpoints for all data access
-- **Curator Interface**: Web-based editor for managing voyage data
+**Backend API:** `backend/app/routers/voyages.py`
+- `/api/voyages` - List/filter voyages with full query support
+- `/api/voyages/{slug}` - Detailed voyage information with passengers and media
 
-### Deployment & Infrastructure
-- **Auto-deploy**: GitHub Actions workflow deploys on push to main
-- **EC2 Hosting**: Production environment on AWS EC2
-- **Nginx**: Reverse proxy and static file serving
-- **PM2**: Process management for backend services
+### 2. Voyage List & Detail Views
+**Location:** `frontend/src/components/VoyageList.tsx`, `frontend/src/components/VoyageDetail.tsx`
+
+- Dual view: timeline and traditional list
+- Comprehensive voyage details with location, purpose, historical notes
+- Passenger manifests with roles and biographical links
+- Media galleries with captions and metadata
+- Tag-based categorization (diplomatic, recreation, significant events)
+
+### 3. People Directory
+**Location:** `frontend/src/components/PeopleDirectory.tsx`, `frontend/src/components/PersonDetail.tsx`
+
+- Searchable directory of all passengers and crew
+- Biographical information with birth/death dates, titles, notes
+- Complete voyage history for each person
+- Passenger statistics (unique titles, average voyages per person)
+
+**Backend API:** `backend/app/routers/people.py`
+- `/api/people` - Directory with search
+- `/api/people/{slug}` - Person details with voyage participation
+- `/api/people/stats` - Aggregate statistics
+
+### 4. Curator Interface
+**Location:** `frontend/src/components/JsonCuratorInterface.tsx`
+
+Web-based JSON editor for managing voyage data:
+- President selector with voyage filtering
+- Voyage editor with date picker, location, tags
+- Media manager for Google Drive/Dropbox links
+- Passenger roster management
+- Save changes instantly (no ingest triggered)
+- Preview and validation before commit
+
+**Backend API:** `backend/app/routers/curator.py`
+- `GET /api/curator/canonical-voyages` - Fetch current data
+- `POST /api/curator/canonical-voyages` - Save edits without triggering ingest
+- `POST /api/curator/voyage-ingest` - Manually trigger full ingest with progress tracking
+
+### 5. Automated Voyage Ingestion
+**Location:** `backend/voyage_ingest/main.py`
+
+Sophisticated data pipeline that processes canonical JSON into structured database:
+
+**Components:**
+- `validator.py` - JSON schema validation, date format checking, slug verification
+- `drive_sync.py` - Download media from Google Drive and Dropbox with retry logic
+- `s3_manager.py` - Upload to S3 (private originals, public derivatives), generate thumbnails
+- `db_updater.py` - Upsert voyages, passengers, media with deduplication
+- `slugger.py` - Generate URL-friendly slugs from names
+
+**Workflow:**
+1. Validate `canonical_voyages.json` structure and data integrity
+2. Download media files from cloud storage (with caching)
+3. Generate thumbnails for images (600x400px)
+4. Upload to AWS S3 (two-bucket architecture)
+5. Upsert to PostgreSQL database with foreign key management
+6. Clean up orphaned records
+
+**Manual Run:**
+```bash
+cd backend
+python3 -m voyage_ingest.main --source json --file canonical_voyages.json
+```
+
+**Nightly Automation:**
+- **Script:** `run-nightly-ingest.sh`
+- **Schedule:** 3 AM EST via cron
+- **Logs:** `logs/nightly-ingest-YYYY-MM-DD.log` (auto-cleanup after 7 days)
+- **Documentation:** `README-CRON.md`
+
+### 6. GitHub Actions Auto-Deploy
+**Location:** `.github/workflows/deploy.yml`
+
+**Trigger Paths:**
+- `frontend/**` - React/TypeScript changes
+- `backend/**` - Python/FastAPI changes
+- `deploy-unified.sh` - Deployment script updates
+- `nginx-sequoia.conf` - Web server config
+- `canonical_voyages.json` - Data updates
+
+**Workflow:**
+1. Checkout code
+2. SSH into EC2 instance
+3. Pull latest code from GitHub
+4. Build frontend on EC2 (`npm install && npm run build`)
+5. Create tarball of frontend build
+6. Run `deploy-unified.sh` which:
+   - Detects changed directories
+   - Installs Python dependencies if needed
+   - Clears Python bytecode cache
+   - Extracts frontend build to nginx directory
+   - Deletes and recreates PM2 backend process
+   - Reloads nginx
+
+**Deployment Script:** `deploy-unified.sh`
+- Smart change detection (frontend vs backend)
+- Environment variable management (secrets from GitHub Actions)
+- Health checks and validation
+- Logging to `/home/ec2-user/sequoia-deploy.log`
+
+**GitHub Secrets Required:**
+- `EC2_HOST` - Server IP: `3.14.31.211`
+- `EC2_USER` - SSH user: `ec2-user`
+- `EC2_SSH_KEY` - Full private key from `sequoia-key.pem`
+- `AWS_ACCESS_KEY_ID` - AWS credentials for S3
+- `AWS_SECRET_ACCESS_KEY` - AWS secret
+- `DB_PASSWORD` - PostgreSQL password
+- `GOOGLE_CREDENTIALS` - Service account JSON
+- `DROPBOX_ACCESS_TOKEN` - Dropbox API token
+
+### 7. AWS Infrastructure
+**S3 Buckets:**
+- `sequoia-canonical-media` (private) - Original high-res files
+- `sequoia-derivative-media` (public) - Thumbnails and web-optimized versions
+
+**RDS PostgreSQL:**
+- Host: `sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com`
+- Database: `sequoia_db`
+- Schema: `sequoia`
+
+**EC2:**
+- Instance: Amazon Linux 2
+- Services: Nginx (port 80), FastAPI backend (port 8000), PM2 process manager
+- Node.js v18, Python 3.9
+
+### 8. Data Consolidation
+**Location:** `backend/scripts/consolidate_duplicates.py`
+
+Automated deduplication system that:
+- Identifies duplicate passengers by name similarity
+- Scores completeness (biographical data richness)
+- Consolidates to most complete record
+- Updates all voyage references
+- Used to clean up 3 duplicates affecting 93 voyage references
 
 ## Repository Structure
 
 ```
 sequoia-project/
-├── frontend/                     # React/TypeScript frontend
+├── frontend/                              # React + TypeScript + Tailwind CSS
 │   ├── src/
-│   │   ├── components/          # React components (Timeline, Voyages, People, etc.)
-│   │   ├── api.ts               # API client
-│   │   └── types.ts             # TypeScript type definitions
-│   └── public/                  # Static assets
-├── backend/                      # Python FastAPI backend
-│   ├── app/                     # FastAPI application
-│   │   ├── routers/            # API route handlers
-│   │   └── db.py               # Database connection
-│   ├── voyage_ingest/           # Data ingestion system
-│   │   ├── main.py             # Main ingest orchestrator
-│   │   ├── validator.py        # JSON validation
-│   │   ├── drive_sync.py       # Media download/processing
-│   │   ├── db_updater.py       # Database upsert logic
-│   │   └── slugger.py          # Slug generation utilities
-│   ├── scripts/                 # Utility scripts
-│   │   ├── debug_voyage_media.py  # Debug media issues
-│   │   └── clear_s3_media.py      # S3 cleanup utility
-│   └── canonical_voyages.json   # Source of truth for all voyage data
-├── .github/workflows/           # CI/CD pipelines
-├── deploy-unified.sh            # Automated deployment script
-└── nginx-sequoia.conf           # Web server configuration
+│   │   ├── components/
+│   │   │   ├── HorizontalTimeline.tsx    # Timeline visualization
+│   │   │   ├── VoyageList.tsx            # List view with filters
+│   │   │   ├── VoyageDetail.tsx          # Individual voyage page
+│   │   │   ├── PeopleDirectory.tsx       # Passenger directory
+│   │   │   ├── PersonDetail.tsx          # Person profile page
+│   │   │   ├── JsonCuratorInterface.tsx  # Data editing interface
+│   │   │   ├── HomePage.tsx              # Landing page
+│   │   │   └── Layout.tsx                # Navigation wrapper
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx           # Authentication state
+│   │   ├── utils/
+│   │   │   └── media.ts                  # Media type detection
+│   │   ├── api.ts                        # API client with axios
+│   │   └── types.ts                      # TypeScript interfaces
+│   └── public/                           # Static assets
+│
+├── backend/                               # Python FastAPI
+│   ├── app/
+│   │   ├── routers/
+│   │   │   ├── voyages.py                # Voyage API endpoints
+│   │   │   ├── people.py                 # People API endpoints
+│   │   │   ├── curator.py                # Curator interface API
+│   │   │   └── presidents.py            # President/owner API
+│   │   ├── db.py                         # PostgreSQL connection pool
+│   │   └── main.py                       # FastAPI app initialization
+│   │
+│   ├── voyage_ingest/                     # ETL Pipeline
+│   │   ├── main.py                       # Orchestrator
+│   │   ├── validator.py                  # JSON validation
+│   │   ├── drive_sync.py                 # Media download
+│   │   ├── s3_manager.py                 # S3 upload/thumbnail generation
+│   │   ├── db_updater.py                 # Database upsert logic
+│   │   └── slugger.py                    # Slug generation
+│   │
+│   ├── scripts/
+│   │   ├── consolidate_duplicates.py     # Deduplication utility
+│   │   ├── debug_voyage_media.py         # Media troubleshooting
+│   │   └── clear_s3_media.py             # S3 cleanup
+│   │
+│   └── canonical_voyages.json             # Single source of truth (460 voyages)
+│
+├── .github/workflows/
+│   └── deploy.yml                         # Auto-deploy pipeline
+│
+├── deploy-unified.sh                      # Deployment orchestration
+├── run-nightly-ingest.sh                  # Cron job script
+├── nginx-sequoia.conf                     # Web server config
+├── ecosystem.config.js                    # PM2 configuration
+├── README-CRON.md                         # Nightly automation docs
+├── EXTERNAL-ACCESS.md                     # Temp access guide
+└── LICENSE.md                             # Proprietary license
 ```
 
-## Setup Instructions
+## Database Schema
 
-### 1. EC2 Instance Setup
+**Tables:**
+- `presidents` - Vessel owners/presidents with term dates
+- `voyages` - Core voyage data (date, location, purpose, tags)
+- `people` - Passengers and crew with biographical info
+- `media` - Media files with S3 URLs and metadata
+- `voyage_passengers` - Many-to-many with role/capacity
+- `voyage_media` - Many-to-many with caption and sort order
 
-Run the setup script on your EC2 instance:
+**Key Constraints:**
+- Slugs are unique identifiers for all entities
+- Foreign keys maintain referential integrity
+- NOT NULL constraints on critical fields (dates, term_end)
+- Cascading deletes for orphaned join table records
 
+## Development Workflow
+
+### Local Setup
 ```bash
-# SSH into your EC2 instance
-ssh -i your-key.pem ec2-user@your-ec2-ip
+# Clone repository
+git clone https://github.com/luxempig/sequoia-project.git
+cd sequoia-project
 
-# Download and run the setup script
-curl -O https://raw.githubusercontent.com/your-username/sequoia-project/main/setup-ec2.sh
-chmod +x setup-ec2.sh
-./setup-ec2.sh
-```
-
-### 2. GitHub Repository Setup
-
-#### Required GitHub Secrets
-
-Add these secrets to your GitHub repository (`Settings > Secrets and variables > Actions`):
-
-| Secret Name | Description | Example Value |
-|-------------|-------------|---------------|
-| `EC2_HOST` | Your EC2 instance public IP or domain | `12.34.56.78` or `your-domain.com` |
-| `EC2_USER` | EC2 username | `ec2-user` |
-| `EC2_SSH_KEY` | Private SSH key content | Contents of your `.pem` file |
-
-#### Setting up SSH Key Secret
-
-1. Copy your EC2 SSH private key:
-   ```bash
-   cat your-ec2-key.pem
-   ```
-2. Copy the entire content (including `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----`)
-3. Add it as the `EC2_SSH_KEY` secret in GitHub
-
-### 3. Update Configuration Files
-
-Before deploying, update these files with your specific values:
-
-#### `deploy-unified.sh`
-```bash
-REPO_URL="https://github.com/your-username/sequoia-project.git"  # Update this
-```
-
-#### `nginx-sequoia.conf`
-```nginx
-server_name your-domain.com;  # Replace with your domain or EC2 public IP
-```
-
-#### `setup-ec2.sh`
-```bash
-git clone https://github.com/your-username/sequoia-project.git  # Update this
-```
-
-### 4. Initial Deployment
-
-1. Push your code to the `main` branch
-2. GitHub Actions will automatically trigger the deployment
-3. The workflow will SSH into your EC2 instance and run the deployment script
-
-## Development
-
-### Local Development Setup
-
-```bash
-# Install all dependencies
+# Install dependencies
 npm run install:all
 
-# Start both frontend and backend in development mode
-npm run dev
+# Configure environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your database credentials
 
-# Or start them individually
-npm run dev:frontend  # Starts React dev server
-npm run dev:backend   # Starts FastAPI with hot reload
+# Start development servers
+npm run dev                # Both frontend + backend
+npm run dev:frontend       # React dev server (port 3000)
+npm run dev:backend        # FastAPI with hot reload (port 8000)
 ```
 
-### Available Scripts
+### Curator Workflow
+1. Navigate to `/curators` page
+2. Select president to filter voyages
+3. Edit voyage details, add media, manage passengers
+4. Click "Save Changes" (instant, no ingest)
+5. Edits persist in `canonical_voyages.json`
+6. Nightly ingest at 3 AM updates database and website
 
-- `npm run install:all` - Install dependencies for both frontend and backend
-- `npm run dev` - Start both services in development mode
-- `npm run build:frontend` - Build frontend for production
-- `npm run deploy` - Run deployment script locally
-- `npm run clean:frontend` - Clean frontend build files
-- `npm run clean:backend` - Clean Python cache files
+### Making Code Changes
+1. Create feature branch: `git checkout -b feature/your-feature`
+2. Make changes in `frontend/` or `backend/`
+3. Test locally with `npm run dev`
+4. Commit with descriptive message
+5. Push to GitHub: `git push origin feature/your-feature`
+6. Create pull request
+7. Merge to `main` triggers auto-deploy to production
 
-## Deployment Process
+## Deployment Details
 
-The deployment system works as follows:
+### Build Process
+**Frontend:**
+- React build: `npm run build` (creates optimized production bundle)
+- Build time: ~17 seconds
+- Output: `frontend/build/` directory
+- Served by: Nginx from `/var/www/html/sequoia/`
 
-1. **Trigger**: Push to `main` branch or merged PR
-2. **Detection**: GitHub Actions detects changes in `frontend/` or `backend/` directories
-3. **SSH**: Actions SSH into EC2 instance using provided credentials
-4. **Pull**: Latest code is pulled from GitHub
-5. **Deploy**: `deploy-unified.sh` script runs, which:
-   - Detects what changed (frontend/backend)
-   - Installs dependencies if needed
-   - Builds frontend if changed
-   - Restarts backend with PM2 if changed
-   - Updates nginx content if frontend changed
-   - Performs health checks
+**Backend:**
+- No build step (Python interpreted)
+- Dependencies: `pip install -r requirements.txt`
+- Process manager: PM2
+- Workers: 1 (fork mode)
 
-## Services
+### Deployment Triggers
+Changes to these paths trigger auto-deploy:
+- `frontend/**/*.{tsx,ts,jsx,js,css,html}`
+- `backend/**/*.{py,json,txt}`
+- `deploy-unified.sh`
+- `nginx-sequoia.conf`
+- `truman.json`, `truman_translated.json`
 
-### Backend (Port 8000)
-- Python FastAPI application
-- Managed by PM2
-- Proxied through nginx at `/api/` path
+**Note:** Changes to `.github/workflows/deploy.yml` do NOT trigger deployment until a subsequent frontend/backend change is pushed.
 
-### Frontend
-- React/TypeScript application
-- Built and served statically by nginx
-- Served from nginx root `/`
-
-### Webhook Server (Port 9000)
-- Handles GitHub webhooks (if needed)
-- Managed by PM2
-
-## Monitoring
-
-### Check Service Status
+### Health Monitoring
 ```bash
-# PM2 processes
-pm2 status
+# SSH into EC2
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
 
-# Nginx status
+# Check PM2 processes
+pm2 list
+pm2 logs sequoia-backend --lines 50
+
+# Check Nginx
 sudo systemctl status nginx
+sudo nginx -t                    # Test config
+sudo tail -f /var/log/nginx/error.log
 
-# View logs
-pm2 logs sequoia-backend
-tail -f /var/log/sequoia-deploy.log
+# View deployment logs
+tail -f ~/sequoia-project/logs/deploy-unified.log
+
+# Check nightly ingest logs
+ls -lth ~/sequoia-project/logs/nightly-ingest-*.log
+tail -50 ~/sequoia-project/logs/nightly-ingest-2025-10-01.log
 ```
 
-### Health Checks
-- Backend health: `http://your-domain.com/health`
-- Frontend: `http://your-domain.com/`
+### Manual Deployment
+If needed, deploy manually:
+```bash
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project
+git pull
+bash deploy-unified.sh
+```
 
 ## Troubleshooting
 
-### Common Issues
+### Frontend Not Updating
+```bash
+# Clear build cache and rebuild
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project/frontend
+rm -rf node_modules/.cache build
+npm install
+npm run build
 
-1. **Deployment fails with SSH errors**
-   - Verify `EC2_SSH_KEY` secret contains the full private key
-   - Ensure EC2 security group allows SSH (port 22) from GitHub Actions IPs
+# Manually deploy
+cd ..
+tar -czf frontend-build.tar.gz -C frontend/build .
+sudo tar -xzf frontend-build.tar.gz -C /var/www/html/sequoia/
+sudo systemctl reload nginx
+```
 
-2. **Backend not starting**
-   - Check PM2 logs: `pm2 logs sequoia-backend`
-   - Verify Python dependencies: `cd backend && source venv/bin/activate && pip install -r requirements.txt`
+### Backend Errors
+```bash
+# Check Python cache
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project
+find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+find . -type f -name '*.pyc' -delete 2>/dev/null || true
 
-3. **Frontend not updating**
-   - Check if build completed: `ls -la frontend/build/` or `frontend/dist/`
-   - Verify nginx permissions: `sudo chown -R nginx:nginx /var/www/html/sequoia`
+# Restart backend
+pm2 delete sequoia-backend
+pm2 start ecosystem.config.js --name sequoia-backend
+pm2 logs sequoia-backend
+```
 
-4. **Nginx not serving correctly**
-   - Check nginx config: `sudo nginx -t`
-   - Restart nginx: `sudo systemctl restart nginx`
+### Database Issues
+```bash
+# Connect to PostgreSQL
+PGPASSWORD='H|X*2BtZ?mu@7WII$B#CQHOv!2*o' psql \
+  -h sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com \
+  -U sequoia -d sequoia_db -p 5432
 
-### Log Locations
-- Deployment: `/var/log/sequoia-deploy.log`
-- Backend: `/var/log/pm2/sequoia-backend-*.log`
-- Webhook: `/var/log/pm2/sequoia-webhook-*.log`
-- Nginx: `/var/log/nginx/error.log`
+# Check table counts
+SELECT COUNT(*) FROM sequoia.voyages;
+SELECT COUNT(*) FROM sequoia.people;
+SELECT COUNT(*) FROM sequoia.media;
+```
 
-## Security Notes
+## API Documentation
 
-- SSH key is stored securely in GitHub Secrets
-- Environment variables should be managed via `.env` files (not committed)
-- Nginx configuration includes security headers and gzip compression
-- PM2 processes run with limited privileges
+### Voyages
+- `GET /api/voyages?q=search&president_slug=fdr&significant=1&limit=500`
+- `GET /api/voyages/{slug}` - Includes passengers and media
 
-## Data Model
+### People
+- `GET /api/people?search=roosevelt&limit=100`
+- `GET /api/people/{slug}` - Includes voyage history
+- `GET /api/people/stats` - Aggregate statistics
 
-### Core Entities
+### Presidents
+- `GET /api/presidents` - List all vessel owners
+- `GET /api/presidents/{slug}` - President details with stats
 
-- **Presidents**: U.S. presidents and yacht owners (Hoover through Carter, plus post-presidential era)
-- **Voyages**: Individual trips with dates, locations, purposes, and tags
-- **People**: Passengers and crew with biographical information and roles
-- **Media**: Photos, documents, PDFs, and other historical materials
-- **Voyage-Passengers**: Many-to-many join with role/capacity information
-- **Voyage-Media**: Many-to-many join with captions and sort order
+### Curator
+- `GET /api/curator/canonical-voyages` - Full JSON data
+- `POST /api/curator/canonical-voyages` - Save without ingest
+- `POST /api/curator/voyage-ingest` - Trigger manual ingest
 
-### Data Ingestion Flow
+## Security
 
-1. **Canonical JSON**: Single source of truth (`canonical_voyages.json`)
-2. **Validation**: Strict validation of dates, slugs, and required fields
-3. **Media Download**: Fetch files from Google Drive and Dropbox
-4. **S3 Upload**: Store originals (private) and thumbnails (public)
-5. **Database Upsert**: Insert or update voyages, passengers, media
-6. **Frontend API**: Serve data via RESTful endpoints
-
-## Contributing
-
-### Development Workflow
-
-1. Create a feature branch from `main`
-2. Make your changes
-3. Test locally using `npm run dev`
-4. Push to GitHub
-5. Create pull request
-6. On merge to `main`, auto-deploy triggers
-
-### Data Curation
-
-To add or update voyage data:
-
-1. Edit `backend/canonical_voyages.json` via curator interface or direct edit
-2. Ensure all dates follow `YYYY-MM-DD` format
-3. Add media links (Google Drive or Dropbox)
-4. Push changes - ingest runs automatically on deploy
-5. Verify on production site
-
-### Coding Standards
-
-- **Frontend**: ESLint + Prettier, TypeScript strict mode
-- **Backend**: Black formatter, type hints, docstrings
-- **Git**: Conventional commit messages
-- **Testing**: Test changes locally before pushing
+- **Proprietary License:** See `LICENSE.md` - All rights reserved, commercial use prohibited without permission
+- **Authentication:** Login required for curator interface
+- **SSH Keys:** Securely stored in GitHub Secrets
+- **Database:** Credentials in `.env` (never committed)
+- **AWS:** IAM roles with minimal permissions
+- **Nginx:** Security headers, gzip compression, rate limiting
 
 ## Acknowledgments
 
 This project preserves the legacy of the USS Sequoia and honors all who sailed aboard her. Special thanks to historians, archivists, and contributors who have helped document this important piece of American presidential history.
+
+---
+
+**Project by Daniel Freymann** | **Date:** October 2025
