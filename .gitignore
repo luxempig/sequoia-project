@@ -7,6 +7,7 @@
 !README.md
 !LICENSE.md
 !package.json
+!package-lock.json
 !deploy-unified.sh
 !setup-ec2.sh
 !nginx-sequoia.conf
