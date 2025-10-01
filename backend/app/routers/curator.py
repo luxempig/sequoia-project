@@ -366,6 +366,44 @@ async def get_canonical_voyages():
         raise HTTPException(status_code=500, detail=f"Failed to load file: {str(e)}")
 
 
+@router.post("/canonical-voyages")
+async def save_canonical_voyages(request: Request):
+    """Save canonical_voyages.json without triggering ingest."""
+    try:
+        data = await request.json()
+
+        # Basic validation of the data structure
+        if not isinstance(data, dict):
+            raise ValueError("Invalid data format: expected JSON object")
+
+        canonical_path = os.path.join(os.path.dirname(__file__), "..", "..", "canonical_voyages.json")
+
+        # Create backup of existing file
+        if os.path.exists(canonical_path):
+            backup_path = f"{canonical_path}.backup.{int(time.time())}"
+            with open(canonical_path, 'r', encoding='utf-8') as src:
+                with open(backup_path, 'w', encoding='utf-8') as dst:
+                    dst.write(src.read())
+            logger.info(f"Created backup at {backup_path}")
+
+        # Write new content
+        with open(canonical_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        file_size = os.path.getsize(canonical_path)
+        logger.info(f"canonical_voyages.json saved successfully ({file_size} bytes)")
+
+        return {
+            "status": "success",
+            "message": "canonical_voyages.json saved successfully (no ingest triggered)",
+            "file_size": file_size
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to save canonical_voyages.json: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+
+
 @router.post("/master-doc")
 async def save_master_doc(request: Request):
     """Save the MASTER_DOC.md content from the curator interface (legacy format - not used by ingest)."""

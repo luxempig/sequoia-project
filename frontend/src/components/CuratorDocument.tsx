@@ -142,8 +142,8 @@ const CuratorDocument: React.FC = () => {
         throw new Error(`Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
       }
 
-      // Save to canonical_voyages.json and trigger ingest
-      const response = await fetch('/api/curator/save-president-data', {
+      // Save to canonical_voyages.json WITHOUT triggering ingest
+      const response = await fetch('/api/curator/canonical-voyages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,11 +158,7 @@ const CuratorDocument: React.FC = () => {
         setLastSaved(new Date());
         setError(null);
 
-        // Start polling for ingest progress
-        if (result.operation_id) {
-          setIngestProgress({ active: true, message: 'Starting ingest...', percent: 0 });
-          pollIngestStatus(result.operation_id);
-        }
+        // No ingest triggered - just saved the JSON file
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(`Save failed: ${errorData.detail || `HTTP ${response.status}`}`);
@@ -253,7 +249,7 @@ const CuratorDocument: React.FC = () => {
               For Curators
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Edit voyage data and trigger automatic ingestion to the database
+              Edit voyage data in canonical_voyages.json
             </p>
             {error ? (
               <p className="mt-1 text-xs text-red-500">
@@ -310,17 +306,10 @@ const CuratorDocument: React.FC = () => {
               <strong>2. Save changes</strong> - Click "Save Changes" to write to canonical_voyages.json
             </p>
             <p>
-              <strong>3. Automatic ingest</strong> - After saving, the system automatically:
-              <ul className="ml-6 mt-1 list-disc">
-                <li>Validates all voyage data and dates</li>
-                <li>Downloads media from Dropbox/Google Drive to S3</li>
-                <li>Generates thumbnails for images and PDFs</li>
-                <li>Updates the database with all changes</li>
-                <li>Reflects changes on the public timeline immediately</li>
-              </ul>
+              <strong>3. Changes persist immediately</strong> - Your edits are saved to the source file and will be visible in this editor
             </p>
-            <p className="text-blue-700 bg-blue-100 px-2 py-1 rounded">
-              💡 <strong>Tip:</strong> Watch the progress bar at the top of the screen during ingestion. The process usually takes 1-3 minutes depending on the number of new media items.
+            <p className="text-amber-700 bg-amber-100 px-2 py-1 rounded">
+              ⚠️ <strong>Note:</strong> Saving does NOT trigger database ingestion. Changes will NOT appear on the public website until an ingest is run separately (this avoids 4+ minute waits for each save).
             </p>
           </div>
         </div>
