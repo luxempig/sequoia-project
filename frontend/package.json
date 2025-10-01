@@ -26,20 +26,8 @@
     "web-vitals": "^2.1.4"
   },
   "overrides": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@testing-library/react": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
-    },
-    "react-router-dom": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
-    },
-    "react-scripts": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
-    }
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
