@@ -334,7 +334,7 @@ const CuratorDocument: React.FC = () => {
           <div className="bg-white shadow-sm rounded-lg border border-gray-200">
             <div className="p-1">
               <div className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
-                MASTER_DOC.md (Raw Edit Mode)
+                canonical_voyages.json (JSON Edit Mode)
               </div>
               <div className="relative">
                 <textarea
@@ -347,7 +347,7 @@ const CuratorDocument: React.FC = () => {
                     height: '75vh',
                     minHeight: '600px'
                   }}
-                  placeholder="Enter your MASTER_DOC content here..."
+                  placeholder="Enter canonical_voyages.json content here..."
                 />
                 {hasUnsavedChanges && (
                   <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
