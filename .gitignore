@@ -5,6 +5,7 @@
 !.github/
 !.gitignore
 !README.md
+!LICENSE.md
 !package.json
 !deploy-unified.sh
 !setup-ec2.sh
