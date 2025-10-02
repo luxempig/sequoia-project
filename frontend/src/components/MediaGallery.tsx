@@ -153,15 +153,26 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
             );
           }
 
+          // Determine document type for better icon
+          const isPDF = t.url.toLowerCase().includes('.pdf') || t.caption?.toLowerCase().includes('pdf');
+          const isAudio = t.url.toLowerCase().match(/\.(mp3|wav|ogg|m4a)$/);
+
           return (
             <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm p-4 flex items-start gap-3">
-              <div className="shrink-0 w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
-                📄
+              <div className={`shrink-0 w-10 h-10 rounded flex items-center justify-center text-xl ${
+                isPDF ? 'bg-red-50 border border-red-200' :
+                isAudio ? 'bg-blue-50 border border-blue-200' :
+                'bg-gray-100 border border-gray-300'
+              }`}>
+                {isPDF ? '📄' : isAudio ? '🔊' : '📎'}
               </div>
-              <figcaption className="text-sm">
-                <div className="text-gray-800">{t.caption || "Document / External media"}</div>
-                <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  Open
+              <figcaption className="text-sm flex-1">
+                <div className="text-gray-800 font-medium mb-1">
+                  {isPDF ? 'PDF Document' : isAudio ? 'Audio File' : 'Document'}
+                </div>
+                <div className="text-gray-600 text-xs line-clamp-2 mb-2">{t.caption || "External media"}</div>
+                <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
+                  Open in new tab →
                 </a>
               </figcaption>
             </figure>

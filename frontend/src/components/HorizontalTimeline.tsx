@@ -277,24 +277,48 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                                 className="w-full h-20 object-cover"
                                 loading="lazy"
                                 onError={(e) => {
-                                  // Hide image on error and show fallback
+                                  // Hide image on error and show fallback based on media type
                                   e.currentTarget.style.display = 'none';
                                   const parent = e.currentTarget.parentElement;
                                   if (parent) {
                                     const fallback = document.createElement('div');
-                                    fallback.className = 'w-full h-20 bg-gray-200 flex items-center justify-center text-gray-500 text-xs';
-                                    fallback.textContent = media.media_type || 'Media';
+                                    const type = media.media_type?.toLowerCase();
+                                    if (type === 'pdf') {
+                                      fallback.className = 'w-full h-20 bg-red-50 border-2 border-red-200 flex flex-col items-center justify-center text-red-600 text-xs font-medium';
+                                      fallback.innerHTML = '<div class="text-2xl mb-1">📄</div><div>PDF Document</div>';
+                                    } else if (type === 'video') {
+                                      fallback.className = 'w-full h-20 bg-gray-800 flex flex-col items-center justify-center text-white text-xs font-medium';
+                                      fallback.innerHTML = '<div class="text-2xl mb-1">▶️</div><div>Video</div>';
+                                    } else if (type === 'audio') {
+                                      fallback.className = 'w-full h-20 bg-blue-50 border-2 border-blue-200 flex flex-col items-center justify-center text-blue-600 text-xs font-medium';
+                                      fallback.innerHTML = '<div class="text-2xl mb-1">🔊</div><div>Audio</div>';
+                                    } else {
+                                      fallback.className = 'w-full h-20 bg-gray-100 border-2 border-gray-300 flex flex-col items-center justify-center text-gray-600 text-xs font-medium';
+                                      fallback.innerHTML = '<div class="text-2xl mb-1">📎</div><div>Document</div>';
+                                    }
                                     parent.insertBefore(fallback, parent.firstChild);
                                   }
                                 }}
                               />
                             ) : isVideo ? (
-                              <div className="w-full h-20 bg-gray-800 flex items-center justify-center text-white text-xs">
-                                ▶ {media.media_type || 'Video'}
+                              <div className="w-full h-20 bg-gray-800 flex flex-col items-center justify-center text-white">
+                                <div className="text-2xl mb-1">▶️</div>
+                                <div className="text-xs font-medium">Video</div>
+                              </div>
+                            ) : media.media_type?.toLowerCase() === 'pdf' ? (
+                              <div className="w-full h-20 bg-red-50 border-2 border-red-200 flex flex-col items-center justify-center text-red-600">
+                                <div className="text-2xl mb-1">📄</div>
+                                <div className="text-xs font-medium">PDF Document</div>
+                              </div>
+                            ) : media.media_type?.toLowerCase() === 'audio' ? (
+                              <div className="w-full h-20 bg-blue-50 border-2 border-blue-200 flex flex-col items-center justify-center text-blue-600">
+                                <div className="text-2xl mb-1">🔊</div>
+                                <div className="text-xs font-medium">Audio</div>
                               </div>
                             ) : (
-                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
-                                📄 {media.media_type || 'Document'}
+                              <div className="w-full h-20 bg-gray-100 border-2 border-gray-300 flex flex-col items-center justify-center text-gray-600">
+                                <div className="text-2xl mb-1">📎</div>
+                                <div className="text-xs font-medium">Document</div>
                               </div>
                             )}
                             <div className="p-1.5">
