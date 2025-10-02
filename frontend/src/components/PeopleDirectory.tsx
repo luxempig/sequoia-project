@@ -78,53 +78,52 @@ const PeopleDirectory: React.FC = () => {
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <span className="text-2xl">👥</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total People</dt>
-                      <dd className="text-lg font-semibold text-gray-900">{stats.total_people}</dd>
-                    </dl>
-                  </div>
-                </div>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total People</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{stats.total_people}</dd>
+                </dl>
               </div>
             </div>
 
             <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <span className="text-2xl">💼</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Unique Titles</dt>
-                      <dd className="text-lg font-semibold text-gray-900">{stats.unique_titles || 0}</dd>
-                    </dl>
-                  </div>
-                </div>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Unique Titles</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{stats.unique_titles || 0}</dd>
+                </dl>
               </div>
             </div>
 
             <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
               <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <span className="text-2xl">🚢</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Avg Voyages per Person</dt>
-                      <dd className="text-lg font-semibold text-gray-900">{stats.avg_voyages_per_passenger || 0}</dd>
-                    </dl>
-                  </div>
-                </div>
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Avg Voyages per Person</dt>
+                  <dd className="text-lg font-semibold text-gray-900">{stats.avg_voyages_per_passenger || 0}</dd>
+                </dl>
               </div>
             </div>
           </div>
         )}
+
+        {/* Help Needed Banner */}
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <p className="text-sm text-gray-700">
+            In addition to currently unresearched voyages, we need help migrating data from{' '}
+            <a
+              href="https://docs.google.com/document/d/1i6zyig7Tg84fGmH8mU9wfQMPbZZ3_iwxf64LWbKgh6Y/edit?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
+            >
+              this Google doc
+            </a>
+            ! Feel free to use the{' '}
+            <Link to="/curators" className="text-blue-600 hover:text-blue-800 underline font-medium">
+              curator page
+            </Link>
+            {' '}to fill in missing information.
+          </p>
+        </div>
 
         <div className="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <div className="max-w-md">

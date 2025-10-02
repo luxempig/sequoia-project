@@ -1,6 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import Layout from "./Layout";
-// Trigger deployment - reverted to commit 33c9d60
 
 export default function HomePage() {
   return (
@@ -12,10 +12,6 @@ export default function HomePage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               About the USS Sequoia Archive
             </h1>
-            {/* Deployment test indicator */}
-            <div className="text-xs text-gray-400 mb-2">
-              Version: Fixed-Deploy-2025.10.01
-            </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               A comprehensive digital collection of presidential voyages aboard
               America's most distinguished yacht
@@ -23,44 +19,41 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gray-900 rounded-lg mb-6 flex items-center justify-center">
-                <span className="text-white text-lg">⚓</span>
-              </div>
+            <Link
+              to="/voyages"
+              className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Presidential Voyages
+                Voyages
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Detailed records of presidential trips and official state visits
-                aboard the USS Sequoia
+                Explore presidential voyages with interactive timeline and detailed records of each trip aboard the USS Sequoia
               </p>
-            </div>
+            </Link>
 
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gray-900 rounded-lg mb-6 flex items-center justify-center">
-                <span className="text-white text-lg">📸</span>
-              </div>
+            <Link
+              to="/people"
+              className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Historical Media
+                Passengers
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Photographs, documents, and multimedia from decades of
-                presidential history
+                Browse the directory of distinguished guests, crew, and officials who sailed aboard the presidential yacht
               </p>
-            </div>
+            </Link>
 
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gray-900 rounded-lg mb-6 flex items-center justify-center">
-                <span className="text-white text-lg">👥</span>
-              </div>
+            <Link
+              to="/curators"
+              className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Distinguished Passengers
+                For Curators
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Comprehensive directory of passengers, crew, and officials who
-                traveled aboard
+                Edit and manage voyage data, media, and passenger information through the curator interface
               </p>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
