@@ -105,27 +105,7 @@ const PeopleDirectory: React.FC = () => {
           </div>
         )}
 
-        {/* Help Needed Banner */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <p className="text-sm text-gray-700">
-            In addition to currently unresearched voyages, we need help migrating data from{' '}
-            <a
-              href="https://docs.google.com/document/d/1i6zyig7Tg84fGmH8mU9wfQMPbZZ3_iwxf64LWbKgh6Y/edit?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline font-medium"
-            >
-              this Google doc
-            </a>
-            ! Feel free to use the{' '}
-            <Link to="/curators" className="text-blue-600 hover:text-blue-800 underline font-medium">
-              curator page
-            </Link>
-            {' '}to fill in missing information.
-          </p>
-        </div>
-
-        <div className="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div className="mt-6 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <div className="max-w-md">
             <label htmlFor="search" className="sr-only">Search people</label>
             <input
