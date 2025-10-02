@@ -88,6 +88,11 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
           {voyage.summary_markdown && (
             <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mt-2">{voyage.summary_markdown}</p>
           )}
+          {voyage.notes_internal && (
+            <p className="text-sm text-gray-500 italic line-clamp-2 leading-relaxed mt-2">
+              Notes: {voyage.notes_internal}
+            </p>
+          )}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {tags.map((tag, idx) => {

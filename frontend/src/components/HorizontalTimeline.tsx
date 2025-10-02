@@ -214,9 +214,14 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                           className="block"
                         >
                           <div className="bg-white border border-orange-300 rounded-md p-3 hover:bg-orange-100 transition-colors shadow-sm">
-                            <div className="text-sm text-gray-800 leading-tight mb-2">
+                            <div className="text-sm text-gray-800 leading-tight mb-1">
                               {dayjs(voyage.start_date).format('MMMM D, YYYY')} - {voyage.title || voyage.summary_markdown?.slice(0, 100) + '...' || 'USS Sequoia Voyage'}
                             </div>
+                            {voyage.notes_internal && (
+                              <div className="text-xs text-gray-600 italic mt-1 line-clamp-2">
+                                Notes: {voyage.notes_internal}
+                              </div>
+                            )}
                           </div>
                           <button className="text-xs bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-1 rounded mt-2 font-bold uppercase tracking-wide">
                             VIEW
