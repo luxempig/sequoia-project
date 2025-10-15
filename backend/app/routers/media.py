@@ -56,20 +56,11 @@ def list_media(
     rows = cur.fetchall()
     cur.close(); conn.close()
 
-    if presign:
-        ttl_eff = int(ttl) if ttl is not None else get_settings().PRESIGNED_TTL
-        for r in rows:
-            # ONLY serve from S3 - no Drive/Dropbox links
-            s3_url = r.get("s3_url") or ""
-            public_url = r.get("public_derivative_url") or ""
-            presigned_url = presign_from_media_s3_url(s3_url, expires=ttl_eff) if s3_url else None
-
-            # Priority: presigned S3 -> public derivative -> raw S3 (no external fallbacks)
-            r["url"] = presigned_url or public_url or s3_url
-    else:
-        for r in rows:
-            # ONLY serve from S3 - no Drive/Dropbox links
-            r["url"] = r.get("public_derivative_url") or r.get("s3_url")
+    # sequoia-canonical and sequoia-public are both publicly readable, no presigning needed
+    for r in rows:
+        # ONLY serve from S3 - no Drive/Dropbox links
+        # Priority: public derivative (thumbnail) -> original S3 URL
+        r["url"] = r.get("public_derivative_url") or r.get("s3_url")
 
     return rows
 
@@ -130,20 +121,11 @@ def media_for_voyage(
         rows = cur.fetchall()
         cur.close(); conn.close()
 
-        if presign:
-            ttl_eff = int(ttl) if ttl is not None else get_settings().PRESIGNED_TTL
-            for r in rows:
-                # ONLY serve from S3 - no Drive/Dropbox links
-                s3_url = r.get("s3_url") or ""
-                public_url = r.get("public_derivative_url") or ""
-                presigned_url = presign_from_media_s3_url(s3_url, expires=ttl_eff) if s3_url else None
-
-                # Priority: presigned S3 -> public derivative -> raw S3 (no external fallbacks)
-                r["url"] = presigned_url or public_url or s3_url
-        else:
-            for r in rows:
-                # ONLY serve from S3 - no Drive/Dropbox links
-                r["url"] = r.get("public_derivative_url") or r.get("s3_url")
+        # sequoia-canonical and sequoia-public are both publicly readable, no presigning needed
+        for r in rows:
+            # ONLY serve from S3 - no Drive/Dropbox links
+            # Priority: public derivative (thumbnail) -> original S3 URL
+            r["url"] = r.get("public_derivative_url") or r.get("s3_url")
 
         return rows
     except Exception as e:
@@ -161,18 +143,10 @@ def get_media(media_slug: str, presign: bool = Query(True), ttl: Optional[int] =
     if not row:
         return {}
 
-    if presign:
-        ttl_eff = int(ttl) if ttl is not None else get_settings().PRESIGNED_TTL
-        # ONLY serve from S3 - no Drive/Dropbox links
-        s3_url = row.get("s3_url") or ""
-        public_url = row.get("public_derivative_url") or ""
-        presigned_url = presign_from_media_s3_url(s3_url, expires=ttl_eff) if s3_url else None
-
-        # Priority: presigned S3 -> public derivative -> raw S3 (no external fallbacks)
-        row["url"] = presigned_url or public_url or s3_url
-    else:
-        # ONLY serve from S3 - no Drive/Dropbox links
-        row["url"] = row.get("public_derivative_url") or row.get("s3_url")
+    # sequoia-canonical and sequoia-public are both publicly readable, no presigning needed
+    # ONLY serve from S3 - no Drive/Dropbox links
+    # Priority: public derivative (thumbnail) -> original S3 URL
+    row["url"] = row.get("public_derivative_url") or row.get("s3_url")
     return row
 
 @router.get("/{media_slug}/related-voyages", response_model=List[Dict[str, Any]])
