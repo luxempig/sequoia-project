@@ -36,6 +36,7 @@ def _parse_s3_url(s3_url: str) -> Optional[Tuple[str, str]]:
 def presign_from_media_s3_url(s3_url: str, expires: int = 3600) -> Optional[str]:
     """
     Given media.s3_url (either s3://bucket/key or bare key), return presigned HTTPS URL.
+    Forces inline display in browser (no download prompts) by setting content-disposition.
     If bucket/key cannot be determined, returns None.
     """
     parsed = _parse_s3_url(s3_url)
@@ -43,9 +44,14 @@ def presign_from_media_s3_url(s3_url: str, expires: int = 3600) -> Optional[str]
         return None
     bucket, key = parsed
     try:
+        # Force inline display in browser, never trigger download
         return _client().generate_presigned_url(
             ClientMethod="get_object",
-            Params={"Bucket": bucket, "Key": key},
+            Params={
+                "Bucket": bucket,
+                "Key": key,
+                "ResponseContentDisposition": "inline"
+            },
             ExpiresIn=expires,
         )
     except Exception:
