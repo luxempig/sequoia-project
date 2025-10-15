@@ -136,15 +136,42 @@ def parse_json_file(json_path):
             transformed_voyage = {
                 "voyage_slug": voyage.get("voyage", ""),
                 "president_slug": actual_president_slug,  # Use actual owner (post-presidential for Reagan+)
+                "title": voyage.get("title"),
                 "start_date": voyage.get("start_date"),
                 "end_date": voyage.get("end_date"),
                 "start_time": voyage.get("start_time"),
                 "end_time": voyage.get("end_time"),
                 "origin": voyage.get("origin"),
                 "destination": voyage.get("destination"),
+                "start_location": voyage.get("start_location"),
+                "end_location": voyage.get("end_location"),
+                "vessel_name": voyage.get("vessel_name"),
+                "voyage_type": voyage.get("voyage_type"),
+                "summary_markdown": voyage.get("summary_markdown"),
+                "source_urls": voyage.get("source_urls"),
+                "additional_information": voyage.get("additional_information"),
+                "additional_sources": voyage.get("additional_sources"),
                 "notes": voyage.get("notes", []),
                 "tags": voyage.get("tags", []),
-                "missing_info": voyage.get("missing_info", {})
+                "missing_info": voyage.get("missing_info", {}),
+                # Boolean metadata flags
+                "has_photo": voyage.get("has_photo", False),
+                "has_video": voyage.get("has_video", False),
+                "presidential_use": voyage.get("presidential_use", False),
+                "has_royalty": voyage.get("has_royalty", False),
+                "has_foreign_leader": voyage.get("has_foreign_leader", False),
+                "mention_camp_david": voyage.get("mention_camp_david", False),
+                "mention_mount_vernon": voyage.get("mention_mount_vernon", False),
+                "mention_captain": voyage.get("mention_captain", False),
+                "mention_crew": voyage.get("mention_crew", False),
+                "mention_rmd": voyage.get("mention_rmd", False),
+                "mention_yacht_spin": voyage.get("mention_yacht_spin", False),
+                "mention_menu": voyage.get("mention_menu", False),
+                "mention_drinks_wine": voyage.get("mention_drinks_wine", False),
+                # Associated text fields
+                "presidential_initials": voyage.get("presidential_initials"),
+                "royalty_details": voyage.get("royalty_details"),
+                "foreign_leader_country": voyage.get("foreign_leader_country"),
             }
 
             # Transform passengers to expected format
