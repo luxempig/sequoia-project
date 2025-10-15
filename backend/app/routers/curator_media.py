@@ -10,7 +10,16 @@ from app.db import db_cursor
 import logging
 import boto3
 import os
+import io
 from datetime import datetime
+from PIL import Image
+
+# Try to import PyMuPDF for PDF thumbnails
+try:
+    import fitz
+    HAS_PYMUPDF = True
+except ImportError:
+    HAS_PYMUPDF = False
 
 LOG = logging.getLogger("app.routers.curator_media")
 
@@ -303,15 +312,25 @@ async def upload_media_file(
             else:
                 media_type = 'document'
 
+        # Generate thumbnail if voyage_slug is provided
+        thumbnail_url = None
+        if voyage_slug and media_type in ('image', 'pdf'):
+            thumbnail_url = generate_and_upload_thumbnail(
+                file_content=file_content,
+                media_type=media_type,
+                voyage_slug=voyage_slug,
+                media_slug=media_slug
+            )
+
         # Create media record
         with db_cursor() as cur:
             cur.execute("""
                 INSERT INTO sequoia.media (
-                    media_slug, title, media_type, s3_url,
+                    media_slug, title, media_type, s3_url, public_derivative_url,
                     credit, description_markdown,
                     created_at, updated_at
                 ) VALUES (
-                    %(media_slug)s, %(title)s, %(media_type)s, %(s3_url)s,
+                    %(media_slug)s, %(title)s, %(media_type)s, %(s3_url)s, %(thumbnail_url)s,
                     %(credit)s, %(description)s,
                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
@@ -319,6 +338,7 @@ async def upload_media_file(
                 DO UPDATE SET
                     title = EXCLUDED.title,
                     s3_url = EXCLUDED.s3_url,
+                    public_derivative_url = EXCLUDED.public_derivative_url,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING *
             """, {
@@ -326,6 +346,7 @@ async def upload_media_file(
                 'title': title or file.filename,
                 'media_type': media_type,
                 's3_url': s3_url,
+                'thumbnail_url': thumbnail_url,
                 'credit': credit,
                 'description': description
             })
@@ -395,7 +416,94 @@ def search_media(
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
-# Helper functions for S3 operations
+# Helper functions for S3 operations and thumbnail generation
+
+def make_image_thumbnail(img_bytes: bytes, thumb_size=320) -> Optional[bytes]:
+    """Create a thumbnail from an image."""
+    try:
+        with Image.open(io.BytesIO(img_bytes)) as im:
+            im = im.convert("RGB")
+            im.thumbnail((thumb_size, thumb_size), Image.LANCZOS)
+            buf = io.BytesIO()
+            im.save(buf, format="JPEG", quality=85, optimize=True)
+            return buf.getvalue()
+    except Exception as e:
+        LOG.warning(f"Failed to create image thumbnail: {e}")
+        return None
+
+
+def make_pdf_thumbnail(pdf_bytes: bytes, thumb_size=320) -> Optional[bytes]:
+    """Create a thumbnail from the first page of a PDF."""
+    if not HAS_PYMUPDF:
+        return None
+
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        if len(doc) == 0:
+            return None
+
+        # Get first page
+        page = doc[0]
+
+        # Render as image (at 150 DPI for good quality)
+        mat = fitz.Matrix(150/72, 150/72)
+        pix = page.get_pixmap(matrix=mat)
+        img_data = pix.tobytes("ppm")
+        doc.close()
+
+        # Convert to PIL Image and create thumbnail
+        img = Image.open(io.BytesIO(img_data))
+        img.thumbnail((thumb_size, thumb_size), Image.LANCZOS)
+
+        # Convert to JPEG
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=85, optimize=True)
+        return buf.getvalue()
+
+    except Exception as e:
+        LOG.warning(f"Failed to create PDF thumbnail: {e}")
+        return None
+
+
+def generate_and_upload_thumbnail(file_content: bytes, media_type: str, voyage_slug: str, media_slug: str) -> Optional[str]:
+    """Generate thumbnail and upload to sequoia-public bucket."""
+    try:
+        # Generate thumbnail based on media type
+        thumb_bytes = None
+
+        if media_type == 'image':
+            thumb_bytes = make_image_thumbnail(file_content)
+        elif media_type == 'pdf':
+            thumb_bytes = make_pdf_thumbnail(file_content)
+        else:
+            LOG.info(f"Thumbnail generation not supported for media_type: {media_type}")
+            return None
+
+        if not thumb_bytes:
+            LOG.warning(f"Failed to generate thumbnail for {media_slug}")
+            return None
+
+        # Upload thumbnail to public bucket
+        public_bucket = os.environ.get("S3_PUBLIC_BUCKET", "sequoia-public")
+        thumb_key = f"thumbnails/{voyage_slug}/{media_slug}.jpg"
+
+        s3_client = boto3.client('s3')
+        s3_client.put_object(
+            Bucket=public_bucket,
+            Key=thumb_key,
+            Body=thumb_bytes,
+            ContentType='image/jpeg',
+            CacheControl='public, max-age=31536000'  # Cache for 1 year
+        )
+
+        thumbnail_url = f"https://{public_bucket}.s3.amazonaws.com/{thumb_key}"
+        LOG.info(f"Generated thumbnail: {thumbnail_url}")
+        return thumbnail_url
+
+    except Exception as e:
+        LOG.error(f"Error generating/uploading thumbnail: {e}")
+        return None
+
 
 def upload_to_s3(file_content: bytes, bucket: str, key: str, content_type: str) -> str:
     """Upload file to S3 and return the S3 URL"""
