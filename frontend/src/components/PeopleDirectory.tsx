@@ -122,7 +122,11 @@ const PeopleDirectory: React.FC = () => {
         {/* People Grid */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPeople.map((person) => (
-            <div key={person.person_slug} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200">
+            <Link
+              key={person.person_slug}
+              to={`/people/${person.person_slug}`}
+              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
+            >
               <div className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -134,12 +138,9 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <Link 
-                        to={`/people/${person.person_slug}`}
-                        className="text-sm font-medium text-gray-900 hover:text-gray-700"
-                      >
+                      <span className="text-sm font-medium text-gray-900">
                         {person.full_name}
-                      </Link>
+                      </span>
                     </div>
                     {person.role_title && (
                       <p className="text-sm text-gray-500">{person.role_title}</p>
@@ -159,7 +160,7 @@ const PeopleDirectory: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

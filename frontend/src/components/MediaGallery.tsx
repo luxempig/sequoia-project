@@ -41,30 +41,30 @@ type Tile = {
 };
 
 const toTile = (m: MediaItem): Tile | null => {
-  const url = m.url || m.s3_url || m.public_derivative_url || "";
-  if (!url) return null;
+  // Only use S3 URLs from sequoia-canonical bucket
+  const s3Url = m.s3_url || "";
+  if (!s3Url || !s3Url.includes('sequoia-canonical')) return null;
+
   const caption =
     (m.title ? `${m.title}` : (m.media_type || "Media")) +
     (m.date ? ` — ${m.date}` : "") +
     (m.description_markdown ? `: ${m.description_markdown}` : "");
 
-  // Use thumbnail for display if available
-  const thumbnailUrl = m.public_derivative_url;
-
-  if (looksLikeImage(url) || m.media_type === 'image') {
-    return { id: m.media_slug, kind: "image", url: thumbnailUrl || url, caption, originalUrl: url };
+  // Always use original S3 file, never thumbnails
+  if (looksLikeImage(s3Url) || m.media_type === 'image') {
+    return { id: m.media_slug, kind: "image", url: s3Url, caption, originalUrl: s3Url };
   }
-  if (looksLikeVideo(url) || m.media_type === 'video') {
-    return { id: m.media_slug, kind: "video", url, caption };
+  if (looksLikeVideo(s3Url) || m.media_type === 'video') {
+    return { id: m.media_slug, kind: "video", url: s3Url, caption };
   }
-  // For PDFs with thumbnails, show as image tile
-  if (m.media_type === 'pdf' && thumbnailUrl) {
-    return { id: m.media_slug, kind: "image", url: thumbnailUrl, caption, originalUrl: url };
+  // For PDFs, show as document tile
+  if (m.media_type === 'pdf') {
+    return { id: m.media_slug, kind: "other", url: s3Url, caption };
   }
-  return { id: m.media_slug, kind: "other", url, caption };
+  return { id: m.media_slug, kind: "other", url: s3Url, caption };
 };
 
-const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }> = ({ voyageSlug, filterDisplayable = false }) => {
+const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
   const [raw, setRaw] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [openSrc, setOpenSrc] = useState<string | null>(null);
@@ -76,26 +76,14 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
       .getVoyageMedia(voyageSlug)
       .then((data) => {
         if (!alive) return;
-        let mediaData = Array.isArray(data) ? data : [];
-
-        // Filter to only displayable media if requested
-        if (filterDisplayable) {
-          mediaData = mediaData.filter(m => {
-            const url = m.url || m.public_derivative_url || m.s3_url || '';
-            return url.includes('drive.google.com') ||
-                   url.includes('dropbox.com') ||
-                   url.includes('s3.amazonaws.com') ||
-                   url.includes('sequoia-');
-          });
-        }
-
+        const mediaData = Array.isArray(data) ? data : [];
         setRaw(mediaData);
       })
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [voyageSlug, filterDisplayable]);
+  }, [voyageSlug]);
 
   const tiles = useMemo(
     () => raw.map(toTile).filter(Boolean) as Tile[],
@@ -118,7 +106,7 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
                 <button
                   type="button"
                   onClick={() => setOpenSrc(originalUrl)}
-                  className="block w-full h-48 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="block w-full aspect-square bg-gray-50 hover:bg-gray-100 transition-colors"
                   title={t.caption || "Click to enlarge"}
                 >
                   <img
@@ -144,7 +132,7 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
             return (
               <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm">
                 <video
-                  className="w-full h-48 bg-black"
+                  className="w-full aspect-square bg-black object-cover"
                   controls
                   preload="metadata"
                   onError={(e) => {
@@ -152,7 +140,7 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
                     if (!parent) return;
                     e.currentTarget.style.display = "none";
                     const div = document.createElement("div");
-                    div.className = "w-full h-48 flex items-center justify-center bg-gray-50 text-gray-600 text-sm";
+                    div.className = "w-full aspect-square flex items-center justify-center bg-gray-50 text-gray-600 text-sm";
                     div.innerHTML = `<a href="${t.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Open video</a>`;
                     parent.insertBefore(div, parent.firstChild);
                   }}

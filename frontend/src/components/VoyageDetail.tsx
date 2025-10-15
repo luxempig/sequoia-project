@@ -77,23 +77,18 @@ export default function VoyageDetail() {
   if (loading) return <p className="p-4">Loading…</p>;
   if (!voyage) return <p className="p-4">Voyage not found</p>;
 
-  // Separate media by type: Drive/Dropbox/S3 vs other sources
+  // Only show media from S3 canonical bucket
   const displayableMedia = media.filter(m => {
-    const url = m.url || m.public_derivative_url || m.s3_url || '';
-    return url.includes('drive.google.com') ||
-           url.includes('dropbox.com') ||
-           url.includes('s3.amazonaws.com') ||
-           url.includes('sequoia-');
+    const s3Url = m.s3_url || '';
+    return s3Url.includes('sequoia-canonical');
   });
 
+  // Source links are non-S3 URLs from the url field
   const sourceLinks = media.filter(m => {
-    const url = m.url || m.public_derivative_url || m.s3_url || '';
-    return url && !(
-      url.includes('drive.google.com') ||
-      url.includes('dropbox.com') ||
-      url.includes('s3.amazonaws.com') ||
-      url.includes('sequoia-')
-    );
+    const url = m.url || '';
+    const s3Url = m.s3_url || '';
+    // Show as source link if it has a URL but it's not an S3 URL
+    return url && !s3Url.includes('sequoia-canonical');
   });
 
   return (
@@ -253,11 +248,11 @@ export default function VoyageDetail() {
         )}
       </div>
 
-      {/* Media Gallery - Only Drive/Dropbox/S3 */}
+      {/* Media Gallery - Only S3 */}
       {displayableMedia.length > 0 && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Media</h3>
-          <MediaGallery voyageSlug={voyageSlug} filterDisplayable={true} />
+          <MediaGallery voyageSlug={voyageSlug} />
         </section>
       )}
 
