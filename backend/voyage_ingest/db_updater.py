@@ -353,6 +353,46 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                           sort_order=COALESCE(EXCLUDED.sort_order, voyage_media.sort_order), notes=EXCLUDED.notes;
                     """, rows)
 
+            # Sync relationships - delete any passengers/media not in current lists
+            passenger_slugs_list = [_ns(p.get("slug") or p.get("person_slug")) for p in ppl if _ns(p.get("slug") or p.get("person_slug"))]
+            media_slugs_list = [_ns(m.get("slug")) for m in med if _ns(m.get("slug"))]
+
+            # Delete voyage_passengers entries not in the current passenger list
+            if passenger_slugs_list:
+                cur.execute("""
+                    DELETE FROM voyage_passengers
+                    WHERE voyage_slug = %s
+                    AND person_slug NOT IN %s;
+                """, (vslug, tuple(passenger_slugs_list)))
+            else:
+                # No passengers - delete all for this voyage
+                cur.execute("""
+                    DELETE FROM voyage_passengers
+                    WHERE voyage_slug = %s;
+                """, (vslug,))
+
+            deleted_passengers = cur.rowcount
+            if deleted_passengers > 0:
+                LOG.info(f"Removed {deleted_passengers} passenger(s) from voyage {vslug}")
+
+            # Delete voyage_media entries not in the current media list
+            if media_slugs_list:
+                cur.execute("""
+                    DELETE FROM voyage_media
+                    WHERE voyage_slug = %s
+                    AND media_slug NOT IN %s;
+                """, (vslug, tuple(media_slugs_list)))
+            else:
+                # No media - delete all for this voyage
+                cur.execute("""
+                    DELETE FROM voyage_media
+                    WHERE voyage_slug = %s;
+                """, (vslug,))
+
+            deleted_media = cur.rowcount
+            if deleted_media > 0:
+                LOG.info(f"Removed {deleted_media} media item(s) from voyage {vslug}")
+
         conn.commit()
         LOG.info("DB upsert complete for voyage %s", vslug)
     except Exception as e:
@@ -374,5 +414,124 @@ def get_all_voyage_slugs_from_db() -> List[str]:
         _schema(cur)
         cur.execute("SELECT voyage_slug FROM voyages;")
         return [row[0] for row in cur.fetchall() if row[0]]
+    finally:
+        conn.close()
+
+
+def sync_voyage_relationships(vslug: str, passenger_slugs: List[str], media_slugs: List[str]) -> None:
+    """
+    Synchronize voyage relationships by removing any that aren't in the provided lists.
+    This ensures deletions in the JSON are reflected in the database.
+
+    Args:
+        vslug: The voyage slug
+        passenger_slugs: List of person slugs that should be associated with this voyage
+        media_slugs: List of media slugs that should be associated with this voyage
+    """
+    conn = _conn()
+    conn.autocommit = False
+    try:
+        with conn.cursor() as cur:
+            _schema(cur)
+
+            # Delete voyage_passengers entries not in the current passenger list
+            if passenger_slugs:
+                cur.execute("""
+                    DELETE FROM voyage_passengers
+                    WHERE voyage_slug = %s
+                    AND person_slug NOT IN %s;
+                """, (vslug, tuple(passenger_slugs)))
+            else:
+                # No passengers - delete all for this voyage
+                cur.execute("""
+                    DELETE FROM voyage_passengers
+                    WHERE voyage_slug = %s;
+                """, (vslug,))
+
+            deleted_passengers = cur.rowcount
+            if deleted_passengers > 0:
+                LOG.info(f"Removed {deleted_passengers} passenger(s) from voyage {vslug}")
+
+            # Delete voyage_media entries not in the current media list
+            if media_slugs:
+                cur.execute("""
+                    DELETE FROM voyage_media
+                    WHERE voyage_slug = %s
+                    AND media_slug NOT IN %s;
+                """, (vslug, tuple(media_slugs)))
+            else:
+                # No media - delete all for this voyage
+                cur.execute("""
+                    DELETE FROM voyage_media
+                    WHERE voyage_slug = %s;
+                """, (vslug,))
+
+            deleted_media = cur.rowcount
+            if deleted_media > 0:
+                LOG.info(f"Removed {deleted_media} media item(s) from voyage {vslug}")
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        LOG.error(f"Failed to sync relationships for voyage {vslug}: {e}")
+        raise
+    finally:
+        conn.close()
+
+
+def delete_voyages_not_in_list(voyage_slugs: List[str], president_slug: Optional[str] = None) -> int:
+    """
+    Delete voyages that are not in the provided list.
+    If president_slug is provided, only delete voyages for that president.
+
+    Args:
+        voyage_slugs: List of voyage slugs that should be kept
+        president_slug: Optional president slug to scope the deletion
+
+    Returns:
+        Number of voyages deleted
+    """
+    conn = _conn()
+    conn.autocommit = False
+    try:
+        with conn.cursor() as cur:
+            _schema(cur)
+
+            if voyage_slugs:
+                if president_slug:
+                    # Delete voyages for this president that aren't in the list
+                    cur.execute("""
+                        DELETE FROM voyages
+                        WHERE president_slug_from_voyage = %s
+                        AND voyage_slug NOT IN %s;
+                    """, (president_slug, tuple(voyage_slugs)))
+                else:
+                    # Delete any voyage not in the list
+                    cur.execute("""
+                        DELETE FROM voyages
+                        WHERE voyage_slug NOT IN %s;
+                    """, (tuple(voyage_slugs),))
+            else:
+                if president_slug:
+                    # No voyages in list - delete all for this president
+                    cur.execute("""
+                        DELETE FROM voyages
+                        WHERE president_slug_from_voyage = %s;
+                    """, (president_slug,))
+                else:
+                    # WARNING: This would delete ALL voyages - skip to be safe
+                    LOG.warning("Attempted to delete all voyages - skipping for safety")
+                    return 0
+
+            deleted_count = cur.rowcount
+            if deleted_count > 0:
+                LOG.info(f"Deleted {deleted_count} voyage(s) not in the source data")
+
+        conn.commit()
+        return deleted_count
+    except Exception as e:
+        conn.rollback()
+        LOG.error(f"Failed to delete old voyages: {e}")
+        raise
     finally:
         conn.close()
