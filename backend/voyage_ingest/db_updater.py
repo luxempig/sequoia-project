@@ -170,6 +170,13 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 if isinstance(x, str): return x.lower() in ('true', '1', 'yes', 't', 'y')
                 return bool(x)
 
+            # Helper to convert Python lists to PostgreSQL arrays
+            def _array(x):
+                if x is None: return None
+                if isinstance(x, list): return x  # psycopg2 handles Python lists as PostgreSQL arrays
+                if isinstance(x, str): return [x] if x.strip() else None  # Convert string to single-element array
+                return None
+
             cur.execute("""
                 INSERT INTO voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
@@ -220,7 +227,7 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 "vessel_name": _ns(v.get("vessel_name") or "USS Sequoia"),
                 "voyage_type": _ns(v.get("voyage_type")),
                 "summary_markdown": _ns(v.get("summary_markdown") or v.get("summary")),
-                "source_urls": _ns(v.get("source_urls")),
+                "source_urls": _array(v.get("source_urls")),
                 "tags": _ns(v.get("tags")),
                 "president_slug": _ns(pres_slug),
                 "start_location": _ns(v.get("start_location") or v.get("origin")),
