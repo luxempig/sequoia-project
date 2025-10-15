@@ -127,7 +127,7 @@ def generate_sample_voyages_for_president(
 
         # Build voyage data
         voyage = {
-            "voyage_slug": voyage_slug,
+            "voyage": voyage_slug,  # Parser expects "voyage" field, not "voyage_slug"
             "title": f"{president_name} {['Diplomatic Cruise', 'Strategy Session', 'Recreation Voyage', 'Official Business', 'State Reception'][i]}",
             "start_date": start_date,
             "end_date": start_date,  # Same day
