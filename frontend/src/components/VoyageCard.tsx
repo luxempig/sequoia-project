@@ -47,6 +47,16 @@ const fmtRange = (start?: string | null, end?: string | null) => {
     : a.format("MMM D, YYYY");
 };
 
+const fmtTimestamp = (timestamp?: string | null) => {
+  if (!timestamp) return null;
+  try {
+    const dt = dayjs(timestamp);
+    return dt.isValid() ? dt.format("MMM D, YYYY [at] h:mm A") : null;
+  } catch {
+    return null;
+  }
+};
+
 const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }) => {
   const significant = voyage.significant === 1 || voyage.significant === true;
   const royalty = voyage.royalty === 1 || voyage.royalty === true;
@@ -78,15 +88,34 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
         >
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
             <h3 className="text-sm sm:text-base font-semibold text-gray-900">
-              {fmtRange(voyage.start_date, voyage.end_date)}
+              {voyage.title || fmtRange(voyage.start_date, voyage.end_date)}
             </h3>
             <div className="flex gap-2">
               {significant && <Badge>Significant</Badge>}
               {royalty && <Badge tone="violet">Royalty</Badge>}
             </div>
           </div>
-          {voyage.summary_markdown && (
-            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mt-2">{voyage.summary_markdown}</p>
+
+          {/* Date/Time and Locations */}
+          <div className="text-xs text-gray-600 mt-2 space-y-1">
+            <div>
+              <strong>Start:</strong> {fmtTimestamp(voyage.start_timestamp) || fmtRange(voyage.start_date, null)}
+              {(voyage.start_location || voyage.origin) && (
+                <span className="ml-1">📍 {voyage.start_location || voyage.origin}</span>
+              )}
+            </div>
+            <div>
+              <strong>End:</strong> {fmtTimestamp(voyage.end_timestamp) || fmtRange(voyage.end_date, null)}
+              {(voyage.end_location || voyage.destination) && (
+                <span className="ml-1">📍 {voyage.end_location || voyage.destination}</span>
+              )}
+            </div>
+          </div>
+
+          {(voyage.additional_information || voyage.summary_markdown) && (
+            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mt-2">
+              {voyage.additional_information || voyage.summary_markdown}
+            </p>
           )}
           {voyage.notes_internal && (
             <p className="text-sm text-gray-500 italic line-clamp-2 leading-relaxed mt-2">

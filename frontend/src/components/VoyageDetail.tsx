@@ -14,6 +14,18 @@ const formatDate = (iso: string | null | undefined) => {
   }
 };
 
+const formatDateTime = (timestamp: string | null | undefined) => {
+  if (!timestamp) return null;
+  try {
+    return new Date(timestamp).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+  } catch {
+    return timestamp;
+  }
+};
+
 export default function VoyageDetail() {
   const { slug } = useParams<{ slug: string }>();
   const voyageSlug = slug!;
@@ -22,6 +34,7 @@ export default function VoyageDetail() {
   const [voyage, setVoyage] = useState<Voyage | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [adjacentVoyages, setAdjacentVoyages] = useState<{ previous: Voyage | null; next: Voyage | null }>({ previous: null, next: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,15 +42,17 @@ export default function VoyageDetail() {
     (async () => {
       setLoading(true);
       try {
-        const [v, p, m] = await Promise.all([
+        const [v, p, m, adj] = await Promise.all([
           api.getVoyage(voyageSlug).catch(() => null),
           api.getVoyagePeople(voyageSlug).catch(() => []),
           api.getVoyageMedia(voyageSlug).catch(() => []),
+          api.getAdjacentVoyages(voyageSlug).catch(() => ({ previous: null, next: null })),
         ]);
         if (!alive) return;
         setVoyage(v);
         setPeople(p);
         setMedia(m);
+        setAdjacentVoyages(adj);
       } finally {
         if (alive) setLoading(false);
       }
@@ -71,12 +86,36 @@ export default function VoyageDetail() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="text-blue-600 hover:underline"
-      >
-        ← Back to timeline
-      </button>
+      <div className="flex justify-between items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-blue-600 hover:underline"
+        >
+          ← Back to timeline
+        </button>
+
+        {/* Voyage Navigation */}
+        <div className="flex gap-2">
+          {adjacentVoyages.previous && (
+            <button
+              onClick={() => navigate(`/voyages/${adjacentVoyages.previous!.voyage_slug}`)}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              title={adjacentVoyages.previous.title || adjacentVoyages.previous.voyage_slug}
+            >
+              ← Previous
+            </button>
+          )}
+          {adjacentVoyages.next && (
+            <button
+              onClick={() => navigate(`/voyages/${adjacentVoyages.next!.voyage_slug}`)}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              title={adjacentVoyages.next.title || adjacentVoyages.next.voyage_slug}
+            >
+              Next →
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Header card */}
       <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
@@ -84,9 +123,34 @@ export default function VoyageDetail() {
           <h1 className="text-xl sm:text-2xl font-semibold">
             {voyage.title || `Voyage ${voyage.voyage_slug}`}
           </h1>
-          <div className="text-sm sm:text-base text-gray-700">
-            <strong>From</strong> {formatDate(voyage.start_date)}{" "}
-            <strong>to</strong> {formatDate(voyage.end_date)}
+        </div>
+
+        {/* Date and Time Information */}
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          {/* Start Date/Time */}
+          <div>
+            <strong className="text-gray-900">Start:</strong>
+            <div className="text-gray-700">
+              {formatDateTime(voyage.start_timestamp) || formatDate(voyage.start_date)}
+            </div>
+            {(voyage.start_location || voyage.origin) && (
+              <div className="text-gray-600 text-xs mt-1">
+                📍 {voyage.start_location || voyage.origin}
+              </div>
+            )}
+          </div>
+
+          {/* End Date/Time */}
+          <div>
+            <strong className="text-gray-900">End:</strong>
+            <div className="text-gray-700">
+              {formatDateTime(voyage.end_timestamp) || formatDate(voyage.end_date)}
+            </div>
+            {(voyage.end_location || voyage.destination) && (
+              <div className="text-gray-600 text-xs mt-1">
+                📍 {voyage.end_location || voyage.destination}
+              </div>
+            )}
           </div>
         </div>
 
@@ -95,6 +159,24 @@ export default function VoyageDetail() {
             <h3 className="font-semibold mb-1">Summary</h3>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
               {voyage.summary_markdown}
+            </p>
+          </div>
+        )}
+
+        {voyage.additional_information && (
+          <div className="mt-4 bg-blue-50 rounded-xl p-4">
+            <h3 className="font-semibold mb-1">Additional Information</h3>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {voyage.additional_information}
+            </p>
+          </div>
+        )}
+
+        {voyage.notes_internal && (
+          <div className="mt-4 bg-gray-50 rounded-xl p-4">
+            <h3 className="font-semibold mb-1">Notes</h3>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {voyage.notes_internal}
             </p>
           </div>
         )}
@@ -152,33 +234,40 @@ export default function VoyageDetail() {
           <p className="text-gray-600">No people recorded for this voyage.</p>
         ) : (
           <ul className="space-y-2">
-            {people.map((p) => (
-              <li key={p.person_slug} className="flex items-start gap-2">
-                <span className="mt-1">•</span>
-                <div className="text-sm">
-                  <div className="font-medium">{p.full_name}</div>
-                  {p.role_title && (
-                    <div className="text-gray-700">{p.role_title}</div>
-                  )}
-                  {p.capacity_role && (
-                    <div className="text-gray-700">Role: {p.capacity_role}</div>
-                  )}
-                  {p.voyage_notes && (
-                    <div className="text-gray-700">{p.voyage_notes}</div>
-                  )}
-                  {p.wikipedia_url && (
-                    <a
-                      href={p.wikipedia_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Wikipedia
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
+            {people.map((p) => {
+              // Determine which bio link to use (prefer bio field, fall back to wikipedia_url)
+              const bioLink = p.bio || p.wikipedia_url;
+              // Use capacity_role for the role (don't duplicate with role_title)
+              const roleToDisplay = p.capacity_role || p.role_title || p.title;
+
+              return (
+                <li key={p.person_slug} className="flex items-start gap-2">
+                  <span className="mt-1">•</span>
+                  <div className="text-sm">
+                    <div className="font-medium">
+                      {bioLink ? (
+                        <a
+                          href={bioLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {p.full_name}
+                        </a>
+                      ) : (
+                        p.full_name
+                      )}
+                    </div>
+                    {roleToDisplay && (
+                      <div className="text-gray-700">{roleToDisplay}</div>
+                    )}
+                    {p.voyage_notes && (
+                      <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

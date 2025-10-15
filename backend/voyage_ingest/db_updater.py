@@ -142,20 +142,49 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
             start_date_normalized = _normalize_date(_ns(v.get("start_date")))
             end_date_normalized = _normalize_date(_ns(v.get("end_date")))
 
+            # Build timestamps from date + time
+            start_timestamp = None
+            end_timestamp = None
+            if start_date_normalized:
+                start_time = _ns(v.get("start_time")) or "00:00:00"
+                try:
+                    start_timestamp = f"{start_date_normalized} {start_time}"
+                except:
+                    start_timestamp = None
+
+            if end_date_normalized:
+                end_time = _ns(v.get("end_time")) or "23:59:59"
+                try:
+                    end_timestamp = f"{end_date_normalized} {end_time}"
+                except:
+                    end_timestamp = None
+
+            # Handle notes array -> text
+            notes_list = v.get("notes", [])
+            notes_text = "\n".join(notes_list) if isinstance(notes_list, list) else _ns(notes_list)
+
             cur.execute("""
                 INSERT INTO voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
                     origin, destination, vessel_name, voyage_type,
-                    summary_markdown, source_urls, tags, president_slug_from_voyage
+                    summary_markdown, source_urls, tags, president_slug_from_voyage,
+                    start_location, end_location, start_timestamp, end_timestamp,
+                    additional_information, additional_sources, notes_internal
                 ) VALUES (%(voyage_slug)s, %(title)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s,
                          %(origin)s, %(destination)s, %(vessel_name)s, %(voyage_type)s,
-                         %(summary_markdown)s, %(source_urls)s, %(tags)s, %(president_slug)s)
+                         %(summary_markdown)s, %(source_urls)s, %(tags)s, %(president_slug)s,
+                         %(start_location)s, %(end_location)s, %(start_timestamp)s, %(end_timestamp)s,
+                         %(additional_information)s, %(additional_sources)s, %(notes_internal)s)
                 ON CONFLICT (voyage_slug) DO UPDATE SET
                     title=EXCLUDED.title, start_date=EXCLUDED.start_date, end_date=EXCLUDED.end_date,
                     start_time=EXCLUDED.start_time, end_time=EXCLUDED.end_time, origin=EXCLUDED.origin,
                     destination=EXCLUDED.destination, vessel_name=EXCLUDED.vessel_name, voyage_type=EXCLUDED.voyage_type,
                     summary_markdown=EXCLUDED.summary_markdown, source_urls=EXCLUDED.source_urls,
-                    tags=EXCLUDED.tags, president_slug_from_voyage=EXCLUDED.president_slug_from_voyage;
+                    tags=EXCLUDED.tags, president_slug_from_voyage=EXCLUDED.president_slug_from_voyage,
+                    start_location=EXCLUDED.start_location, end_location=EXCLUDED.end_location,
+                    start_timestamp=EXCLUDED.start_timestamp, end_timestamp=EXCLUDED.end_timestamp,
+                    additional_information=EXCLUDED.additional_information, additional_sources=EXCLUDED.additional_sources,
+                    notes_internal=EXCLUDED.notes_internal;
             """, {
                 "voyage_slug": _ns(v.get("voyage_slug")),
                 "title": _ns(v.get("title")) or _ns(v.get("voyage_slug")) or "Untitled Voyage",
@@ -171,6 +200,13 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 "source_urls": _ns(v.get("source_urls")),
                 "tags": _ns(v.get("tags")),
                 "president_slug": _ns(pres_slug),
+                "start_location": _ns(v.get("start_location") or v.get("origin")),
+                "end_location": _ns(v.get("end_location") or v.get("destination")),
+                "start_timestamp": start_timestamp,
+                "end_timestamp": end_timestamp,
+                "additional_information": _ns(v.get("additional_information")),
+                "additional_sources": _ns(v.get("additional_sources")),
+                "notes_internal": notes_text,
             })
 
             # people

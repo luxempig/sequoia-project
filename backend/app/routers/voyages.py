@@ -31,8 +31,8 @@ def list_voyages(
             params: List[Any] = []
 
             if q:
-                conds.append("(COALESCE(v.title,'') ILIKE %s OR COALESCE(v.summary_markdown,'') ILIKE %s OR COALESCE(v.notes_internal,'') ILIKE %s)")
-                params += [f"%{q}%", f"%{q}%", f"%{q}%"]
+                conds.append("(COALESCE(v.title,'') ILIKE %s OR COALESCE(v.summary_markdown,'') ILIKE %s OR COALESCE(v.notes_internal,'') ILIKE %s OR COALESCE(v.additional_information,'') ILIKE %s)")
+                params += [f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%"]
 
             if origin:
                 conds.append("v.origin = %s"); params.append(origin)
@@ -177,3 +177,49 @@ def voyage_people(voyage_slug: str) -> List[Dict[str, Any]]:
         )
         rows = cur.fetchall()
         return [dict(row) for row in rows]
+
+@router.get("/{voyage_slug}/adjacent", response_model=Dict[str, Any])
+def get_adjacent_voyages(voyage_slug: str) -> Dict[str, Any]:
+    """Get the previous and next voyages in chronological order"""
+    with db_cursor(read_only=True) as cur:
+        # Get the current voyage's start date
+        cur.execute(
+            "SELECT start_date FROM sequoia.voyages WHERE voyage_slug = %s",
+            (voyage_slug,)
+        )
+        current = cur.fetchone()
+        if not current:
+            raise HTTPException(status_code=404, detail="Voyage not found")
+
+        current_date = current['start_date']
+
+        # Get previous voyage
+        cur.execute(
+            """
+            SELECT voyage_slug, title, start_date
+            FROM sequoia.voyages
+            WHERE start_date < %s
+            ORDER BY start_date DESC, voyage_slug DESC
+            LIMIT 1
+            """,
+            (current_date,)
+        )
+        prev_row = cur.fetchone()
+
+        # Get next voyage
+        cur.execute(
+            """
+            SELECT voyage_slug, title, start_date
+            FROM sequoia.voyages
+            WHERE start_date > %s
+            ORDER BY start_date ASC, voyage_slug ASC
+            LIMIT 1
+            """,
+            (current_date,)
+        )
+        next_row = cur.fetchone()
+
+        return {
+            "previous": dict(prev_row) if prev_row else None,
+            "next": dict(next_row) if next_row else None
+        }

@@ -27,6 +27,8 @@ export const api = {
     getJSON<Voyage[]>(`/api/voyages${params.toString() ? "?" + params : ""}`),
   getVoyage: (voyageSlug: string) =>
     getJSON<Voyage>(`/api/voyages/${encodeURIComponent(voyageSlug)}`),
+  getAdjacentVoyages: (voyageSlug: string) =>
+    getJSON<{ previous: Voyage | null; next: Voyage | null }>(`/api/voyages/${encodeURIComponent(voyageSlug)}/adjacent`),
 
   /** People on voyage */
   getVoyagePeople: (voyageSlug: string) =>

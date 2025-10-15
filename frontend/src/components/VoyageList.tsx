@@ -60,6 +60,7 @@ export default function VoyageList() {
 
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Extract all distinct tags from voyages
   const allTags = useMemo(() => {
@@ -95,6 +96,15 @@ export default function VoyageList() {
       .listPresidents()
       .then(setPrez)
       .catch(console.error);
+
+    // Restore scroll position if returning from a voyage detail
+    const savedScrollPosition = sessionStorage.getItem('voyageListScrollPosition');
+    if (savedScrollPosition && scrollContainerRef.current) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        sessionStorage.removeItem('voyageListScrollPosition');
+      }, 100);
+    }
   }, []);
 
   useEffect(() => {
@@ -186,8 +196,18 @@ export default function VoyageList() {
     return acc;
   }, {});
 
+  // Save scroll position before navigating away
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem('voyageListScrollPosition', window.scrollY.toString());
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
+    <div ref={scrollContainerRef} className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
       <Link to="/" className="text-gray-600 hover:text-gray-900 inline-block mb-8 font-medium">
         ← Home
       </Link>

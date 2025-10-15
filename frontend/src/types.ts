@@ -13,11 +13,19 @@ export interface Voyage {
   title?: string | null;
   start_date: string | null;   // ISO date
   end_date: string | null;     // ISO date
+  start_time?: string | null;  // Time component
+  end_time?: string | null;    // Time component
+  start_timestamp?: string | null;  // Combined timestamp
+  end_timestamp?: string | null;    // Combined timestamp
   origin?: string | null;
   destination?: string | null;
+  start_location?: string | null;   // Replaces origin
+  end_location?: string | null;     // Replaces destination
   voyage_type?: string | null;
   summary_markdown?: string | null;
-  notes_internal?: string | null;
+  notes_internal?: string | null;   // Internal curator notes
+  additional_information?: string | null;  // Public-facing additional info
+  additional_sources?: string | null;
   tags?: string | null;
   // denormalized hint to group by presidency (from your schema)
   president_slug_from_voyage?: string | null;

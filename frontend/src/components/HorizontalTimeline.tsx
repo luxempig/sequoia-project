@@ -214,11 +214,30 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                           className="block"
                         >
                           <div className="bg-white border border-orange-300 rounded-md p-3 hover:bg-orange-100 transition-colors shadow-sm">
-                            <div className="text-sm text-gray-800 leading-tight mb-1">
-                              {dayjs(voyage.start_date).format('MMMM D, YYYY')} - {voyage.title || voyage.summary_markdown?.slice(0, 100) + '...' || 'USS Sequoia Voyage'}
+                            <div className="text-sm font-semibold text-gray-900 leading-tight mb-1">
+                              {voyage.title || `Voyage ${dayjs(voyage.start_date).format('MMM D, YYYY')}`}
                             </div>
+                            <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                              <div>
+                                <strong>Start:</strong> {voyage.start_timestamp ? dayjs(voyage.start_timestamp).format('MMM D, YYYY [at] h:mm A') : dayjs(voyage.start_date).format('MMM D, YYYY')}
+                                {(voyage.start_location || voyage.origin) && (
+                                  <span className="ml-1">📍 {voyage.start_location || voyage.origin}</span>
+                                )}
+                              </div>
+                              <div>
+                                <strong>End:</strong> {voyage.end_timestamp ? dayjs(voyage.end_timestamp).format('MMM D, YYYY [at] h:mm A') : (voyage.end_date ? dayjs(voyage.end_date).format('MMM D, YYYY') : '—')}
+                                {(voyage.end_location || voyage.destination) && (
+                                  <span className="ml-1">📍 {voyage.end_location || voyage.destination}</span>
+                                )}
+                              </div>
+                            </div>
+                            {(voyage.additional_information || voyage.summary_markdown) && (
+                              <div className="text-xs text-gray-700 mt-2 line-clamp-2">
+                                {voyage.additional_information || voyage.summary_markdown}
+                              </div>
+                            )}
                             {voyage.notes_internal && (
-                              <div className="text-xs text-gray-600 italic mt-1 line-clamp-2">
+                              <div className="text-xs text-gray-500 italic mt-1 line-clamp-1">
                                 Notes: {voyage.notes_internal}
                               </div>
                             )}
