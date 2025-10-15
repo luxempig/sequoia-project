@@ -63,8 +63,8 @@ MEDIA_LINKS = [
 ]
 
 VOYAGE_TYPES = [
-    "official_business", "diplomatic", "recreation", "inspection",
-    "ceremony", "conference", "strategy_session"
+    "official", "official", "private", "official",
+    "other"
 ]
 
 def generate_slug(text: str) -> str:
