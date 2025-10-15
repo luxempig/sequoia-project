@@ -26,6 +26,18 @@ const formatDateTime = (timestamp: string | null | undefined) => {
   }
 };
 
+const stripMarkdown = (text: string | null | undefined) => {
+  if (!text) return '';
+  return text
+    .replace(/^#+\s*/gm, '')   // Remove heading markers (##, ###, etc)
+    .replace(/\*\*/g, '')       // Remove bold markers
+    .replace(/\*/g, '')         // Remove italic markers
+    .replace(/^[-*+]\s/gm, '')  // Remove list markers
+    .replace(/^\d+\.\s/gm, '')  // Remove numbered list markers
+    .replace(/`/g, '')          // Remove code markers
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // Remove links but keep text
+};
+
 export default function VoyageDetail() {
   const { slug } = useParams<{ slug: string }>();
   const voyageSlug = slug!;
@@ -216,7 +228,7 @@ export default function VoyageDetail() {
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <h3 className="font-semibold mb-1">Summary</h3>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {voyage.summary_markdown}
+              {stripMarkdown(voyage.summary_markdown)}
             </p>
           </div>
         )}
