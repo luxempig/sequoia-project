@@ -125,19 +125,14 @@ export default function VoyageDetail() {
           </h1>
         </div>
 
-        {/* Vessel and Type Information */}
-        <div className="mt-3 flex flex-wrap gap-3 text-sm">
-          {voyage.vessel_name && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
-              🚢 {voyage.vessel_name}
-            </span>
-          )}
-          {voyage.voyage_type && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-medium capitalize">
+        {/* Type Information */}
+        {voyage.voyage_type && (
+          <div className="mt-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-medium capitalize text-sm">
               {voyage.voyage_type}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Date and Time Information */}
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -149,7 +144,7 @@ export default function VoyageDetail() {
             </div>
             {(voyage.start_location || voyage.origin) && (
               <div className="text-gray-600 text-xs mt-1">
-                📍 {voyage.start_location || voyage.origin}
+                {voyage.start_location || voyage.origin}
               </div>
             )}
           </div>
@@ -162,7 +157,7 @@ export default function VoyageDetail() {
             </div>
             {(voyage.end_location || voyage.destination) && (
               <div className="text-gray-600 text-xs mt-1">
-                📍 {voyage.end_location || voyage.destination}
+                {voyage.end_location || voyage.destination}
               </div>
             )}
           </div>
@@ -282,9 +277,6 @@ export default function VoyageDetail() {
             {sourceLinks.map((source) => (
               <div key={source.media_slug} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-3">
-                  <div className="shrink-0 w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-sm">
-                    📄
-                  </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-gray-900 mb-1">
                       {source.title || source.credit || 'Source Document'}
