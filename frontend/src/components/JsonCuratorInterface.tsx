@@ -430,17 +430,19 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
     if (!voyage.media) return voyage;
 
     const updatedMedia = [...voyage.media];
-    
+
     for (let i = 0; i < updatedMedia.length; i++) {
       const mediaItem = updatedMedia[i];
       if (mediaItem.file) {
         try {
-          // Upload to S3 via backend
+          // Upload to S3 via backend - now saves directly to database
           const formData = new FormData();
           formData.append('file', mediaItem.file);
-          formData.append('voyage_id', voyage.voyage);
-          formData.append('source', mediaItem.source || '');
-          formData.append('media_name', mediaItem.media_name || '');
+          formData.append('voyage_slug', voyage.voyage);
+          formData.append('credit', mediaItem.source || '');
+          formData.append('title', mediaItem.media_name || mediaItem.file.name);
+          formData.append('date', mediaItem.date || '');
+          formData.append('media_type', mediaItem.type || 'image');
 
           const response = await fetch('/api/curator/upload-media', {
             method: 'POST',
@@ -449,11 +451,11 @@ ${voyage.missing_info?.length ? `\n**Missing Information:** ${voyage.missing_inf
 
           if (response.ok) {
             const result = await response.json();
+            console.log('Media uploaded successfully:', result.media_slug);
+            // Clear the file after upload - media is now in database, not JSON
             updatedMedia[i] = {
               ...mediaItem,
-              s3_path: result.s3_path,
-              link: result.public_url || "",
-              file: null // Clear the file object after upload
+              file: null
             };
           } else {
             console.error('Failed to upload media file:', mediaItem.file.name);

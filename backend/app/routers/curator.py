@@ -567,54 +567,116 @@ async def get_presigned_url(request: PresignRequest):
 @router.post("/upload-media")
 async def upload_media(
     file: UploadFile = File(...),
-    voyage_id: str = Form(...),
+    voyage_slug: str = Form(...),
     credit: str = Form(""),
-    description: str = Form("")
+    title: str = Form(""),
+    date: str = Form(""),
+    media_type: str = Form("image")
 ):
-    """Upload media files to S3 and return the S3 path."""
+    """Upload media files to S3 and insert directly into database."""
     try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        import re
+
         # Get AWS credentials and S3 client
         s3_client = boto3.client(
             's3',
-            region_name=os.getenv('AWS_REGION', 'us-east-1'),
+            region_name=os.getenv('AWS_REGION', 'us-east-2'),
             aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
         )
-        
-        bucket_name = os.getenv('PRIVATE_BUCKET', 'sequoia-canonical')
-        
-        # Create S3 path: media/president/voyage_id/filename
-        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'unknown'
-        s3_key = f"media/truman-harry-s/{voyage_id}/{file.filename}"
-        
+
+        # Determine media type from file extension if not provided
+        file_extension = file.filename.split('.')[-1].lower() if '.' in file.filename else 'unknown'
+        if not media_type or media_type == "image":
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                media_type = "image"
+            elif file_extension in ['mp4', 'mov', 'avi', 'webm']:
+                media_type = "video"
+            elif file_extension == 'pdf':
+                media_type = "pdf"
+            elif file_extension in ['mp3', 'wav', 'flac']:
+                media_type = "audio"
+            else:
+                media_type = "other"
+
+        # Generate media slug from filename
+        base_name = file.filename.rsplit('.', 1)[0] if '.' in file.filename else file.filename
+        media_slug = re.sub(r'[^a-z0-9-]+', '-', base_name.lower()).strip('-')
+        media_slug = f"{voyage_slug}-{media_slug}-{int(time.time())}"
+
+        bucket_name = os.getenv('PRIVATE_BUCKET', 'sequoia-canonical-media')
+
+        # Create S3 path: media/voyage_slug/filename
+        s3_key = f"s3://{bucket_name}/{voyage_slug}/{file.filename}"
+        s3_key_raw = f"{voyage_slug}/{file.filename}"
+
         # Upload file to S3
         file_content = await file.read()
         s3_client.put_object(
             Bucket=bucket_name,
-            Key=s3_key,
+            Key=s3_key_raw,
             Body=file_content,
             ContentType=file.content_type or 'application/octet-stream',
             Metadata={
-                'voyage_id': voyage_id,
+                'voyage_slug': voyage_slug,
                 'credit': credit,
-                'description': description,
+                'media_slug': media_slug,
                 'uploaded_by': 'curator_interface'
             }
         )
-        
-        # Generate public URL
-        public_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
-        
-        logger.info(f"Media uploaded successfully: {s3_key}")
-        
+
+        logger.info(f"Media uploaded to S3: {s3_key}")
+
+        # Insert into database
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT", "5432")),
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Set schema
+        schema = os.getenv("DB_SCHEMA", "sequoia")
+        cur.execute(f"SET search_path = {schema}, public;")
+
+        # Insert media record
+        cur.execute("""
+            INSERT INTO media (media_slug, title, media_type, s3_url, credit, date, description_markdown)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (media_slug) DO UPDATE SET
+                title=EXCLUDED.title, media_type=EXCLUDED.media_type, s3_url=EXCLUDED.s3_url,
+                credit=EXCLUDED.credit, date=EXCLUDED.date, description_markdown=EXCLUDED.description_markdown
+            RETURNING media_slug;
+        """, (media_slug, title or file.filename, media_type, s3_key, credit, date or None, title))
+
+        result = cur.fetchone()
+
+        # Create voyage_media join
+        cur.execute("""
+            INSERT INTO voyage_media (voyage_slug, media_slug, sort_order)
+            VALUES (%s, %s, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM voyage_media WHERE voyage_slug = %s))
+            ON CONFLICT (voyage_slug, media_slug) DO NOTHING;
+        """, (voyage_slug, media_slug, voyage_slug))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Media inserted into database: {media_slug}")
+
         return {
-            "s3_path": s3_key,
-            "public_url": public_url,
+            "media_slug": media_slug,
+            "s3_key": s3_key,
             "filename": file.filename,
             "size": len(file_content),
-            "content_type": file.content_type
+            "media_type": media_type,
+            "message": "Media uploaded to S3 and saved to database"
         }
-        
+
     except Exception as e:
         logger.error(f"Media upload failed: {e}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
