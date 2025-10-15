@@ -89,20 +89,43 @@ for i, media in enumerate(media_to_process):
         response = requests.get(download_url, timeout=30, stream=True)
         response.raise_for_status()
 
-        # Determine file extension
-        ext = media['type'] if media['type'] != 'unknown' else 'pdf'
-        if not ext.startswith('.'):
-            ext = f'.{ext}'
+        # Determine file extension and map to database media_type enum
+        file_ext = media['type'] if media['type'] != 'unknown' else 'pdf'
+        if not file_ext.startswith('.'):
+            file_ext = f'.{file_ext}'
+
+        # Map file extensions to database media_type enum values
+        ext_to_type = {
+            '.pdf': 'pdf',
+            '.jpg': 'image',
+            '.jpeg': 'image',
+            '.png': 'image',
+            '.gif': 'image',
+            '.mp4': 'video',
+            '.mov': 'video',
+            '.mp3': 'audio',
+            '.wav': 'audio'
+        }
+        media_type_enum = ext_to_type.get(file_ext.lower(), 'other')
 
         # Upload to S3
-        s3_key = f"{media['voyage_slug']}/{media['media_slug']}{ext}"
+        s3_key = f"{media['voyage_slug']}/{media['media_slug']}{file_ext}"
         print(f"  Uploading to S3: {s3_key}")
+
+        # Determine content type for S3
+        content_type_map = {
+            'pdf': 'application/pdf',
+            'image': 'image/jpeg',
+            'video': 'video/mp4',
+            'audio': 'audio/mpeg'
+        }
+        content_type = content_type_map.get(media_type_enum, 'application/octet-stream')
 
         s3.put_object(
             Bucket=bucket,
             Key=s3_key,
             Body=response.content,
-            ContentType=f'application/{media["type"]}' if media['type'] in ['pdf'] else 'application/octet-stream'
+            ContentType=content_type
         )
 
         s3_url = f"https://{bucket}.s3.amazonaws.com/{s3_key}"
@@ -118,7 +141,7 @@ for i, media in enumerate(media_to_process):
         """, (
             media['media_slug'],
             media['title'],
-            media['type'],
+            media_type_enum,
             s3_url,
             media['source'],
             media['date'] if media['date'] else None
