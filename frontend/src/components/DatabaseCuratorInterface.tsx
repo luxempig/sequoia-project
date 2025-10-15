@@ -692,9 +692,20 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
             <textarea
               value={voyage.summary_markdown || ''}
-              onChange={(e) => setVoyage({ ...voyage, summary_markdown: e.target.value || null })}
+              onChange={(e) => {
+                // Strip markdown symbols automatically
+                const cleanText = e.target.value
+                  .replace(/^#+\s*/gm, '')  // Remove heading markers (##, ###, etc)
+                  .replace(/\*\*/g, '')      // Remove bold markers
+                  .replace(/\*/g, '')        // Remove italic markers
+                  .replace(/^[-*+]\s/gm, '') // Remove list markers
+                  .replace(/^\d+\.\s/gm, '') // Remove numbered list markers
+                  .replace(/`/g, '');        // Remove code markers
+                setVoyage({ ...voyage, summary_markdown: cleanText || null });
+              }}
               rows={4}
               className="w-full border rounded px-3 py-2"
+              placeholder="Enter plain text description..."
             />
           </div>
 
