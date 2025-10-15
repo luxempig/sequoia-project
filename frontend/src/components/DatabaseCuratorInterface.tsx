@@ -689,6 +689,44 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Voyage Type</label>
+            <select
+              value={voyage.voyage_type || 'official'}
+              onChange={(e) => setVoyage({ ...voyage, voyage_type: e.target.value || null })}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="official">Official</option>
+              <option value="ceremonial">Ceremonial</option>
+              <option value="recreational">Recreational</option>
+              <option value="diplomatic">Diplomatic</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Location</label>
+              <input
+                type="text"
+                value={voyage.start_location || voyage.origin || ''}
+                onChange={(e) => setVoyage({ ...voyage, start_location: e.target.value || null })}
+                className="w-full border rounded px-3 py-2"
+                placeholder="e.g., Washington, DC"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Location</label>
+              <input
+                type="text"
+                value={voyage.end_location || voyage.destination || ''}
+                onChange={(e) => setVoyage({ ...voyage, end_location: e.target.value || null })}
+                className="w-full border rounded px-3 py-2"
+                placeholder="e.g., Annapolis, MD"
+              />
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
             <textarea
               value={(() => {
@@ -718,6 +756,28 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
               rows={4}
               className="w-full border rounded px-3 py-2"
               placeholder="Enter plain text description..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Information</label>
+            <textarea
+              value={voyage.additional_information || ''}
+              onChange={(e) => setVoyage({ ...voyage, additional_information: e.target.value || null })}
+              rows={3}
+              className="w-full border rounded px-3 py-2"
+              placeholder="Public-facing additional context..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Internal Notes</label>
+            <textarea
+              value={voyage.notes_internal || ''}
+              onChange={(e) => setVoyage({ ...voyage, notes_internal: e.target.value || null })}
+              rows={2}
+              className="w-full border rounded px-3 py-2"
+              placeholder="Curator notes (not displayed publicly)..."
             />
           </div>
 
@@ -760,35 +820,121 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
             </div>
           </div>
 
-          {/* Boolean Metadata - Checkboxes */}
+          {/* Boolean Metadata - Checkboxes with Conditional Fields */}
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-sm font-medium text-gray-800 mb-3">Metadata Flags</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { key: 'has_photo', label: 'Has Photo' },
-                { key: 'has_video', label: 'Has Video' },
-                { key: 'presidential_use', label: 'Presidential Use' },
-                { key: 'has_royalty', label: 'Royalty' },
-                { key: 'has_foreign_leader', label: 'Foreign Leader' },
-                { key: 'mention_camp_david', label: 'Camp David' },
-                { key: 'mention_mount_vernon', label: 'Mount Vernon' },
-                { key: 'mention_captain', label: 'Captain' },
-                { key: 'mention_crew', label: 'Crew' },
-                { key: 'mention_rmd', label: 'RMD' },
-                { key: 'mention_yacht_spin', label: 'Yacht Spin' },
-                { key: 'mention_menu', label: 'Menu' },
-                { key: 'mention_drinks_wine', label: 'Drinks/Wine' },
-              ].map(({ key, label }) => (
-                <label key={key} className="flex items-center space-x-2 cursor-pointer text-sm">
+            <div className="space-y-3">
+              {/* Photo/Video - Simple checkboxes */}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center space-x-2 cursor-pointer text-sm">
                   <input
                     type="checkbox"
-                    checked={Boolean(voyage[key as keyof Voyage])}
-                    onChange={(e) => setVoyage({ ...voyage, [key]: e.target.checked })}
+                    checked={Boolean(voyage.has_photo)}
+                    onChange={(e) => setVoyage({ ...voyage, has_photo: e.target.checked })}
                     className="rounded"
                   />
-                  <span>{label}</span>
+                  <span>Has Photo</span>
                 </label>
-              ))}
+                <label className="flex items-center space-x-2 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(voyage.has_video)}
+                    onChange={(e) => setVoyage({ ...voyage, has_video: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Has Video</span>
+                </label>
+              </div>
+
+              {/* Presidential Use - with conditional initials field */}
+              <div>
+                <label className="flex items-center space-x-2 cursor-pointer text-sm mb-2">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(voyage.presidential_use)}
+                    onChange={(e) => setVoyage({ ...voyage, presidential_use: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Presidential Use</span>
+                </label>
+                {voyage.presidential_use && (
+                  <input
+                    type="text"
+                    value={voyage.presidential_initials || ''}
+                    onChange={(e) => setVoyage({ ...voyage, presidential_initials: e.target.value || null })}
+                    placeholder="Presidential initials (e.g., FDR)"
+                    className="w-full border rounded px-3 py-2 text-sm ml-6"
+                  />
+                )}
+              </div>
+
+              {/* Royalty - with conditional details field */}
+              <div>
+                <label className="flex items-center space-x-2 cursor-pointer text-sm mb-2">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(voyage.has_royalty)}
+                    onChange={(e) => setVoyage({ ...voyage, has_royalty: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Royalty</span>
+                </label>
+                {voyage.has_royalty && (
+                  <input
+                    type="text"
+                    value={voyage.royalty_details || ''}
+                    onChange={(e) => setVoyage({ ...voyage, royalty_details: e.target.value || null })}
+                    placeholder="Royalty details (e.g., King George VI)"
+                    className="w-full border rounded px-3 py-2 text-sm ml-6"
+                  />
+                )}
+              </div>
+
+              {/* Foreign Leader - with conditional country field */}
+              <div>
+                <label className="flex items-center space-x-2 cursor-pointer text-sm mb-2">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(voyage.has_foreign_leader)}
+                    onChange={(e) => setVoyage({ ...voyage, has_foreign_leader: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Foreign Leader</span>
+                </label>
+                {voyage.has_foreign_leader && (
+                  <input
+                    type="text"
+                    value={voyage.foreign_leader_country || ''}
+                    onChange={(e) => setVoyage({ ...voyage, foreign_leader_country: e.target.value || null })}
+                    placeholder="Country (e.g., France)"
+                    className="w-full border rounded px-3 py-2 text-sm ml-6"
+                  />
+                )}
+              </div>
+
+              {/* Other mentions - simple checkboxes */}
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { key: 'mention_camp_david', label: 'Camp David (CD)' },
+                  { key: 'mention_mount_vernon', label: 'Mount Vernon (MV)' },
+                  { key: 'mention_captain', label: 'Captain' },
+                  { key: 'mention_crew', label: 'Crew' },
+                  { key: 'mention_rmd', label: 'RMD' },
+                  { key: 'mention_yacht_spin', label: 'Yacht Spin' },
+                  { key: 'mention_menu', label: 'Menu' },
+                  { key: 'mention_drinks_wine', label: 'Drinks/Wine' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center space-x-2 cursor-pointer text-sm">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(voyage[key as keyof Voyage])}
+                      onChange={(e) => setVoyage({ ...voyage, [key]: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </div>
