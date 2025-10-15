@@ -125,6 +125,20 @@ export default function VoyageDetail() {
           </h1>
         </div>
 
+        {/* Vessel and Type Information */}
+        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+          {voyage.vessel_name && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
+              🚢 {voyage.vessel_name}
+            </span>
+          )}
+          {voyage.voyage_type && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-medium capitalize">
+              {voyage.voyage_type}
+            </span>
+          )}
+        </div>
+
         {/* Date and Time Information */}
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           {/* Start Date/Time */}
@@ -154,6 +168,55 @@ export default function VoyageDetail() {
           </div>
         </div>
 
+        {/* Boolean Metadata Tags */}
+        {(voyage.has_photo || voyage.has_video || voyage.presidential_use || voyage.has_royalty ||
+          voyage.has_foreign_leader || voyage.mention_camp_david || voyage.mention_mount_vernon ||
+          voyage.mention_captain || voyage.mention_crew || voyage.mention_rmd || voyage.mention_yacht_spin ||
+          voyage.mention_menu || voyage.mention_drinks_wine) && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Voyage Attributes</h4>
+            <div className="flex flex-wrap gap-2">
+              {voyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">Has Photos</span>}
+              {voyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">Has Video</span>}
+              {voyage.presidential_use && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">Presidential Use</span>}
+              {voyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">Royalty Present</span>}
+              {voyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-md">Foreign Leader Present</span>}
+              {voyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">Camp David</span>}
+              {voyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">Mount Vernon</span>}
+              {voyage.mention_captain && <span className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-md">Captain</span>}
+              {voyage.mention_crew && <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">Crew</span>}
+              {voyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">RMD</span>}
+              {voyage.mention_yacht_spin && <span className="px-2 py-1 bg-lime-100 text-lime-800 text-xs rounded-md">Yacht Spin</span>}
+              {voyage.mention_menu && <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">Menu Info</span>}
+              {voyage.mention_drinks_wine && <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-md">Drinks/Wine</span>}
+            </div>
+          </div>
+        )}
+
+        {/* Associated Details */}
+        {(voyage.presidential_initials || voyage.royalty_details || voyage.foreign_leader_country) && (
+          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
+            {voyage.presidential_initials && (
+              <div>
+                <strong className="text-gray-700">Presidential Initials:</strong>
+                <span className="ml-2 text-gray-900">{voyage.presidential_initials}</span>
+              </div>
+            )}
+            {voyage.royalty_details && (
+              <div>
+                <strong className="text-gray-700">Royalty Details:</strong>
+                <span className="ml-2 text-gray-900">{voyage.royalty_details}</span>
+              </div>
+            )}
+            {voyage.foreign_leader_country && (
+              <div>
+                <strong className="text-gray-700">Foreign Leader Country:</strong>
+                <span className="ml-2 text-gray-900">{voyage.foreign_leader_country}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {voyage.summary_markdown && (
           <div className="mt-4 bg-gray-50 rounded-xl p-4">
             <h3 className="font-semibold mb-1">Summary</h3>
@@ -178,6 +241,27 @@ export default function VoyageDetail() {
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
               {voyage.notes_internal}
             </p>
+          </div>
+        )}
+
+        {/* Source URLs */}
+        {voyage.source_urls && voyage.source_urls.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Source URLs</h4>
+            <ul className="space-y-2">
+              {voyage.source_urls.map((url, index) => (
+                <li key={index}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                  >
+                    {url}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
