@@ -102,11 +102,9 @@ def reorganize_s3_bucket():
         print("✓ All files are already in correct structure!")
         return
 
-    # Confirm before proceeding
-    response = input(f"Proceed with moving {len(files_to_move)} files? (yes/no): ")
-    if response.lower() != 'yes':
-        print("Aborted.")
-        return
+    # Auto-proceed with reorganization
+    print(f"Proceeding with moving {len(files_to_move)} files...")
+    print()
 
     # Move files
     moved_count = 0
