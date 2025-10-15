@@ -504,6 +504,7 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mediaTitle, setMediaTitle] = useState("");
   const [mediaCredit, setMediaCredit] = useState("");
+  const [mediaDate, setMediaDate] = useState("");
 
   // Person search state
   const [personSearch, setPersonSearch] = useState("");
@@ -658,6 +659,9 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
       formData.append('voyage_slug', voyage.voyage_slug);
       formData.append('title', mediaTitle || selectedFile.name);
       formData.append('credit', mediaCredit);
+      if (mediaDate) {
+        formData.append('date', mediaDate);
+      }
 
       const response = await fetch('/api/curator/media/upload', {
         method: 'POST',
@@ -669,6 +673,7 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
         setSelectedFile(null);
         setMediaTitle("");
         setMediaCredit("");
+        setMediaDate("");
       } else {
         const error = await response.json();
         alert(`Upload failed: ${error.detail || 'Unknown error'}`);
@@ -1109,6 +1114,13 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
                     value={mediaCredit}
                     onChange={(e) => setMediaCredit(e.target.value)}
                     placeholder="Credit/Source"
+                    className="w-full border rounded px-3 py-2 text-sm mb-2"
+                  />
+                  <input
+                    type="date"
+                    value={mediaDate}
+                    onChange={(e) => setMediaDate(e.target.value)}
+                    placeholder="Date (YYYY-MM-DD)"
                     className="w-full border rounded px-3 py-2 text-sm mb-2"
                   />
                   <button

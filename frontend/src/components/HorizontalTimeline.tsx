@@ -30,37 +30,76 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   // Organize voyages by year/month/day
   useEffect(() => {
     const organized: TimelineData = {};
-    
+
     voyages.forEach(voyage => {
       if (!voyage.start_date) return;
-      
+
       const date = dayjs(voyage.start_date);
       const year = date.format('YYYY');
       const month = date.format('MMMM');
       const day = date.format('D');
-      
+
       if (!organized[year]) organized[year] = {};
       if (!organized[year][month]) organized[year][month] = {};
       if (!organized[year][month][day]) organized[year][month][day] = { voyages: [], media: [] };
-      
+
       organized[year][month][day].voyages.push(voyage);
     });
 
-    setTimelineData(organized);
+    // Fetch all media with dates and add to timeline
+    api.listMedia(new URLSearchParams({ limit: '500' })).then(allMedia => {
+      allMedia.forEach(media => {
+        if (!media.date) return;
 
-    // Set initial year and month to first available data
-    const years = Object.keys(organized).sort();
-    if (years.length > 0 && !currentYear) {
-      const firstYear = years[0];
-      setCurrentYear(firstYear);
-      
-      const months = Object.keys(organized[firstYear]).sort((a, b) => 
-        dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
-      );
-      if (months.length > 0) {
-        setCurrentMonth(months[0]);
+        const date = dayjs(media.date);
+        const year = date.format('YYYY');
+        const month = date.format('MMMM');
+        const day = date.format('D');
+
+        // Only include media from sequoia-canonical bucket
+        const s3Url = media.s3_url || '';
+        if (!s3Url.includes('sequoia-canonical')) return;
+
+        if (!organized[year]) organized[year] = {};
+        if (!organized[year][month]) organized[year][month] = {};
+        if (!organized[year][month][day]) organized[year][month][day] = { voyages: [], media: [] };
+
+        organized[year][month][day].media.push(media);
+      });
+
+      setTimelineData(organized);
+
+      // Set initial year and month to first available data
+      const years = Object.keys(organized).sort();
+      if (years.length > 0 && !currentYear) {
+        const firstYear = years[0];
+        setCurrentYear(firstYear);
+
+        const months = Object.keys(organized[firstYear]).sort((a, b) =>
+          dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+        );
+        if (months.length > 0) {
+          setCurrentMonth(months[0]);
+        }
       }
-    }
+    }).catch(err => {
+      console.error('Failed to fetch media for timeline:', err);
+      setTimelineData(organized);
+
+      // Set initial year and month even if media fetch fails
+      const years = Object.keys(organized).sort();
+      if (years.length > 0 && !currentYear) {
+        const firstYear = years[0];
+        setCurrentYear(firstYear);
+
+        const months = Object.keys(organized[firstYear]).sort((a, b) =>
+          dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+        );
+        if (months.length > 0) {
+          setCurrentMonth(months[0]);
+        }
+      }
+    });
   }, [voyages, currentYear]);
 
   // Fetch media for visible voyages
@@ -155,9 +194,8 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       background: 'linear-gradient(135deg, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%)'
     }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
         <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
-        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">help?</button>
       </div>
 
       {/* Year Navigation */}
@@ -243,7 +281,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                             )}
                           </div>
                           <button className="text-xs bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-1 rounded mt-2 font-bold uppercase tracking-wide">
-                            VIEW
+                            Click to see voyage details and all associated media and sources
                           </button>
                         </Link>
                       ))}
@@ -262,12 +300,17 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
               const dayData = currentMonthData[day];
               const dayMedia: MediaItem[] = [];
               const isLast = index === days.length - 1;
-              
+
               // Collect media from voyages on this day
               dayData.voyages.forEach(voyage => {
                 const voyageMedia = mediaData[voyage.voyage_slug] || [];
                 dayMedia.push(...voyageMedia);
               });
+
+              // Add standalone media for this day (from timeline data)
+              if (dayData.media && dayData.media.length > 0) {
+                dayMedia.push(...dayData.media);
+              }
 
               return (
                 <div key={`media-${day}`} className={`flex-1 min-h-36 p-4 ${!isLast ? 'border-r border-gray-400' : ''} bg-gray-100`}>
