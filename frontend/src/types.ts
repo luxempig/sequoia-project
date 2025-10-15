@@ -21,6 +21,7 @@ export interface Voyage {
   destination?: string | null;
   start_location?: string | null;   // Replaces origin
   end_location?: string | null;     // Replaces destination
+  vessel_name?: string | null;
   voyage_type?: string | null;
   summary_markdown?: string | null;
   notes_internal?: string | null;   // Internal curator notes
