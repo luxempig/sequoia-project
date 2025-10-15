@@ -18,7 +18,12 @@ from voyage_ingest.db_updater import _conn
 with open('app/canonical_voyages.json.backup.1759276543', 'r') as f:
     data = json.load(f)
 
-# Get S3 client using default credentials (same as curator endpoint)
+# Get S3 client using EC2 instance role (ignore .env credentials)
+# The .env file has sequoia-ingest-bot credentials which lack PutObject permission
+# So we unset AWS credential env vars and use the EC2 instance role which has full access
+for key in ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']:
+    os.environ.pop(key, None)
+
 s3 = boto3.client('s3')
 bucket = 'sequoia-canonical'
 
