@@ -82,7 +82,7 @@ def generate_thumbnail_key(voyage_slug: str, media_slug: str) -> str:
 
 # Get all media items that don't have thumbnails yet
 conn = _conn()
-cur = conn.cursor()
+cur = conn.cursor()  # This returns DictCursor from db_updater
 
 cur.execute("""
     SELECT m.media_slug, m.media_type, m.s3_url, m.public_derivative_url, vm.voyage_slug
@@ -100,11 +100,15 @@ skip_count = 0
 fail_count = 0
 
 for item in media_items:
-    media_slug = item['media_slug']
-    media_type = item['media_type']
-    s3_url = item['s3_url']
-    existing_thumbnail = item['public_derivative_url']
-    voyage_slug = item['voyage_slug']
+    # Handle both tuple and dict results
+    if isinstance(item, tuple):
+        media_slug, media_type, s3_url, existing_thumbnail, voyage_slug = item
+    else:
+        media_slug = item['media_slug']
+        media_type = item['media_type']
+        s3_url = item['s3_url']
+        existing_thumbnail = item['public_derivative_url']
+        voyage_slug = item['voyage_slug']
 
     print(f"Processing: {media_slug} ({media_type})")
 
