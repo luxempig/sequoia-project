@@ -286,9 +286,17 @@ async def upload_media_file(
         file_content = await file.read()
         file_size = len(file_content)
 
-        # Determine S3 key based on voyage_slug and media_slug
+        # Determine S3 key with proper hierarchy: media/{owner}/{voyage}/{filename}
         if voyage_slug:
-            s3_key = f"{voyage_slug}/{file.filename}"
+            # Extract owner from voyage_slug (e.g., "roosevelt-franklin-1938-01" -> "roosevelt-franklin")
+            # Voyage slugs are formatted as: {lastname}-{firstname}-{year}-{month}
+            parts = voyage_slug.split('-')
+            if len(parts) >= 2:
+                owner = f"{parts[0]}-{parts[1]}"  # e.g., "roosevelt-franklin"
+            else:
+                owner = parts[0]  # fallback
+
+            s3_key = f"media/{owner}/{voyage_slug}/{file.filename}"
         else:
             s3_key = f"media/{media_slug}/{file.filename}"
 
