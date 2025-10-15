@@ -28,6 +28,7 @@ export interface Voyage {
   additional_information?: string | null;  // Public-facing additional info
   additional_sources?: string | null;
   tags?: string | null;
+  source_urls?: string[] | null;
   // denormalized hint to group by presidency (from your schema)
   president_slug_from_voyage?: string | null;
 
