@@ -183,44 +183,20 @@ export default function VoyageDetail() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Voyage Attributes</h4>
             <div className="flex flex-wrap gap-2">
-              {voyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">Has Photos</span>}
-              {voyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">Has Video</span>}
-              {voyage.presidential_use && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">Presidential Use</span>}
-              {voyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">Royalty Present</span>}
-              {voyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-md">Foreign Leader Present</span>}
-              {voyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">Camp David</span>}
-              {voyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">Mount Vernon</span>}
-              {voyage.mention_captain && <span className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-md">Captain</span>}
-              {voyage.mention_crew && <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">Crew</span>}
-              {voyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">RMD</span>}
-              {voyage.mention_yacht_spin && <span className="px-2 py-1 bg-lime-100 text-lime-800 text-xs rounded-md">Yacht Spin</span>}
-              {voyage.mention_menu && <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">Menu Info</span>}
-              {voyage.mention_drinks_wine && <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-md">Drinks/Wine</span>}
+              {voyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">(Photo(s))</span>}
+              {voyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">(Video(s))</span>}
+              {voyage.presidential_use && voyage.presidential_initials && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">({voyage.presidential_initials})</span>}
+              {voyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">(Royalty{voyage.royalty_details ? `: ${voyage.royalty_details}` : ''})</span>}
+              {voyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-md">(Foreign Leader{voyage.foreign_leader_country ? ` - ${voyage.foreign_leader_country}` : ''})</span>}
+              {voyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">(CD)</span>}
+              {voyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">(MV)</span>}
+              {voyage.mention_captain && <span className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-md">(Captain)</span>}
+              {voyage.mention_crew && <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">(Crew)</span>}
+              {voyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">(RMD)</span>}
+              {voyage.mention_yacht_spin && <span className="px-2 py-1 bg-lime-100 text-lime-800 text-xs rounded-md">(Yacht Spin)</span>}
+              {voyage.mention_menu && <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">(Menu)</span>}
+              {voyage.mention_drinks_wine && <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-md">(Drinks/Wine)</span>}
             </div>
-          </div>
-        )}
-
-        {/* Associated Details */}
-        {(voyage.presidential_initials || voyage.royalty_details || voyage.foreign_leader_country) && (
-          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
-            {voyage.presidential_initials && (
-              <div>
-                <strong className="text-gray-700">Presidential Initials:</strong>
-                <span className="ml-2 text-gray-900">{voyage.presidential_initials}</span>
-              </div>
-            )}
-            {voyage.royalty_details && (
-              <div>
-                <strong className="text-gray-700">Royalty Details:</strong>
-                <span className="ml-2 text-gray-900">{voyage.royalty_details}</span>
-              </div>
-            )}
-            {voyage.foreign_leader_country && (
-              <div>
-                <strong className="text-gray-700">Foreign Leader Country:</strong>
-                <span className="ml-2 text-gray-900">{voyage.foreign_leader_country}</span>
-              </div>
-            )}
           </div>
         )}
 
