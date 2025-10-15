@@ -54,23 +54,55 @@ class VoyagePassengerLink(BaseModel):
     notes: Optional[str] = Field(None, description="Notes specific to this person on this voyage")
 
 
+def generate_person_slug(full_name: str) -> str:
+    """Generate a slug from a person's full name"""
+    import re
+    # Convert to lowercase, replace spaces with hyphens, remove special chars
+    slug = full_name.lower().strip()
+    slug = re.sub(r'[^\w\s-]', '', slug)  # Remove special characters
+    slug = re.sub(r'[\s_]+', '-', slug)   # Replace spaces/underscores with hyphens
+    slug = re.sub(r'-+', '-', slug)       # Replace multiple hyphens with single
+    return slug.strip('-')
+
+
 @router.post("/", response_model=Dict[str, Any])
 def create_person(person: PersonCreate) -> Dict[str, Any]:
     """Create a new person"""
     try:
         with db_cursor() as cur:
-            # Check if person_slug already exists
-            cur.execute(
-                "SELECT person_slug FROM sequoia.people WHERE person_slug = %s",
-                (person.person_slug,)
-            )
-            if cur.fetchone():
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"Person with slug '{person.person_slug}' already exists"
-                )
+            # Auto-generate slug if not provided
+            person_slug = person.person_slug
+            if not person_slug or person_slug == "auto":
+                person_slug = generate_person_slug(person.full_name)
 
-            # Insert the person
+                # Check for duplicates and append number if needed
+                base_slug = person_slug
+                counter = 2
+                while True:
+                    cur.execute(
+                        "SELECT person_slug FROM sequoia.people WHERE person_slug = %s",
+                        (person_slug,)
+                    )
+                    if not cur.fetchone():
+                        break
+                    person_slug = f"{base_slug}-{counter}"
+                    counter += 1
+            else:
+                # Check if person_slug already exists
+                cur.execute(
+                    "SELECT person_slug FROM sequoia.people WHERE person_slug = %s",
+                    (person_slug,)
+                )
+                if cur.fetchone():
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"Person with slug '{person_slug}' already exists"
+                    )
+
+            # Insert the person with the determined slug
+            person_data = person.model_dump()
+            person_data['person_slug'] = person_slug
+
             cur.execute("""
                 INSERT INTO sequoia.people (
                     person_slug, full_name, role, title, organization,
@@ -84,10 +116,10 @@ def create_person(person: PersonCreate) -> Dict[str, Any]:
                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
                 RETURNING *
-            """, person.model_dump())
+            """, person_data)
 
             row = cur.fetchone()
-            LOG.info(f"Created person: {person.person_slug}")
+            LOG.info(f"Created person: {person_slug}")
             return dict(row)
 
     except HTTPException:

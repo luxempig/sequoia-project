@@ -510,6 +510,13 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
   const [searchResults, setSearchResults] = useState<Person[]>([]);
   const [searching, setSearching] = useState(false);
 
+  // Create new person state
+  const [showCreatePerson, setShowCreatePerson] = useState(false);
+  const [newPersonName, setNewPersonName] = useState("");
+  const [newPersonTitle, setNewPersonTitle] = useState("");
+  const [newPersonBioLink, setNewPersonBioLink] = useState("");
+  const [creatingPerson, setCreatingPerson] = useState(false);
+
   useEffect(() => {
     // Parse source_urls if it exists (it might be undefined or a string in some cases)
     if (Array.isArray(voyage.source_urls)) {
@@ -551,6 +558,66 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
       console.error('Search failed:', error);
     } finally {
       setSearching(false);
+    }
+  };
+
+  const createNewPerson = async () => {
+    if (!newPersonName.trim()) {
+      alert('Person name is required');
+      return;
+    }
+
+    setCreatingPerson(true);
+    try {
+      // Create the person with auto-generated slug
+      const response = await fetch('/api/curator/people', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: 'auto',  // Backend will auto-generate from name
+          full_name: newPersonName.trim(),
+          role_title: newPersonTitle.trim() || null,
+          wikipedia_url: newPersonBioLink.trim() || null
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to create person');
+      }
+
+      const createdPerson = await response.json();
+
+      // Now link the person to the voyage
+      const role = prompt(`Enter role for ${createdPerson.full_name} on this voyage:`, newPersonTitle || "Passenger");
+      if (role) {
+        const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            person_slug: createdPerson.person_slug,
+            voyage_slug: voyage.voyage_slug,
+            capacity_role: role
+          })
+        });
+
+        if (linkResponse.ok) {
+          alert(`${createdPerson.full_name} created and linked successfully!`);
+        } else {
+          alert(`Person created but failed to link to voyage`);
+        }
+      }
+
+      // Clear form
+      setNewPersonName("");
+      setNewPersonTitle("");
+      setNewPersonBioLink("");
+      setShowCreatePerson(false);
+    } catch (error) {
+      console.error('Create person failed:', error);
+      alert(`Failed to create person: ${error instanceof Error ? error.message : error}`);
+    } finally {
+      setCreatingPerson(false);
     }
   };
 
@@ -944,31 +1011,76 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
           {/* Person Search */}
           {!isNew && (
             <div className="border rounded-lg p-4 bg-blue-50">
-              <h3 className="text-sm font-medium text-gray-800 mb-2">Link People</h3>
-              <input
-                type="text"
-                value={personSearch}
-                onChange={(e) => {
-                  setPersonSearch(e.target.value);
-                  searchPeople(e.target.value);
-                }}
-                placeholder="Search for people..."
-                className="w-full border rounded px-3 py-2 text-sm mb-2"
-              />
-              {searching && <p className="text-xs text-gray-600">Searching...</p>}
-              {searchResults.length > 0 && (
-                <div className="max-h-40 overflow-y-auto space-y-1">
-                  {searchResults.map((person) => (
-                    <div
-                      key={person.person_slug}
-                      onClick={() => linkPerson(person.person_slug, person.full_name)}
-                      className="p-2 bg-white rounded hover:bg-gray-100 cursor-pointer text-sm"
-                    >
-                      <p className="font-medium">{person.full_name}</p>
-                      {person.role && <p className="text-xs text-gray-600">{person.role}</p>}
-                    </div>
-                  ))}
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-800">Link People</h3>
+                <button
+                  onClick={() => setShowCreatePerson(!showCreatePerson)}
+                  className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  {showCreatePerson ? 'Cancel' : '+ New Person'}
+                </button>
+              </div>
+
+              {/* Create New Person Form */}
+              {showCreatePerson ? (
+                <div className="space-y-2 mt-2">
+                  <input
+                    type="text"
+                    value={newPersonName}
+                    onChange={(e) => setNewPersonName(e.target.value)}
+                    placeholder="Full name *"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newPersonTitle}
+                    onChange={(e) => setNewPersonTitle(e.target.value)}
+                    placeholder="Title/Role (optional)"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={newPersonBioLink}
+                    onChange={(e) => setNewPersonBioLink(e.target.value)}
+                    placeholder="Bio link / Wikipedia URL (optional)"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                  />
+                  <button
+                    onClick={createNewPerson}
+                    disabled={creatingPerson}
+                    className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 text-sm"
+                  >
+                    {creatingPerson ? 'Creating...' : 'Create & Link to Voyage'}
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={personSearch}
+                    onChange={(e) => {
+                      setPersonSearch(e.target.value);
+                      searchPeople(e.target.value);
+                    }}
+                    placeholder="Search for people..."
+                    className="w-full border rounded px-3 py-2 text-sm mb-2"
+                  />
+                  {searching && <p className="text-xs text-gray-600">Searching...</p>}
+                  {searchResults.length > 0 && (
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                      {searchResults.map((person) => (
+                        <div
+                          key={person.person_slug}
+                          onClick={() => linkPerson(person.person_slug, person.full_name)}
+                          className="p-2 bg-white rounded hover:bg-gray-100 cursor-pointer text-sm"
+                        >
+                          <p className="font-medium">{person.full_name}</p>
+                          {person.role && <p className="text-xs text-gray-600">{person.role}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
