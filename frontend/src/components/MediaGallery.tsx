@@ -37,17 +37,30 @@ type Tile = {
   kind: "image" | "video" | "other";
   url: string;
   caption?: string;
+  originalUrl?: string;  // For thumbnails, this is the full-res original
 };
 
 const toTile = (m: MediaItem): Tile | null => {
-  const url = m.url || m.public_derivative_url || "";
+  const url = m.url || m.s3_url || m.public_derivative_url || "";
   if (!url) return null;
   const caption =
     (m.title ? `${m.title}` : (m.media_type || "Media")) +
     (m.date ? ` — ${m.date}` : "") +
     (m.description_markdown ? `: ${m.description_markdown}` : "");
-  if (looksLikeImage(url)) return { id: m.media_slug, kind: "image", url, caption };
-  if (looksLikeVideo(url)) return { id: m.media_slug, kind: "video", url, caption };
+
+  // Use thumbnail for display if available
+  const thumbnailUrl = m.public_derivative_url;
+
+  if (looksLikeImage(url) || m.media_type === 'image') {
+    return { id: m.media_slug, kind: "image", url: thumbnailUrl || url, caption, originalUrl: url };
+  }
+  if (looksLikeVideo(url) || m.media_type === 'video') {
+    return { id: m.media_slug, kind: "video", url, caption };
+  }
+  // For PDFs with thumbnails, show as image tile
+  if (m.media_type === 'pdf' && thumbnailUrl) {
+    return { id: m.media_slug, kind: "image", url: thumbnailUrl, caption, originalUrl: url };
+  }
   return { id: m.media_slug, kind: "other", url, caption };
 };
 
@@ -97,17 +110,20 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tiles.map((t) => {
           if (t.kind === "image") {
+            const displayUrl = t.url;  // Thumbnail or image
+            const originalUrl = t.originalUrl || t.url;  // Full resolution original
+
             return (
               <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm">
                 <button
                   type="button"
-                  onClick={() => setOpenSrc(t.url)}
-                  className="block w-full h-48 bg-gray-50"
-                  title={t.caption || "Open image"}
+                  onClick={() => setOpenSrc(originalUrl)}
+                  className="block w-full h-48 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  title={t.caption || "Click to enlarge"}
                 >
                   <img
-                    src={t.url}
-                    alt={t.caption || "Voyage image"}
+                    src={displayUrl}
+                    alt={t.caption || "Voyage media"}
                     className="w-full h-full object-cover"
                     onError={(e) => (e.currentTarget.style.display = "none")}
                     loading="lazy"
@@ -115,9 +131,9 @@ const MediaGallery: React.FC<{ voyageSlug: string; filterDisplayable?: boolean }
                   />
                 </button>
                 <figcaption className="p-2 text-xs text-gray-700">
-                  <div className="line-clamp-3">{t.caption || "Image"}</div>
-                  <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    Open original
+                  <div className="line-clamp-3">{t.caption || "Media"}</div>
+                  <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    Open original →
                   </a>
                 </figcaption>
               </figure>
