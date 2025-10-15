@@ -27,7 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: "/", label: "Home" },
     { path: "/voyages", label: "Voyages" },
     { path: "/people", label: "Passengers" },
-    { path: "/curators", label: "For Curators" },
+    { path: "/curators", label: "Database Editor" },
+    { path: "/media-explorer", label: "Media Explorer" },
   ];
 
   return (
