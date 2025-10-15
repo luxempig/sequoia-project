@@ -130,6 +130,14 @@ for i, media in enumerate(media_to_process):
 
         s3_url = f"https://{bucket}.s3.amazonaws.com/{s3_key}"
 
+        # Validate date field - only use if it looks like a valid date
+        media_date = None
+        if media['date']:
+            date_str = str(media['date'])
+            # Only use if it contains a dash (YYYY-MM-DD format) or slash (MM/DD/YYYY)
+            if '-' in date_str or '/' in date_str:
+                media_date = date_str
+
         # Insert into database
         cur.execute("""
             INSERT INTO sequoia.media (media_slug, title, media_type, s3_url, credit, date)
@@ -144,7 +152,7 @@ for i, media in enumerate(media_to_process):
             media_type_enum,
             s3_url,
             media['source'],
-            media['date'] if media['date'] else None
+            media_date
         ))
 
         # Link to voyage
