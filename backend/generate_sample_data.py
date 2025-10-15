@@ -146,7 +146,7 @@ def generate_sample_voyages_for_president(
                               f"{'The yacht spun in the Potomac River for optimal views.' if mention_yacht_spin else ''}"
                               f"{'Captain Anderson expertly navigated the vessel through challenging conditions.' if mention_captain else ''}"
                               f"{'The crew provided exceptional service throughout the voyage.' if mention_crew else ''}",
-            "source_urls": f"National Archives, Presidential Papers, {president_name} Library",
+            "source_urls": [f"National Archives", f"Presidential Papers", f"{president_name} Library"],  # Array for PostgreSQL
             "tags": ", ".join([VOYAGE_TYPES[i], "documented", "significant"]),
             "president_slug": president_slug,
             "notes": [
