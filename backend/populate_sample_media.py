@@ -18,13 +18,9 @@ from voyage_ingest.db_updater import _conn
 with open('app/canonical_voyages.json.backup.1759276543', 'r') as f:
     data = json.load(f)
 
-# Get S3 client
-s3 = boto3.client('s3',
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-    region_name=os.getenv('AWS_REGION', 'us-east-1')
-)
-bucket = os.getenv('S3_BUCKET_NAME', 'sequoia-canonical')
+# Get S3 client using default credentials (same as curator endpoint)
+s3 = boto3.client('s3')
+bucket = 'sequoia-canonical'
 
 # Get a sample voyage from our database to use for all media
 conn = _conn()
