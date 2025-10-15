@@ -254,18 +254,22 @@ export default function VoyageDetail() {
         {/* Source URLs */}
         {voyage.source_urls && voyage.source_urls.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Source URLs</h4>
-            <ul className="space-y-2">
-              {voyage.source_urls.map((url, index) => (
-                <li key={index}>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
-                  >
-                    {url}
-                  </a>
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Sources</h4>
+            <ul className="space-y-1">
+              {voyage.source_urls.map((source, index) => (
+                <li key={index} className="text-sm text-gray-700">
+                  {source.startsWith('http') ? (
+                    <a
+                      href={source}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 hover:underline break-all"
+                    >
+                      {source}
+                    </a>
+                  ) : (
+                    <span>• {source}</span>
+                  )}
                 </li>
               ))}
             </ul>
