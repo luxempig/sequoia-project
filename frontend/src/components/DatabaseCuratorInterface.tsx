@@ -691,16 +691,28 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
             <textarea
-              value={voyage.summary_markdown || ''}
+              value={(() => {
+                // Always display with markdown stripped
+                if (!voyage.summary_markdown) return '';
+                return voyage.summary_markdown
+                  .replace(/^#+\s*/gm, '')   // Remove heading markers (##, ###, etc)
+                  .replace(/\*\*/g, '')       // Remove bold markers
+                  .replace(/\*/g, '')         // Remove italic markers
+                  .replace(/^[-*+]\s/gm, '')  // Remove list markers
+                  .replace(/^\d+\.\s/gm, '')  // Remove numbered list markers
+                  .replace(/`/g, '')          // Remove code markers
+                  .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // Remove links but keep text
+              })()}
               onChange={(e) => {
-                // Strip markdown symbols automatically
+                // Strip markdown symbols as you type
                 const cleanText = e.target.value
-                  .replace(/^#+\s*/gm, '')  // Remove heading markers (##, ###, etc)
-                  .replace(/\*\*/g, '')      // Remove bold markers
-                  .replace(/\*/g, '')        // Remove italic markers
-                  .replace(/^[-*+]\s/gm, '') // Remove list markers
-                  .replace(/^\d+\.\s/gm, '') // Remove numbered list markers
-                  .replace(/`/g, '');        // Remove code markers
+                  .replace(/^#+\s*/gm, '')   // Remove heading markers (##, ###, etc)
+                  .replace(/\*\*/g, '')       // Remove bold markers
+                  .replace(/\*/g, '')         // Remove italic markers
+                  .replace(/^[-*+]\s/gm, '')  // Remove list markers
+                  .replace(/^\d+\.\s/gm, '')  // Remove numbered list markers
+                  .replace(/`/g, '')          // Remove code markers
+                  .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // Remove links but keep text
                 setVoyage({ ...voyage, summary_markdown: cleanText || null });
               }}
               rows={4}
