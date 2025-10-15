@@ -60,6 +60,34 @@ The canonical JSON file is structured by president, with each president containi
 | `additional_sources` | string | **NEW** - Additional source references | `"See also: Truman Library Archive XYZ"` |
 | `tags` | array | Categorization tags | `["diplomacy", "World War II"]` |
 
+### Metadata Fields (Categorization & Filtering)
+
+**Boolean Flags:**
+
+| Field | Type | Description | Display Tag |
+|-------|------|-------------|-------------|
+| `has_photo` | boolean | Voyage has associated photo(s) | Photo(s) |
+| `has_video` | boolean | Voyage has associated video(s) | Video(s) |
+| `presidential_use` | boolean | President was present/used the yacht | Presidential Use |
+| `has_royalty` | boolean | Royalty was present on voyage | Royalty |
+| `has_foreign_leader` | boolean | Foreign leader was present | Foreign Leader |
+| `mention_camp_david` | boolean | Voyage mentions Camp David | CD |
+| `mention_mount_vernon` | boolean | Voyage mentions Mount Vernon | MV |
+| `mention_captain` | boolean | Voyage mentions captain | Captain |
+| `mention_crew` | boolean | Voyage mentions crew member(s) | Crew |
+| `mention_rmd` | boolean | Mentions Restoration, Maintenance, and/or Damage | RMD |
+| `mention_yacht_spin` | boolean | Mentions Maintenance, Cost, Buy/Sell, and/or yacht spin | Yacht Spin |
+| `mention_menu` | boolean | Voyage mentions menu | Menu |
+| `mention_drinks_wine` | boolean | Voyage mentions drinks or wine | Drinks/Wine |
+
+**Associated Text Fields (when boolean is true):**
+
+| Field | Type | Description | Required When | Example |
+|-------|------|-------------|---------------|---------|
+| `presidential_initials` | string | President initials | `presidential_use = true` | `"HST"`, `"FDR"` |
+| `royalty_details` | string | Names/details of royalty | `has_royalty = true` | `"Queen Elizabeth II"` |
+| `foreign_leader_country` | string | Country of foreign leader | `has_foreign_leader = true` | `"United Kingdom"` |
+
 ### Passengers Array
 
 Each passenger object in the `passengers` array:
@@ -110,6 +138,21 @@ Each media object in the `media` array:
         "end_location": "Washington, D.C.",
         "title": "Meeting with British Officials",
         "additional_information": "Historic diplomatic meeting to discuss post-war strategy in the Pacific theater.",
+        "has_photo": true,
+        "has_video": false,
+        "presidential_use": true,
+        "presidential_initials": "HST",
+        "has_royalty": false,
+        "has_foreign_leader": true,
+        "foreign_leader_country": "United Kingdom",
+        "mention_camp_david": false,
+        "mention_mount_vernon": false,
+        "mention_captain": true,
+        "mention_crew": false,
+        "mention_rmd": false,
+        "mention_yacht_spin": false,
+        "mention_menu": true,
+        "mention_drinks_wine": true,
         "passengers": [
           {
             "name": "forrestal-james",

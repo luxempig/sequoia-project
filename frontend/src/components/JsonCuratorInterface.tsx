@@ -33,6 +33,24 @@ interface Voyage {
   notes: string[];
   tags: string[];
   missing_info: string[];
+  // Metadata flags
+  has_photo?: boolean;
+  has_video?: boolean;
+  presidential_use?: boolean;
+  has_royalty?: boolean;
+  has_foreign_leader?: boolean;
+  mention_camp_david?: boolean;
+  mention_mount_vernon?: boolean;
+  mention_captain?: boolean;
+  mention_crew?: boolean;
+  mention_rmd?: boolean;
+  mention_yacht_spin?: boolean;
+  mention_menu?: boolean;
+  mention_drinks_wine?: boolean;
+  // Associated text fields
+  presidential_initials?: string | null;
+  royalty_details?: string | null;
+  foreign_leader_country?: string | null;
 }
 
 interface PresidentData {
@@ -1139,6 +1157,176 @@ const VoyageEditor: React.FC<VoyageEditorProps> = ({
               rows={3}
               className="w-full border rounded px-3 py-2"
             />
+          </div>
+
+          {/* Metadata Flags Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-medium text-gray-800 mb-3">Voyage Metadata</h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Boolean checkboxes */}
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.has_photo || false}
+                  onChange={(e) => setVoyage({ ...voyage, has_photo: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Photo(s)</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.has_video || false}
+                  onChange={(e) => setVoyage({ ...voyage, has_video: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Video(s)</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.has_royalty || false}
+                  onChange={(e) => setVoyage({ ...voyage, has_royalty: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Royalty</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.has_foreign_leader || false}
+                  onChange={(e) => setVoyage({ ...voyage, has_foreign_leader: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Foreign Leader</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_camp_david || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_camp_david: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Camp David (CD)</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_mount_vernon || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_mount_vernon: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Mount Vernon (MV)</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_captain || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_captain: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Captain</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_crew || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_crew: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Crew</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_rmd || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_rmd: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">RMD</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_yacht_spin || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_yacht_spin: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Yacht Spin</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_menu || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_menu: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Menu</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.mention_drinks_wine || false}
+                  onChange={(e) => setVoyage({ ...voyage, mention_drinks_wine: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm">Drinks/Wine</span>
+              </label>
+            </div>
+
+            {/* Conditional text fields */}
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={voyage.presidential_use || false}
+                  onChange={(e) => setVoyage({ ...voyage, presidential_use: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-sm font-medium">Presidential Use</span>
+              </label>
+              {voyage.presidential_use && (
+                <input
+                  type="text"
+                  placeholder="Presidential Initials (e.g., HST, FDR)"
+                  value={voyage.presidential_initials || ''}
+                  onChange={(e) => setVoyage({ ...voyage, presidential_initials: e.target.value || null })}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                />
+              )}
+
+              {voyage.has_royalty && (
+                <input
+                  type="text"
+                  placeholder="Royalty Details"
+                  value={voyage.royalty_details || ''}
+                  onChange={(e) => setVoyage({ ...voyage, royalty_details: e.target.value || null })}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                />
+              )}
+
+              {voyage.has_foreign_leader && (
+                <input
+                  type="text"
+                  placeholder="Foreign Leader Country"
+                  value={voyage.foreign_leader_country || ''}
+                  onChange={(e) => setVoyage({ ...voyage, foreign_leader_country: e.target.value || null })}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                />
+              )}
+            </div>
           </div>
         </div>
 

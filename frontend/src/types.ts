@@ -30,6 +30,26 @@ export interface Voyage {
   // denormalized hint to group by presidency (from your schema)
   president_slug_from_voyage?: string | null;
 
+  // Metadata flags for categorization
+  has_photo?: boolean | null;
+  has_video?: boolean | null;
+  presidential_use?: boolean | null;
+  has_royalty?: boolean | null;
+  has_foreign_leader?: boolean | null;
+  mention_camp_david?: boolean | null;
+  mention_mount_vernon?: boolean | null;
+  mention_captain?: boolean | null;
+  mention_crew?: boolean | null;
+  mention_rmd?: boolean | null;
+  mention_yacht_spin?: boolean | null;
+  mention_menu?: boolean | null;
+  mention_drinks_wine?: boolean | null;
+
+  // Associated text fields
+  presidential_initials?: string | null;
+  royalty_details?: string | null;
+  foreign_leader_country?: string | null;
+
   // Flags kept for continuity (optional; may be absent in new schema)
   significant?: number | boolean;
   royalty?: number | boolean;

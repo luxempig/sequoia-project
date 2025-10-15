@@ -163,18 +163,33 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
             notes_list = v.get("notes", [])
             notes_text = "\n".join(notes_list) if isinstance(notes_list, list) else _ns(notes_list)
 
+            # Helper to convert boolean values from JSON
+            def _bool(x):
+                if x is None: return False
+                if isinstance(x, bool): return x
+                if isinstance(x, str): return x.lower() in ('true', '1', 'yes', 't', 'y')
+                return bool(x)
+
             cur.execute("""
                 INSERT INTO voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
                     origin, destination, vessel_name, voyage_type,
                     summary_markdown, source_urls, tags, president_slug_from_voyage,
                     start_location, end_location, start_timestamp, end_timestamp,
-                    additional_information, additional_sources, notes_internal
+                    additional_information, additional_sources, notes_internal,
+                    has_photo, has_video, presidential_use, has_royalty, has_foreign_leader,
+                    mention_camp_david, mention_mount_vernon, mention_captain, mention_crew,
+                    mention_rmd, mention_yacht_spin, mention_menu, mention_drinks_wine,
+                    presidential_initials, royalty_details, foreign_leader_country
                 ) VALUES (%(voyage_slug)s, %(title)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s,
                          %(origin)s, %(destination)s, %(vessel_name)s, %(voyage_type)s,
                          %(summary_markdown)s, %(source_urls)s, %(tags)s, %(president_slug)s,
                          %(start_location)s, %(end_location)s, %(start_timestamp)s, %(end_timestamp)s,
-                         %(additional_information)s, %(additional_sources)s, %(notes_internal)s)
+                         %(additional_information)s, %(additional_sources)s, %(notes_internal)s,
+                         %(has_photo)s, %(has_video)s, %(presidential_use)s, %(has_royalty)s, %(has_foreign_leader)s,
+                         %(mention_camp_david)s, %(mention_mount_vernon)s, %(mention_captain)s, %(mention_crew)s,
+                         %(mention_rmd)s, %(mention_yacht_spin)s, %(mention_menu)s, %(mention_drinks_wine)s,
+                         %(presidential_initials)s, %(royalty_details)s, %(foreign_leader_country)s)
                 ON CONFLICT (voyage_slug) DO UPDATE SET
                     title=EXCLUDED.title, start_date=EXCLUDED.start_date, end_date=EXCLUDED.end_date,
                     start_time=EXCLUDED.start_time, end_time=EXCLUDED.end_time, origin=EXCLUDED.origin,
@@ -184,7 +199,15 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                     start_location=EXCLUDED.start_location, end_location=EXCLUDED.end_location,
                     start_timestamp=EXCLUDED.start_timestamp, end_timestamp=EXCLUDED.end_timestamp,
                     additional_information=EXCLUDED.additional_information, additional_sources=EXCLUDED.additional_sources,
-                    notes_internal=EXCLUDED.notes_internal;
+                    notes_internal=EXCLUDED.notes_internal,
+                    has_photo=EXCLUDED.has_photo, has_video=EXCLUDED.has_video, presidential_use=EXCLUDED.presidential_use,
+                    has_royalty=EXCLUDED.has_royalty, has_foreign_leader=EXCLUDED.has_foreign_leader,
+                    mention_camp_david=EXCLUDED.mention_camp_david, mention_mount_vernon=EXCLUDED.mention_mount_vernon,
+                    mention_captain=EXCLUDED.mention_captain, mention_crew=EXCLUDED.mention_crew,
+                    mention_rmd=EXCLUDED.mention_rmd, mention_yacht_spin=EXCLUDED.mention_yacht_spin,
+                    mention_menu=EXCLUDED.mention_menu, mention_drinks_wine=EXCLUDED.mention_drinks_wine,
+                    presidential_initials=EXCLUDED.presidential_initials, royalty_details=EXCLUDED.royalty_details,
+                    foreign_leader_country=EXCLUDED.foreign_leader_country;
             """, {
                 "voyage_slug": _ns(v.get("voyage_slug")),
                 "title": _ns(v.get("title")) or _ns(v.get("voyage_slug")) or "Untitled Voyage",
@@ -207,6 +230,24 @@ def upsert_all(bundle: Dict, s3_links: Dict[str, Tuple[Optional[str], Optional[s
                 "additional_information": _ns(v.get("additional_information")),
                 "additional_sources": _ns(v.get("additional_sources")),
                 "notes_internal": notes_text,
+                # Metadata flags
+                "has_photo": _bool(v.get("has_photo")),
+                "has_video": _bool(v.get("has_video")),
+                "presidential_use": _bool(v.get("presidential_use")),
+                "has_royalty": _bool(v.get("has_royalty")),
+                "has_foreign_leader": _bool(v.get("has_foreign_leader")),
+                "mention_camp_david": _bool(v.get("mention_camp_david")),
+                "mention_mount_vernon": _bool(v.get("mention_mount_vernon")),
+                "mention_captain": _bool(v.get("mention_captain")),
+                "mention_crew": _bool(v.get("mention_crew")),
+                "mention_rmd": _bool(v.get("mention_rmd")),
+                "mention_yacht_spin": _bool(v.get("mention_yacht_spin")),
+                "mention_menu": _bool(v.get("mention_menu")),
+                "mention_drinks_wine": _bool(v.get("mention_drinks_wine")),
+                # Associated text fields
+                "presidential_initials": _ns(v.get("presidential_initials")),
+                "royalty_details": _ns(v.get("royalty_details")),
+                "foreign_leader_country": _ns(v.get("foreign_leader_country")),
             })
 
             # people

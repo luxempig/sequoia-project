@@ -28,6 +28,26 @@ class Voyage(BaseModel):
     updated_at: Optional[str] = None
     president_slug_from_voyage: Optional[str] = None
 
+    # Metadata flags
+    has_photo: Optional[bool] = None
+    has_video: Optional[bool] = None
+    presidential_use: Optional[bool] = None
+    has_royalty: Optional[bool] = None
+    has_foreign_leader: Optional[bool] = None
+    mention_camp_david: Optional[bool] = None
+    mention_mount_vernon: Optional[bool] = None
+    mention_captain: Optional[bool] = None
+    mention_crew: Optional[bool] = None
+    mention_rmd: Optional[bool] = None
+    mention_yacht_spin: Optional[bool] = None
+    mention_menu: Optional[bool] = None
+    mention_drinks_wine: Optional[bool] = None
+
+    # Associated text fields
+    presidential_initials: Optional[str] = None
+    royalty_details: Optional[str] = None
+    foreign_leader_country: Optional[str] = None
+
 class Media(BaseModel):
     media_slug: str
     title: Optional[str] = None
