@@ -91,7 +91,7 @@ const DatabaseCuratorInterface: React.FC = () => {
       }
 
       // Load media
-      const mediaResp = await fetch(`/api/media/by-voyage?voyage_slug=${slug}`);
+      const mediaResp = await fetch(`/api/media/by-voyage/${slug}`);
       if (mediaResp.ok) {
         const media = await mediaResp.json();
         setLinkedMedia(media);
