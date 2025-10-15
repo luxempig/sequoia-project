@@ -61,23 +61,26 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
   const significant = voyage.significant === 1 || voyage.significant === true;
   const royalty = voyage.royalty === 1 || voyage.royalty === true;
 
-  // Parse tags from comma-separated string or JSON array
-  const tags = (() => {
-    if (!voyage.tags) return [];
+  // Generate tags from boolean metadata fields (matching filter dropdown options)
+  const booleanFieldLabels: Array<{ key: keyof Voyage; label: string }> = [
+    { key: 'has_photo', label: 'Has Photos' },
+    { key: 'has_video', label: 'Has Video' },
+    { key: 'presidential_use', label: 'Presidential Use' },
+    { key: 'has_royalty', label: 'Royalty Present' },
+    { key: 'has_foreign_leader', label: 'Foreign Leader Present' },
+    { key: 'mention_camp_david', label: 'Camp David' },
+    { key: 'mention_mount_vernon', label: 'Mount Vernon' },
+    { key: 'mention_captain', label: 'Captain' },
+    { key: 'mention_crew', label: 'Crew' },
+    { key: 'mention_rmd', label: 'RMD' },
+    { key: 'mention_yacht_spin', label: 'Yacht Spin' },
+    { key: 'mention_menu', label: 'Menu Info' },
+    { key: 'mention_drinks_wine', label: 'Drinks/Wine' },
+  ];
 
-    // Try to parse as JSON array first (if stored as ["tag1", "tag2"])
-    try {
-      const parsed = JSON.parse(voyage.tags);
-      if (Array.isArray(parsed)) {
-        return parsed.map(t => String(t).trim()).filter(Boolean);
-      }
-    } catch {
-      // Not JSON, treat as comma-separated string
-    }
-
-    // Fallback to comma-separated parsing
-    return voyage.tags.split(',').map(t => t.trim().replace(/^\[|\]$/g, '').replace(/^["']|["']$/g, '')).filter(Boolean);
-  })();
+  const tags = booleanFieldLabels
+    .filter(field => voyage[field.key] === true)
+    .map(field => field.label);
 
   return (
     <div className="timeline-item">
