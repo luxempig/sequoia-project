@@ -104,13 +104,13 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
             <div>
               <strong>Start:</strong> {fmtTimestamp(voyage.start_timestamp) || fmtRange(voyage.start_date, null)}
               {(voyage.start_location || voyage.origin) && (
-                <span className="ml-1">📍 {voyage.start_location || voyage.origin}</span>
+                <span className="ml-2 text-gray-500">→ {voyage.start_location || voyage.origin}</span>
               )}
             </div>
             <div>
               <strong>End:</strong> {fmtTimestamp(voyage.end_timestamp) || fmtRange(voyage.end_date, null)}
               {(voyage.end_location || voyage.destination) && (
-                <span className="ml-1">📍 {voyage.end_location || voyage.destination}</span>
+                <span className="ml-2 text-gray-500">→ {voyage.end_location || voyage.destination}</span>
               )}
             </div>
           </div>
