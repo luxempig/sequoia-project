@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./Layout";
-import { Voyage } from "../types";
+import { Voyage, Person, MediaItem } from "../types";
 
 interface VoyageListItem {
   voyage_slug: string;
@@ -19,11 +19,21 @@ const DatabaseCuratorInterface: React.FC = () => {
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Linked entities
+  const [linkedPeople, setLinkedPeople] = useState<Person[]>([]);
+  const [linkedMedia, setLinkedMedia] = useState<MediaItem[]>([]);
+
   useEffect(() => {
     if (isAuthenticated) {
       loadVoyages();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (selectedVoyage && editMode === 'view') {
+      loadLinkedEntities(selectedVoyage.voyage_slug);
+    }
+  }, [selectedVoyage, editMode]);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,10 +81,28 @@ const DatabaseCuratorInterface: React.FC = () => {
     }
   };
 
-  const createNewVoyage = (): Voyage => {
-    const year = new Date().getFullYear();
-    const slug = `new-voyage-${Date.now()}`;
+  const loadLinkedEntities = async (slug: string) => {
+    try {
+      // Load people
+      const peopleResp = await fetch(`/api/voyages/${slug}/people`);
+      if (peopleResp.ok) {
+        const people = await peopleResp.json();
+        setLinkedPeople(people);
+      }
 
+      // Load media
+      const mediaResp = await fetch(`/api/media/by-voyage?voyage_slug=${slug}`);
+      if (mediaResp.ok) {
+        const media = await mediaResp.json();
+        setLinkedMedia(media);
+      }
+    } catch (error) {
+      console.error('Failed to load linked entities:', error);
+    }
+  };
+
+  const createNewVoyage = (): Voyage => {
+    const slug = `new-voyage-${Date.now()}`;
     return {
       voyage_slug: slug,
       title: '',
@@ -128,14 +156,10 @@ const DatabaseCuratorInterface: React.FC = () => {
       const savedVoyage = await response.json();
       setSuccess(`Voyage ${isNew ? 'created' : 'updated'} successfully!`);
 
-      // Reload voyages list
       await loadVoyages();
-
-      // Update selected voyage
       setSelectedVoyage(savedVoyage);
       setEditMode('view');
 
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error('Save failed:', error);
@@ -323,82 +347,108 @@ const DatabaseCuratorInterface: React.FC = () => {
               {/* Voyage Details */}
               <div className="lg:col-span-2">
                 {selectedVoyage ? (
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-bold text-gray-800">Voyage Details</h2>
-                      <div className="space-x-2">
-                        <button
-                          onClick={() => setEditMode('edit')}
-                          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => duplicateVoyage(selectedVoyage.voyage_slug)}
-                          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-                        >
-                          Duplicate
-                        </button>
-                        <button
-                          onClick={() => deleteVoyage(selectedVoyage.voyage_slug)}
-                          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-800">Voyage Details</h2>
+                        <div className="space-x-2">
+                          <button
+                            onClick={() => setEditMode('edit')}
+                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => duplicateVoyage(selectedVoyage.voyage_slug)}
+                            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                          >
+                            Duplicate
+                          </button>
+                          <button
+                            onClick={() => deleteVoyage(selectedVoyage.voyage_slug)}
+                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Slug</label>
+                          <p className="text-gray-900">{selectedVoyage.voyage_slug}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Title</label>
+                          <p className="text-gray-900">{selectedVoyage.title || '—'}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700">Start Date</label>
+                            <p className="text-gray-900">{selectedVoyage.start_date || '—'}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700">End Date</label>
+                            <p className="text-gray-900">{selectedVoyage.end_date || '—'}</p>
+                          </div>
+                        </div>
+                        {selectedVoyage.summary_markdown && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-700">Summary</label>
+                            <p className="text-gray-900 whitespace-pre-wrap bg-gray-50 p-3 rounded">
+                              {selectedVoyage.summary_markdown}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Boolean Flags */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">Metadata</label>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedVoyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Has Photo</span>}
+                            {selectedVoyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">Has Video</span>}
+                            {selectedVoyage.presidential_use && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Presidential Use</span>}
+                            {selectedVoyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Royalty</span>}
+                            {selectedVoyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Foreign Leader</span>}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Slug</label>
-                        <p className="text-gray-900">{selectedVoyage.voyage_slug}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Title</label>
-                        <p className="text-gray-900">{selectedVoyage.title || '—'}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Start Date</label>
-                          <p className="text-gray-900">{selectedVoyage.start_date || '—'}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">End Date</label>
-                          <p className="text-gray-900">{selectedVoyage.end_date || '—'}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Origin</label>
-                          <p className="text-gray-900">{selectedVoyage.origin || selectedVoyage.start_location || '—'}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Destination</label>
-                          <p className="text-gray-900">{selectedVoyage.destination || selectedVoyage.end_location || '—'}</p>
-                        </div>
-                      </div>
-                      {selectedVoyage.summary_markdown && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Summary</label>
-                          <p className="text-gray-900 whitespace-pre-wrap bg-gray-50 p-3 rounded">
-                            {selectedVoyage.summary_markdown}
-                          </p>
+                    {/* Linked People Panel */}
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                      <h3 className="text-lg font-bold text-gray-800 mb-4">Passengers ({linkedPeople.length})</h3>
+                      {linkedPeople.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No people linked to this voyage</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {linkedPeople.map((person) => (
+                            <div key={person.person_slug} className="border rounded p-3">
+                              <p className="font-medium text-sm">{person.full_name}</p>
+                              {person.capacity_role && (
+                                <p className="text-xs text-gray-600">{person.capacity_role}</p>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
+                    </div>
 
-                      {/* Boolean Flags */}
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Metadata</label>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedVoyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Has Photo</span>}
-                          {selectedVoyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">Has Video</span>}
-                          {selectedVoyage.presidential_use && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Presidential Use</span>}
-                          {selectedVoyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Royalty</span>}
-                          {selectedVoyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Foreign Leader</span>}
-                          {selectedVoyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded">Camp David</span>}
-                          {selectedVoyage.mention_yacht_spin && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded">Yacht Spin</span>}
+                    {/* Linked Media Panel */}
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                      <h3 className="text-lg font-bold text-gray-800 mb-4">Media ({linkedMedia.length})</h3>
+                      {linkedMedia.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No media linked to this voyage</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {linkedMedia.map((media) => (
+                            <div key={media.media_slug} className="border rounded p-3">
+                              <p className="font-medium text-sm">{media.title || media.media_slug}</p>
+                              <p className="text-xs text-gray-600">{media.media_type || 'unknown type'}</p>
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -446,6 +496,123 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
   loading
 }) => {
   const [voyage, setVoyage] = useState<Voyage>(initialVoyage);
+  const [sourceUrls, setSourceUrls] = useState<string[]>([]);
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+
+  // Media upload state
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mediaTitle, setMediaTitle] = useState("");
+  const [mediaCredit, setMediaCredit] = useState("");
+
+  // Person search state
+  const [personSearch, setPersonSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<Person[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    // Parse source_urls if it exists (it might be undefined or a string in some cases)
+    if (Array.isArray(voyage.source_urls)) {
+      setSourceUrls(voyage.source_urls);
+    } else if (typeof voyage.source_urls === 'string') {
+      setSourceUrls([voyage.source_urls]);
+    }
+  }, []);
+
+  const addSourceUrl = () => {
+    if (newSourceUrl.trim()) {
+      const updated = [...sourceUrls, newSourceUrl.trim()];
+      setSourceUrls(updated);
+      setVoyage({ ...voyage, source_urls: updated as any });
+      setNewSourceUrl("");
+    }
+  };
+
+  const removeSourceUrl = (index: number) => {
+    const updated = sourceUrls.filter((_, i) => i !== index);
+    setSourceUrls(updated);
+    setVoyage({ ...voyage, source_urls: updated as any });
+  };
+
+  const searchPeople = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await fetch(`/api/curator/people/search?q=${encodeURIComponent(query)}`);
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const linkPerson = async (personSlug: string, fullName: string) => {
+    const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
+    if (!role) return;
+
+    try {
+      const response = await fetch('/api/curator/people/link-to-voyage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: personSlug,
+          voyage_slug: voyage.voyage_slug,
+          capacity_role: role
+        })
+      });
+
+      if (response.ok) {
+        alert(`${fullName} linked successfully!`);
+        setPersonSearch("");
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Link failed:', error);
+      alert('Failed to link person');
+    }
+  };
+
+  const uploadMedia = async () => {
+    if (!selectedFile) return;
+
+    setUploadingMedia(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('media_slug', `${voyage.voyage_slug}-${Date.now()}`);
+      formData.append('voyage_slug', voyage.voyage_slug);
+      formData.append('title', mediaTitle || selectedFile.name);
+      formData.append('credit', mediaCredit);
+
+      const response = await fetch('/api/curator/media/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Media uploaded successfully!');
+        setSelectedFile(null);
+        setMediaTitle("");
+        setMediaCredit("");
+      } else {
+        const error = await response.json();
+        alert(`Upload failed: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -455,7 +622,7 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
         </h2>
         <div className="space-x-2">
           <button
-            onClick={() => onSave(voyage)}
+            onClick={() => onSave({ ...voyage, source_urls: sourceUrls as any })}
             disabled={loading}
             className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50"
           >
@@ -486,7 +653,6 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
               placeholder="e.g., truman-1945-01"
               disabled={!isNew}
             />
-            <p className="text-xs text-gray-500 mt-1">Unique identifier (cannot be changed after creation)</p>
           </div>
 
           <div>
@@ -498,15 +664,12 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
               value={voyage.title || ''}
               onChange={(e) => setVoyage({ ...voyage, title: e.target.value || null })}
               className="w-full border rounded px-3 py-2"
-              placeholder="Brief title for this voyage"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
               <input
                 type="date"
                 value={voyage.start_date || ''}
@@ -515,9 +678,7 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
               <input
                 type="date"
                 value={voyage.end_date || ''}
@@ -527,295 +688,166 @@ const VoyageEditorForm: React.FC<VoyageEditorFormProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Origin
-              </label>
-              <input
-                type="text"
-                value={voyage.origin || voyage.start_location || ''}
-                onChange={(e) => setVoyage({ ...voyage, origin: e.target.value || null, start_location: e.target.value || null })}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Destination
-              </label>
-              <input
-                type="text"
-                value={voyage.destination || voyage.end_location || ''}
-                onChange={(e) => setVoyage({ ...voyage, destination: e.target.value || null, end_location: e.target.value || null })}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Voyage Type
-            </label>
-            <select
-              value={voyage.voyage_type || 'official'}
-              onChange={(e) => setVoyage({ ...voyage, voyage_type: e.target.value as any })}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="official">Official</option>
-              <option value="private">Private</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Vessel Name
-            </label>
-            <input
-              type="text"
-              value={voyage.vessel_name || ''}
-              onChange={(e) => setVoyage({ ...voyage, vessel_name: e.target.value || null })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="USS Sequoia"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              President Slug
-            </label>
-            <input
-              type="text"
-              value={voyage.president_slug_from_voyage || ''}
-              onChange={(e) => setVoyage({ ...voyage, president_slug_from_voyage: e.target.value || null })}
-              className="w-full border rounded px-3 py-2"
-              placeholder="e.g., truman-harry-s"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Summary
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
             <textarea
               value={voyage.summary_markdown || ''}
               onChange={(e) => setVoyage({ ...voyage, summary_markdown: e.target.value || null })}
               rows={4}
               className="w-full border rounded px-3 py-2"
-              placeholder="Brief description of the voyage..."
             />
           </div>
 
+          {/* Source URLs */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Internal Notes
-            </label>
-            <textarea
-              value={voyage.notes_internal || ''}
-              onChange={(e) => setVoyage({ ...voyage, notes_internal: e.target.value || null })}
-              rows={3}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Curator notes (not public)..."
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Source URLs</label>
+            <div className="space-y-2">
+              {sourceUrls.map((url, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={url}
+                    readOnly
+                    className="flex-1 border rounded px-3 py-2 bg-gray-50 text-sm"
+                  />
+                  <button
+                    onClick={() => removeSourceUrl(index)}
+                    className="text-red-600 hover:text-red-800 text-sm px-2"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newSourceUrl}
+                  onChange={(e) => setNewSourceUrl(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
+                  placeholder="https://..."
+                  className="flex-1 border rounded px-3 py-2 text-sm"
+                />
+                <button
+                  onClick={addSourceUrl}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Boolean Metadata - Checkboxes */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <h3 className="text-sm font-medium text-gray-800 mb-3">Metadata Flags</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { key: 'has_photo', label: 'Has Photo' },
+                { key: 'has_video', label: 'Has Video' },
+                { key: 'presidential_use', label: 'Presidential Use' },
+                { key: 'has_royalty', label: 'Royalty' },
+                { key: 'has_foreign_leader', label: 'Foreign Leader' },
+                { key: 'mention_camp_david', label: 'Camp David' },
+                { key: 'mention_mount_vernon', label: 'Mount Vernon' },
+                { key: 'mention_captain', label: 'Captain' },
+                { key: 'mention_crew', label: 'Crew' },
+                { key: 'mention_rmd', label: 'RMD' },
+                { key: 'mention_yacht_spin', label: 'Yacht Spin' },
+                { key: 'mention_menu', label: 'Menu' },
+                { key: 'mention_drinks_wine', label: 'Drinks/Wine' },
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center space-x-2 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(voyage[key as keyof Voyage])}
+                    onChange={(e) => setVoyage({ ...voyage, [key]: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right Column - Boolean Metadata */}
+        {/* Right Column - Person Search & Media Upload */}
         <div className="space-y-4">
-          <div className="border rounded-lg p-4 bg-gray-50">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Voyage Metadata</h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.has_photo || false}
-                  onChange={(e) => setVoyage({ ...voyage, has_photo: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Has Photos</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.has_video || false}
-                  onChange={(e) => setVoyage({ ...voyage, has_video: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Has Video</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.presidential_use || false}
-                  onChange={(e) => setVoyage({ ...voyage, presidential_use: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Presidential Use</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.has_royalty || false}
-                  onChange={(e) => setVoyage({ ...voyage, has_royalty: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Royalty Present</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.has_foreign_leader || false}
-                  onChange={(e) => setVoyage({ ...voyage, has_foreign_leader: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Foreign Leader</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_camp_david || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_camp_david: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Camp David</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_mount_vernon || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_mount_vernon: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Mount Vernon</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_captain || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_captain: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Captain</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_crew || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_crew: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Crew</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_rmd || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_rmd: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">RMD</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_yacht_spin || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_yacht_spin: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Yacht Spin</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_menu || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_menu: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Menu Info</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={voyage.mention_drinks_wine || false}
-                  onChange={(e) => setVoyage({ ...voyage, mention_drinks_wine: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm">Drinks/Wine</span>
-              </label>
-            </div>
-
-            {/* Conditional text fields */}
-            <div className="mt-4 space-y-3">
-              {voyage.presidential_use && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Presidential Initials
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., HST, FDR"
-                    value={voyage.presidential_initials || ''}
-                    onChange={(e) => setVoyage({ ...voyage, presidential_initials: e.target.value || null })}
-                    className="w-full border rounded px-3 py-2 text-sm"
-                  />
-                </div>
-              )}
-
-              {voyage.has_royalty && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Royalty Details
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Names and titles"
-                    value={voyage.royalty_details || ''}
-                    onChange={(e) => setVoyage({ ...voyage, royalty_details: e.target.value || null })}
-                    className="w-full border rounded px-3 py-2 text-sm"
-                  />
-                </div>
-              )}
-
-              {voyage.has_foreign_leader && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Foreign Leader Country
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Country name"
-                    value={voyage.foreign_leader_country || ''}
-                    onChange={(e) => setVoyage({ ...voyage, foreign_leader_country: e.target.value || null })}
-                    className="w-full border rounded px-3 py-2 text-sm"
-                  />
+          {/* Person Search */}
+          {!isNew && (
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <h3 className="text-sm font-medium text-gray-800 mb-2">Link People</h3>
+              <input
+                type="text"
+                value={personSearch}
+                onChange={(e) => {
+                  setPersonSearch(e.target.value);
+                  searchPeople(e.target.value);
+                }}
+                placeholder="Search for people..."
+                className="w-full border rounded px-3 py-2 text-sm mb-2"
+              />
+              {searching && <p className="text-xs text-gray-600">Searching...</p>}
+              {searchResults.length > 0 && (
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {searchResults.map((person) => (
+                    <div
+                      key={person.person_slug}
+                      onClick={() => linkPerson(person.person_slug, person.full_name)}
+                      className="p-2 bg-white rounded hover:bg-gray-100 cursor-pointer text-sm"
+                    >
+                      <p className="font-medium">{person.full_name}</p>
+                      {person.role && <p className="text-xs text-gray-600">{person.role}</p>}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          <div className="border rounded-lg p-4 bg-blue-50">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Next Steps</h3>
-            <p className="text-xs text-gray-600">
-              After saving this voyage, you can:
-            </p>
-            <ul className="text-xs text-gray-600 mt-2 space-y-1 list-disc list-inside">
-              <li>Link people as passengers</li>
-              <li>Upload and attach media</li>
-              <li>Add source URLs</li>
+          {/* Media Upload */}
+          {!isNew && (
+            <div className="border rounded-lg p-4 bg-green-50">
+              <h3 className="text-sm font-medium text-gray-800 mb-2">Upload Media</h3>
+              <input
+                type="file"
+                accept="image/*,video/*,application/pdf"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="w-full border rounded px-3 py-2 text-sm mb-2"
+              />
+              {selectedFile && (
+                <>
+                  <input
+                    type="text"
+                    value={mediaTitle}
+                    onChange={(e) => setMediaTitle(e.target.value)}
+                    placeholder="Title (optional)"
+                    className="w-full border rounded px-3 py-2 text-sm mb-2"
+                  />
+                  <input
+                    type="text"
+                    value={mediaCredit}
+                    onChange={(e) => setMediaCredit(e.target.value)}
+                    placeholder="Credit/Source"
+                    className="w-full border rounded px-3 py-2 text-sm mb-2"
+                  />
+                  <button
+                    onClick={uploadMedia}
+                    disabled={uploadingMedia}
+                    className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 text-sm"
+                  >
+                    {uploadingMedia ? 'Uploading...' : 'Upload to S3'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className="border rounded-lg p-4 bg-yellow-50">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Tips</h3>
+            <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+              <li>Save the voyage first before linking people or media</li>
+              <li>Use descriptive slugs (e.g., truman-1945-01)</li>
+              <li>Source URLs support multiple entries</li>
             </ul>
           </div>
         </div>
