@@ -369,7 +369,7 @@ pm2 logs sequoia-backend
 ### Database Issues
 ```bash
 # Connect to PostgreSQL
-PGPASSWORD='H|X*2BtZ?mu@7WII$B#CQHOv!2*o' psql \
+PGPASSWORD='H|X*2BtZ?muW7Wll$B#CQHOv!2*o' psql \
   -h sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com \
   -U sequoia -d sequoia_db -p 5432
 
