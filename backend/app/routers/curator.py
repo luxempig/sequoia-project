@@ -1090,3 +1090,80 @@ async def get_pipeline_health():
             "timestamp": datetime.utcnow().isoformat(),
             "error": str(e)
         }
+
+
+@router.get("/export-database")
+async def export_database():
+    """Export entire database to JSON format for backup/portability."""
+    from app.db import db_cursor
+
+    try:
+        with db_cursor(read_only=True) as cur:
+            # Export presidents
+            cur.execute("SELECT * FROM sequoia.presidents ORDER BY term_start")
+            presidents = [dict(row) for row in cur.fetchall()]
+
+            # Export all voyages
+            cur.execute("SELECT * FROM sequoia.voyages ORDER BY start_date")
+            voyages = [dict(row) for row in cur.fetchall()]
+
+            # Export all people
+            cur.execute("SELECT * FROM sequoia.people ORDER BY full_name")
+            people = [dict(row) for row in cur.fetchall()]
+
+            # Export all media
+            cur.execute("SELECT * FROM sequoia.media ORDER BY created_at")
+            media = [dict(row) for row in cur.fetchall()]
+
+            # Export relationships
+            cur.execute("""
+                SELECT * FROM sequoia.voyage_passengers
+                ORDER BY voyage_slug, person_slug
+            """)
+            voyage_passengers = [dict(row) for row in cur.fetchall()]
+
+            cur.execute("""
+                SELECT * FROM sequoia.voyage_media
+                ORDER BY voyage_slug, sort_order
+            """)
+            voyage_media = [dict(row) for row in cur.fetchall()]
+
+            cur.execute("""
+                SELECT * FROM sequoia.voyage_presidents
+                ORDER BY voyage_slug, president_slug
+            """)
+            voyage_presidents = [dict(row) for row in cur.fetchall()]
+
+            # Build export object
+            export_data = {
+                "export_timestamp": datetime.utcnow().isoformat(),
+                "export_version": "1.0.0",
+                "database": "sequoia",
+                "schema": "sequoia",
+                "summary": {
+                    "total_presidents": len(presidents),
+                    "total_voyages": len(voyages),
+                    "total_people": len(people),
+                    "total_media": len(media),
+                    "total_voyage_passenger_links": len(voyage_passengers),
+                    "total_voyage_media_links": len(voyage_media),
+                    "total_voyage_president_links": len(voyage_presidents)
+                },
+                "data": {
+                    "presidents": presidents,
+                    "voyages": voyages,
+                    "people": people,
+                    "media": media,
+                    "voyage_passengers": voyage_passengers,
+                    "voyage_media": voyage_media,
+                    "voyage_presidents": voyage_presidents
+                }
+            }
+
+            logger.info(f"Database export completed: {export_data['summary']}")
+
+            return export_data
+
+    except Exception as e:
+        logger.error(f"Database export failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
