@@ -17,33 +17,25 @@ class PersonCreate(BaseModel):
     """Schema for creating a new person"""
     person_slug: str = Field(..., description="Unique identifier (e.g., 'truman-harry-s')")
     full_name: str = Field(..., description="Full name of the person")
-    role: Optional[str] = None
-    title: Optional[str] = None
+    role_title: Optional[str] = Field(None, description="Title/Role of the person")
     organization: Optional[str] = None
     birth_year: Optional[int] = None
     death_year: Optional[int] = None
-    bio: Optional[str] = Field(None, description="Biography URL or text")
+    wikipedia_url: Optional[str] = Field(None, description="Wikipedia or bio URL")
     notes_internal: Optional[str] = None
     tags: Optional[str] = None
-
-    # Legacy fields for backward compatibility
-    role_title: Optional[str] = None
-    wikipedia_url: Optional[str] = None
 
 
 class PersonUpdate(BaseModel):
     """Schema for updating an existing person (all fields optional)"""
     full_name: Optional[str] = None
-    role: Optional[str] = None
-    title: Optional[str] = None
+    role_title: Optional[str] = None
     organization: Optional[str] = None
     birth_year: Optional[int] = None
     death_year: Optional[int] = None
-    bio: Optional[str] = None
+    wikipedia_url: Optional[str] = None
     notes_internal: Optional[str] = None
     tags: Optional[str] = None
-    role_title: Optional[str] = None
-    wikipedia_url: Optional[str] = None
 
 
 class VoyagePassengerLink(BaseModel):
@@ -105,14 +97,12 @@ def create_person(person: PersonCreate) -> Dict[str, Any]:
 
             cur.execute("""
                 INSERT INTO sequoia.people (
-                    person_slug, full_name, role, title, organization,
-                    birth_year, death_year, bio, notes_internal, tags,
-                    role_title, wikipedia_url,
+                    person_slug, full_name, role_title, organization,
+                    birth_year, death_year, wikipedia_url, notes_internal, tags,
                     created_at, updated_at
                 ) VALUES (
-                    %(person_slug)s, %(full_name)s, %(role)s, %(title)s, %(organization)s,
-                    %(birth_year)s, %(death_year)s, %(bio)s, %(notes_internal)s, %(tags)s,
-                    %(role_title)s, %(wikipedia_url)s,
+                    %(person_slug)s, %(full_name)s, %(role_title)s, %(organization)s,
+                    %(birth_year)s, %(death_year)s, %(wikipedia_url)s, %(notes_internal)s, %(tags)s,
                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
                 RETURNING *
