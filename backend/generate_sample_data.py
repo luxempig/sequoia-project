@@ -188,7 +188,7 @@ def generate_sample_voyages_for_president(
         if has_royalty:
             royal = ROYALTY[i % len(ROYALTY)]
             voyage["passengers"].append({
-                "slug": generate_slug(royal["name"]),
+                "name": generate_slug(royal["name"]),  # Parser expects "name" field
                 "full_name": royal["name"],
                 "title": royal["details"],
                 "role_title": "Guest of Honor",
@@ -199,7 +199,7 @@ def generate_sample_voyages_for_president(
         if has_foreign_leader:
             leader = FOREIGN_LEADERS[i % len(FOREIGN_LEADERS)]
             voyage["passengers"].append({
-                "slug": generate_slug(leader["name"]),
+                "name": generate_slug(leader["name"]),  # Parser expects "name" field
                 "full_name": leader["name"],
                 "title": leader["title"],
                 "role_title": "Foreign Dignitary",
@@ -211,7 +211,7 @@ def generate_sample_voyages_for_president(
         for j in range(random.randint(2, 4)):
             cabinet = CABINET_MEMBERS[j % len(CABINET_MEMBERS)]
             voyage["passengers"].append({
-                "slug": generate_slug(cabinet["name"]),
+                "name": generate_slug(cabinet["name"]),  # Parser expects "name" field
                 "full_name": cabinet["name"],
                 "title": cabinet["title"],
                 "role_title": cabinet["title"],
@@ -219,22 +219,9 @@ def generate_sample_voyages_for_president(
                 "bio": f"https://en.wikipedia.org/wiki/{cabinet['name'].replace(' ', '_')}"
             })
 
-        # Add media
+        # Skip media for now - would need real Google Drive links for S3 upload to work
+        # Media can be added later via the curator interface
         voyage["media"] = []
-        num_media = 3 if has_photo else 1
-        for j in range(num_media):
-            media_slug = f"{voyage_slug}-media-{j+1:03d}"
-            media_type = "image" if j == 0 and has_photo else "video" if j == 1 and has_video else "pdf"
-
-            voyage["media"].append({
-                "slug": media_slug,
-                "title": f"{president_name} {['aboard USS Sequoia', 'with guests', 'official photo', 'video footage', 'document'][j]}",
-                "media_type": media_type,
-                "google_drive_link": MEDIA_LINKS[j % len(MEDIA_LINKS)],
-                "credit": random.choice(["White House Photo Office", "Naval Photographic Center", "National Archives", f"{president_name} Library"]),
-                "date": start_date,
-                "description_markdown": f"{'Official photograph' if media_type == 'image' else 'Video footage' if media_type == 'video' else 'Official document'} from the {['diplomatic meeting', 'strategy session', 'recreation cruise', 'official business', 'ceremonial voyage'][i]} on {start_date}."
-            })
 
         voyages.append(voyage)
 
