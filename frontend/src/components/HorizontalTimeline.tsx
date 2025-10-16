@@ -194,10 +194,10 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   }, [timelineData, currentYear, currentMonth]);
 
   const years = Object.keys(timelineData).sort();
-  const months = currentYear ? Object.keys(timelineData[currentYear]).sort((a, b) => 
+  const months = (currentYear && timelineData[currentYear]) ? Object.keys(timelineData[currentYear]).sort((a, b) =>
     dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
   ) : [];
-  
+
   const currentMonthData = timelineData[currentYear]?.[currentMonth] || {};
   const days = Object.keys(currentMonthData).sort((a, b) => parseInt(a) - parseInt(b));
 
