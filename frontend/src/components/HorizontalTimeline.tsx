@@ -148,7 +148,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         }
       }
     });
-  }, [voyages, currentYear]);
+  }, [voyages]);
 
   // Save timeline position whenever it changes
   useEffect(() => {

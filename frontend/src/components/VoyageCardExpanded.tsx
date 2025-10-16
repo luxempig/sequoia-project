@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { Voyage } from "../types";
+import { Voyage, Person, MediaItem } from "../types";
+import { api } from "../api";
+import MediaGallery from "./MediaGallery";
 
 interface VoyageCardExpandedProps {
   voyage: Voyage;
@@ -44,6 +46,26 @@ const stripMarkdown = (text: string | null | undefined) => {
 const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMode, onSave }) => {
   const [editedVoyage, setEditedVoyage] = useState<Voyage>(voyage);
   const [isEditing, setIsEditing] = useState(false);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [loadingPeople, setLoadingPeople] = useState(false);
+  const [loadingMedia, setLoadingMedia] = useState(false);
+
+  // Load people and media when component mounts
+  useEffect(() => {
+    setLoadingPeople(true);
+    setLoadingMedia(true);
+
+    api.getVoyagePeople(voyage.voyage_slug)
+      .then(setPeople)
+      .catch(() => setPeople([]))
+      .finally(() => setLoadingPeople(false));
+
+    api.getVoyageMedia(voyage.voyage_slug)
+      .then(setMedia)
+      .catch(() => setMedia([]))
+      .finally(() => setLoadingMedia(false));
+  }, [voyage.voyage_slug]);
 
   const handleSave = async () => {
     if (onSave) {
@@ -261,6 +283,63 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* People */}
+      <div className="pt-4 border-t border-gray-200">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">People ({people.length})</h4>
+        {loadingPeople ? (
+          <p className="text-sm text-gray-500">Loading...</p>
+        ) : people.length === 0 ? (
+          <p className="text-sm text-gray-600">No people recorded for this voyage.</p>
+        ) : (
+          <ul className="space-y-2">
+            {people.map((p) => {
+              const bioLink = p.bio || p.wikipedia_url;
+              const roleToDisplay = p.capacity_role || p.role_title || p.title;
+
+              return (
+                <li key={p.person_slug} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1">•</span>
+                  <div>
+                    <div className="font-medium">
+                      {bioLink ? (
+                        <a
+                          href={bioLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {p.full_name}
+                        </a>
+                      ) : (
+                        p.full_name
+                      )}
+                    </div>
+                    {roleToDisplay && (
+                      <div className="text-gray-700 text-xs">{roleToDisplay}</div>
+                    )}
+                    {p.voyage_notes && (
+                      <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      {/* Media Gallery */}
+      {media.filter(m => m.s3_url?.includes('sequoia-canonical')).length > 0 && (
+        <div className="pt-4 border-t border-gray-200">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Media ({media.filter(m => m.s3_url?.includes('sequoia-canonical')).length})</h4>
+          {loadingMedia ? (
+            <p className="text-sm text-gray-500">Loading...</p>
+          ) : (
+            <MediaGallery voyageSlug={currentVoyage.voyage_slug} />
+          )}
         </div>
       )}
     </div>
