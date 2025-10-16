@@ -142,7 +142,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const currentMonthIndex = months.indexOf(currentMonth);
-    
+
     if (direction === 'next') {
       if (currentMonthIndex < months.length - 1) {
         setCurrentMonth(months[currentMonthIndex + 1]);
@@ -152,7 +152,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         if (currentYearIndex < years.length - 1) {
           const nextYear = years[currentYearIndex + 1];
           setCurrentYear(nextYear);
-          const nextYearMonths = Object.keys(timelineData[nextYear]).sort((a, b) => 
+          const nextYearMonths = Object.keys(timelineData[nextYear]).sort((a, b) =>
             dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
           );
           setCurrentMonth(nextYearMonths[0] || '');
@@ -167,13 +167,110 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         if (currentYearIndex > 0) {
           const prevYear = years[currentYearIndex - 1];
           setCurrentYear(prevYear);
-          const prevYearMonths = Object.keys(timelineData[prevYear]).sort((a, b) => 
+          const prevYearMonths = Object.keys(timelineData[prevYear]).sort((a, b) =>
             dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
           );
           setCurrentMonth(prevYearMonths[prevYearMonths.length - 1] || '');
         }
       }
     }
+  };
+
+  // Navigate to next/previous day with any events (voyages or media)
+  const navigateDay = (direction: 'prev' | 'next') => {
+    // Build chronological list of all dates
+    const allDates: Array<{ year: string; month: string; day: string; date: dayjs.Dayjs }> = [];
+
+    years.forEach(year => {
+      const yearMonths = Object.keys(timelineData[year]).sort((a, b) =>
+        dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+      );
+
+      yearMonths.forEach(month => {
+        const monthDays = Object.keys(timelineData[year][month]).sort((a, b) => parseInt(a) - parseInt(b));
+
+        monthDays.forEach(day => {
+          allDates.push({
+            year,
+            month,
+            day,
+            date: dayjs(`${year}-${dayjs().month(dayjs(`${month} 1`).month()).format('MM')}-${day.padStart(2, '0')}`)
+          });
+        });
+      });
+    });
+
+    // Sort by actual date
+    allDates.sort((a, b) => a.date.valueOf() - b.date.valueOf());
+
+    // Find current position
+    const currentIndex = allDates.findIndex(d =>
+      d.year === currentYear && d.month === currentMonth
+    );
+
+    if (currentIndex === -1) return;
+
+    // Navigate to next or previous date
+    const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (targetIndex >= 0 && targetIndex < allDates.length) {
+      const target = allDates[targetIndex];
+      setCurrentYear(target.year);
+      setCurrentMonth(target.month);
+    }
+  };
+
+  // Navigate to next/previous voyage
+  const navigateVoyage = (direction: 'prev' | 'next') => {
+    // Get all voyages sorted by date
+    const sortedVoyages = [...voyages]
+      .filter(v => v.start_date)
+      .sort((a, b) => dayjs(a.start_date).valueOf() - dayjs(b.start_date).valueOf());
+
+    if (sortedVoyages.length === 0) return;
+
+    // Find first voyage in current view
+    const currentMonthDays = Object.keys(currentMonthData).sort((a, b) => parseInt(a) - parseInt(b));
+    let currentVoyageIndex = -1;
+
+    for (const day of currentMonthDays) {
+      const dayVoyages = currentMonthData[day].voyages;
+      if (dayVoyages.length > 0) {
+        const firstVoyage = dayVoyages[0];
+        currentVoyageIndex = sortedVoyages.findIndex(v => v.voyage_slug === firstVoyage.voyage_slug);
+        break;
+      }
+    }
+
+    if (currentVoyageIndex === -1) {
+      // No voyage in current view, find nearest
+      const currentDate = dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-01`);
+
+      if (direction === 'next') {
+        currentVoyageIndex = sortedVoyages.findIndex(v => dayjs(v.start_date).isAfter(currentDate));
+        if (currentVoyageIndex === -1) return; // No more voyages
+      } else {
+        // Find last voyage before current date
+        for (let i = sortedVoyages.length - 1; i >= 0; i--) {
+          if (dayjs(sortedVoyages[i].start_date).isBefore(currentDate)) {
+            currentVoyageIndex = i;
+            break;
+          }
+        }
+        if (currentVoyageIndex === -1) return; // No earlier voyages
+      }
+    } else {
+      // Navigate to next/prev voyage
+      currentVoyageIndex = direction === 'next' ? currentVoyageIndex + 1 : currentVoyageIndex - 1;
+    }
+
+    if (currentVoyageIndex < 0 || currentVoyageIndex >= sortedVoyages.length) return;
+
+    const targetVoyage = sortedVoyages[currentVoyageIndex];
+    const voyageDate = dayjs(targetVoyage.start_date);
+
+    setCurrentYear(voyageDate.format('YYYY'));
+    setCurrentMonth(voyageDate.format('MMMM'));
   };
 
   if (!currentYear || !currentMonth) {
@@ -200,17 +297,18 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       {/* Year Navigation */}
       <div className="flex items-stretch mb-4 shadow-md">
-        <button 
-          onClick={() => navigateMonth('prev')}
-          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-r border-gray-600 transition-colors"
+        <button
+          onClick={() => navigateDay('prev')}
+          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-r border-gray-600 transition-colors text-xs"
+          title="Previous Day"
         >
-          ←
+          ← Previous Day
         </button>
-        
+
         <div className="bg-gray-600 text-white px-6 py-2 font-bold text-base tracking-wide">
           {currentYear.slice(-2)}
         </div>
-        
+
         <div className="bg-gray-200 px-8 py-2 flex-1 text-center border-l-2 border-gray-600" style={{
           background: 'linear-gradient(to bottom, #f3f4f6 0%, #e5e7eb 100%)'
         }}>
@@ -219,12 +317,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           </div>
           <div className="text-xl text-gray-800 mt-1 font-medium">{currentMonth}</div>
         </div>
-        
-        <button 
-          onClick={() => navigateMonth('next')}
-          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-l border-gray-600 transition-colors"
+
+        <button
+          onClick={() => navigateDay('next')}
+          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-l border-gray-600 transition-colors text-xs"
+          title="Next Day"
         >
-          →
+          Next Day →
         </button>
       </div>
 
@@ -412,19 +511,19 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       {/* Navigation Arrows */}
       <div className="flex justify-between mt-6">
         <button
-          onClick={() => navigateMonth('prev')}
-          className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={years.indexOf(currentYear) === 0 && months.indexOf(currentMonth) === 0}
+          onClick={() => navigateVoyage('prev')}
+          className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors"
+          title="Skip to Previous Voyage"
         >
-          ← Previous
+          ← Previous Voyage
         </button>
 
         <button
-          onClick={() => navigateMonth('next')}
-          className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={years.indexOf(currentYear) === years.length - 1 && months.indexOf(currentMonth) === months.length - 1}
+          onClick={() => navigateVoyage('next')}
+          className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold text-lg border border-gray-600 shadow-md transition-colors"
+          title="Skip to Next Voyage"
         >
-          Next →
+          Next Voyage →
         </button>
       </div>
 
