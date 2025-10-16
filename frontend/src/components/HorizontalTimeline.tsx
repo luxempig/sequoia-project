@@ -23,6 +23,7 @@ interface HorizontalTimelineProps {
 const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   const [currentYear, setCurrentYear] = useState<string>("");
   const [currentMonth, setCurrentMonth] = useState<string>("");
+  const [currentDay, setCurrentDay] = useState<string>("");
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [mediaData, setMediaData] = useState<{ [voyageSlug: string]: MediaItem[] }>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -69,7 +70,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       setTimelineData(organized);
 
-      // Set initial year and month to first available data
+      // Set initial year, month, and day to first available data
       const years = Object.keys(organized).sort();
       if (years.length > 0 && !currentYear) {
         const firstYear = years[0];
@@ -79,14 +80,20 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
         );
         if (months.length > 0) {
-          setCurrentMonth(months[0]);
+          const firstMonth = months[0];
+          setCurrentMonth(firstMonth);
+
+          const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
+          if (days.length > 0) {
+            setCurrentDay(days[0]);
+          }
         }
       }
     }).catch(err => {
       console.error('Failed to fetch media for timeline:', err);
       setTimelineData(organized);
 
-      // Set initial year and month even if media fetch fails
+      // Set initial year, month, and day even if media fetch fails
       const years = Object.keys(organized).sort();
       if (years.length > 0 && !currentYear) {
         const firstYear = years[0];
@@ -96,7 +103,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
         );
         if (months.length > 0) {
-          setCurrentMonth(months[0]);
+          const firstMonth = months[0];
+          setCurrentMonth(firstMonth);
+
+          const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
+          if (days.length > 0) {
+            setCurrentDay(days[0]);
+          }
         }
       }
     });
@@ -203,9 +216,9 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     // Sort by actual date
     allDates.sort((a, b) => a.date.valueOf() - b.date.valueOf());
 
-    // Find current position
+    // Find current position by matching year, month, AND day
     const currentIndex = allDates.findIndex(d =>
-      d.year === currentYear && d.month === currentMonth
+      d.year === currentYear && d.month === currentMonth && d.day === currentDay
     );
 
     if (currentIndex === -1) return;
@@ -217,6 +230,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       const target = allDates[targetIndex];
       setCurrentYear(target.year);
       setCurrentMonth(target.month);
+      setCurrentDay(target.day);
     }
   };
 
@@ -271,9 +285,10 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
     setCurrentYear(voyageDate.format('YYYY'));
     setCurrentMonth(voyageDate.format('MMMM'));
+    setCurrentDay(voyageDate.format('D'));
   };
 
-  if (!currentYear || !currentMonth) {
+  if (!currentYear || !currentMonth || !currentDay) {
     return <div className="text-center py-8 text-gray-500">No timeline data available</div>;
   }
 
@@ -334,14 +349,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       }}>
         {/* Events Row */}
         <div className="border-b-2 border-gray-500">
-          <div className="flex">
-            {days.map((day, index) => {
-              const dayData = currentMonthData[day];
+          <div>
+            {currentMonthData[currentDay] && (() => {
+              const dayData = currentMonthData[currentDay];
               const hasVoyages = dayData.voyages.length > 0;
-              const isLast = index === days.length - 1;
-              
+
               return (
-                <div key={day} className={`flex-1 min-h-40 p-4 ${!isLast ? 'border-r border-gray-400' : ''} ${hasVoyages ? 'bg-orange-50' : 'bg-gray-50'}`}>
+                <div className={`min-h-40 p-4 ${hasVoyages ? 'bg-orange-50' : 'bg-gray-50'}`}>
                   {hasVoyages && (
                     <div className="space-y-3">
                       {dayData.voyages.map(voyage => (
@@ -388,17 +402,16 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                   )}
                 </div>
               );
-            })}
+            })()}
           </div>
         </div>
 
         {/* Media Row */}
         <div>
-          <div className="flex">
-            {days.map((day, index) => {
-              const dayData = currentMonthData[day];
+          <div>
+            {currentMonthData[currentDay] && (() => {
+              const dayData = currentMonthData[currentDay];
               const dayMedia: MediaItem[] = [];
-              const isLast = index === days.length - 1;
 
               // Collect media from voyages on this day
               dayData.voyages.forEach(voyage => {
@@ -412,17 +425,17 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
               }
 
               return (
-                <div key={`media-${day}`} className={`flex-1 min-h-36 p-4 ${!isLast ? 'border-r border-gray-400' : ''} bg-gray-100`}>
+                <div className="min-h-36 p-4 bg-gray-100">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-bold text-gray-700">{day}</span>
+                    <span className="text-lg font-bold text-gray-700">{currentDay}</span>
                     <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                      {index === 0 ? "First" : index === 1 ? "Second" : index + 1}
+                      {dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-${currentDay.padStart(2, '0')}`).format('MMMM D, YYYY')}
                     </div>
                   </div>
-                  
+
                   {dayMedia.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      {dayMedia.slice(0, 4).map(media => {
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {dayMedia.map(media => {
                         const url = media.url || media.public_derivative_url || media.s3_url || '';
                         const thumbnailUrl = media.public_derivative_url || media.url;
                         const isImage = looksLikeImage(url);
@@ -503,7 +516,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                   )}
                 </div>
               );
-            })}
+            })()}
           </div>
         </div>
       </div>
