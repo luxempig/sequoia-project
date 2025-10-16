@@ -2,6 +2,7 @@ import { api } from "../api";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import VoyageCard from "./VoyageCard";
+import VoyageCardExpanded from "./VoyageCardExpanded";
 import HorizontalTimeline from "./HorizontalTimeline";
 import { Voyage, President } from "../types";
 
@@ -60,6 +61,14 @@ export default function VoyageList() {
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>(() => {
     const saved = sessionStorage.getItem('voyageListViewMode');
     return (saved === 'timeline' ? 'timeline' : 'list') as 'list' | 'timeline';
+  });
+  const [expandedView, setExpandedView] = useState<boolean>(() => {
+    const saved = sessionStorage.getItem('voyageListExpandedView');
+    return saved === 'true';
+  });
+  const [editMode, setEditMode] = useState<boolean>(() => {
+    const saved = sessionStorage.getItem('voyageListEditMode');
+    return saved === 'true';
   });
 
   const [moreOpen, setMore] = useState(false);
@@ -156,6 +165,36 @@ export default function VoyageList() {
     setParams(new URLSearchParams());
   };
 
+  // Handle saving edited voyage
+  const handleVoyageSave = async (updatedVoyage: Voyage) => {
+    try {
+      // Call backend API to update voyage
+      const response = await fetch(`http://3.14.31.211/api/curator/voyages/${updatedVoyage.voyage_slug}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedVoyage),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save voyage');
+      }
+
+      // Update local state
+      setVoyages(prevVoyages =>
+        prevVoyages.map(v =>
+          v.voyage_slug === updatedVoyage.voyage_slug ? updatedVoyage : v
+        )
+      );
+
+      console.log('Voyage saved successfully');
+    } catch (error) {
+      console.error('Error saving voyage:', error);
+      alert('Failed to save voyage. Please try again.');
+    }
+  };
+
   // Filter voyages by selected boolean fields
   const filteredVoyages = useMemo(() => {
     if (selectedFilters.size === 0) return voyages;
@@ -193,6 +232,16 @@ export default function VoyageList() {
   useEffect(() => {
     sessionStorage.setItem('voyageListViewMode', viewMode);
   }, [viewMode]);
+
+  // Save expandedView when it changes
+  useEffect(() => {
+    sessionStorage.setItem('voyageListExpandedView', expandedView.toString());
+  }, [expandedView]);
+
+  // Save editMode when it changes
+  useEffect(() => {
+    sessionStorage.setItem('voyageListEditMode', editMode.toString());
+  }, [editMode]);
 
   // Save selected filters when they change
   useEffect(() => {
@@ -311,14 +360,14 @@ export default function VoyageList() {
           </div>
         )}
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 ml-auto flex-wrap">
           <div className="flex rounded-md border border-gray-300 bg-white">
             <button
               type="button"
               onClick={() => setViewMode('list')}
               className={`px-3 py-2 text-sm font-medium rounded-l-md transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-gray-900 text-white' 
+                viewMode === 'list'
+                  ? 'bg-gray-900 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -328,14 +377,49 @@ export default function VoyageList() {
               type="button"
               onClick={() => setViewMode('timeline')}
               className={`px-3 py-2 text-sm font-medium rounded-r-md border-l transition-colors ${
-                viewMode === 'timeline' 
-                  ? 'bg-gray-900 text-white border-gray-900' 
+                viewMode === 'timeline'
+                  ? 'bg-gray-900 text-white border-gray-900'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
               }`}
             >
               Timeline
             </button>
           </div>
+
+          {viewMode === 'list' && (
+            <>
+              <div className="flex rounded-md border border-gray-300 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setExpandedView(!expandedView)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    expandedView
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                  title="Show full details for each voyage"
+                >
+                  {expandedView ? 'Compact' : 'Expanded'}
+                </button>
+              </div>
+
+              <div className="flex rounded-md border border-gray-300 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setEditMode(!editMode)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    editMode
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                  title="Enable inline editing"
+                >
+                  {editMode ? 'Editing' : 'Edit Mode'}
+                </button>
+              </div>
+            </>
+          )}
+
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-gray-300 rounded-md w-48 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
           <button type="submit" className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 font-medium transition-colors">Search</button>
           <button type="button" onClick={clear} className="px-4 py-2 rounded-md bg-white hover:bg-gray-50 text-gray-900 font-medium border border-gray-300 hover:border-gray-400 transition-colors">Clear</button>
@@ -364,7 +448,25 @@ export default function VoyageList() {
                     .filter((v) => v.start_date)
                     .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
                     .map((v) => (
-                      <VoyageCard key={v.voyage_slug} voyage={v} />
+                      expandedView ? (
+                        <VoyageCardExpanded
+                          key={v.voyage_slug}
+                          voyage={v}
+                          editMode={editMode}
+                          onSave={handleVoyageSave}
+                        />
+                      ) : (
+                        <Link
+                          key={v.voyage_slug}
+                          to={`/voyages/${v.voyage_slug}`}
+                          className="block hover:shadow-lg transition-shadow"
+                          onClick={() => {
+                            sessionStorage.setItem('voyageListScrollPosition', window.scrollY.toString());
+                          }}
+                        >
+                          <VoyageCard voyage={v} />
+                        </Link>
+                      )
                     ))}
                 </section>
               ))}
