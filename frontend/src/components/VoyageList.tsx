@@ -57,7 +57,10 @@ export default function VoyageList() {
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [presidents, setPrez] = useState<President[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>(() => {
+    const saved = sessionStorage.getItem('voyageListViewMode');
+    return (saved === 'timeline' ? 'timeline' : 'list') as 'list' | 'timeline';
+  });
 
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -184,6 +187,29 @@ export default function VoyageList() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Save viewMode when it changes
+  useEffect(() => {
+    sessionStorage.setItem('voyageListViewMode', viewMode);
+  }, [viewMode]);
+
+  // Save selected filters when they change
+  useEffect(() => {
+    sessionStorage.setItem('voyageListFilters', JSON.stringify(Array.from(selectedFilters)));
+  }, [selectedFilters]);
+
+  // Restore selected filters on mount
+  useEffect(() => {
+    const savedFilters = sessionStorage.getItem('voyageListFilters');
+    if (savedFilters) {
+      try {
+        const filters = JSON.parse(savedFilters);
+        setSelectedFilters(new Set(filters));
+      } catch (e) {
+        console.error('Failed to restore filters:', e);
+      }
+    }
   }, []);
 
   return (

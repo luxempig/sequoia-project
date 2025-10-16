@@ -21,9 +21,16 @@ interface HorizontalTimelineProps {
 }
 
 const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
-  const [currentYear, setCurrentYear] = useState<string>("");
-  const [currentMonth, setCurrentMonth] = useState<string>("");
-  const [currentDay, setCurrentDay] = useState<string>("");
+  // Initialize from sessionStorage if available
+  const [currentYear, setCurrentYear] = useState<string>(() => {
+    return sessionStorage.getItem('timelineYear') || "";
+  });
+  const [currentMonth, setCurrentMonth] = useState<string>(() => {
+    return sessionStorage.getItem('timelineMonth') || "";
+  });
+  const [currentDay, setCurrentDay] = useState<string>(() => {
+    return sessionStorage.getItem('timelineDay') || "";
+  });
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [mediaData, setMediaData] = useState<{ [voyageSlug: string]: MediaItem[] }>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -70,22 +77,37 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       setTimelineData(organized);
 
-      // Set initial year, month, and day to first available data
+      // Set initial year, month, and day - prefer saved position, fallback to first available
       const years = Object.keys(organized).sort();
-      if (years.length > 0 && !currentYear) {
-        const firstYear = years[0];
-        setCurrentYear(firstYear);
+      if (years.length > 0) {
+        // Check if saved position is valid
+        const savedYear = currentYear;
+        const savedMonth = currentMonth;
+        const savedDay = currentDay;
 
-        const months = Object.keys(organized[firstYear]).sort((a, b) =>
-          dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
-        );
-        if (months.length > 0) {
-          const firstMonth = months[0];
-          setCurrentMonth(firstMonth);
+        const isValidSavedPosition = savedYear &&
+          organized[savedYear] &&
+          savedMonth &&
+          organized[savedYear][savedMonth] &&
+          savedDay &&
+          organized[savedYear][savedMonth][savedDay];
 
-          const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
-          if (days.length > 0) {
-            setCurrentDay(days[0]);
+        if (!isValidSavedPosition && !currentYear) {
+          // No valid saved position, use first available
+          const firstYear = years[0];
+          setCurrentYear(firstYear);
+
+          const months = Object.keys(organized[firstYear]).sort((a, b) =>
+            dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+          );
+          if (months.length > 0) {
+            const firstMonth = months[0];
+            setCurrentMonth(firstMonth);
+
+            const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
+            if (days.length > 0) {
+              setCurrentDay(days[0]);
+            }
           }
         }
       }
@@ -95,25 +117,51 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       // Set initial year, month, and day even if media fetch fails
       const years = Object.keys(organized).sort();
-      if (years.length > 0 && !currentYear) {
-        const firstYear = years[0];
-        setCurrentYear(firstYear);
+      if (years.length > 0) {
+        const savedYear = currentYear;
+        const savedMonth = currentMonth;
+        const savedDay = currentDay;
 
-        const months = Object.keys(organized[firstYear]).sort((a, b) =>
-          dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
-        );
-        if (months.length > 0) {
-          const firstMonth = months[0];
-          setCurrentMonth(firstMonth);
+        const isValidSavedPosition = savedYear &&
+          organized[savedYear] &&
+          savedMonth &&
+          organized[savedYear][savedMonth] &&
+          savedDay &&
+          organized[savedYear][savedMonth][savedDay];
 
-          const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
-          if (days.length > 0) {
-            setCurrentDay(days[0]);
+        if (!isValidSavedPosition && !currentYear) {
+          const firstYear = years[0];
+          setCurrentYear(firstYear);
+
+          const months = Object.keys(organized[firstYear]).sort((a, b) =>
+            dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+          );
+          if (months.length > 0) {
+            const firstMonth = months[0];
+            setCurrentMonth(firstMonth);
+
+            const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
+            if (days.length > 0) {
+              setCurrentDay(days[0]);
+            }
           }
         }
       }
     });
   }, [voyages, currentYear]);
+
+  // Save timeline position whenever it changes
+  useEffect(() => {
+    if (currentYear) sessionStorage.setItem('timelineYear', currentYear);
+  }, [currentYear]);
+
+  useEffect(() => {
+    if (currentMonth) sessionStorage.setItem('timelineMonth', currentMonth);
+  }, [currentMonth]);
+
+  useEffect(() => {
+    if (currentDay) sessionStorage.setItem('timelineDay', currentDay);
+  }, [currentDay]);
 
   // Fetch media for visible voyages
   useEffect(() => {
