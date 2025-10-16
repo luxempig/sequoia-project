@@ -83,9 +83,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     setEditedVoyage(prev => ({ ...prev, [field]: value }));
   };
 
-  const booleanFields = [
+  // Auto-computed fields (has_photo, has_video) - shown but not editable
+  const autoComputedFields = [
     { key: 'has_photo' as keyof Voyage, label: 'Has Photos' },
     { key: 'has_video' as keyof Voyage, label: 'Has Video' },
+  ];
+
+  // Editable boolean fields
+  const booleanFields = [
     { key: 'presidential_use' as keyof Voyage, label: 'Presidential Use' },
     { key: 'has_royalty' as keyof Voyage, label: 'Royalty Present' },
     { key: 'has_foreign_leader' as keyof Voyage, label: 'Foreign Leader Present' },
@@ -99,7 +104,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     { key: 'mention_drinks_wine' as keyof Voyage, label: 'Drinks/Wine' },
   ];
 
-  const activeTags = booleanFields
+  // Combine auto-computed and editable fields for display
+  const allDisplayFields = [...autoComputedFields, ...booleanFields];
+
+  const activeTags = allDisplayFields
     .filter(field => voyage[field.key] === true)
     .map(field => field.label);
 
