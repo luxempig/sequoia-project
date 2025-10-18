@@ -34,12 +34,47 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [mediaData, setMediaData] = useState<{ [voyageSlug: string]: MediaItem[] }>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem('timelineSelectedFilters');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  // Boolean field filter options
+  const filterOptions = [
+    { key: 'has_photo', label: 'Has Photos' },
+    { key: 'has_video', label: 'Has Video' },
+    { key: 'presidential_use', label: 'Presidential Use' },
+    { key: 'has_royalty', label: 'Royalty Present' },
+    { key: 'has_foreign_leader', label: 'Foreign Leader Present' },
+    { key: 'mention_camp_david', label: 'Mentions Camp David' },
+    { key: 'mention_mount_vernon', label: 'Mentions Mount Vernon' },
+    { key: 'mention_captain', label: 'Mentions Captain' },
+    { key: 'mention_crew', label: 'Mentions Crew' },
+    { key: 'mention_rmd', label: 'Mentions RMD' },
+    { key: 'mention_yacht_spin', label: 'Yacht Spin' },
+    { key: 'mention_menu', label: 'Includes Menu Info' },
+    { key: 'mention_drinks_wine', label: 'Mentions Drinks/Wine' },
+  ];
+
+  // Filter voyages by selected attributes
+  const filteredVoyages = voyages.filter(voyage => {
+    if (selectedFilters.size === 0) return true;
+    return Array.from(selectedFilters).every(key =>
+      voyage[key as keyof Voyage] === true
+    );
+  });
+
+  // Save selected filters to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('timelineSelectedFilters', JSON.stringify(Array.from(selectedFilters)));
+  }, [selectedFilters]);
 
   // Organize voyages by year/month/day
   useEffect(() => {
     const organized: TimelineData = {};
 
-    voyages.forEach(voyage => {
+    filteredVoyages.forEach(voyage => {
       if (!voyage.start_date) return;
 
       const date = dayjs(voyage.start_date);
@@ -148,7 +183,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         }
       }
     });
-  }, [voyages]);
+  }, [voyages, selectedFilters, filteredVoyages]);
 
   // Save timeline position whenever it changes
   useEffect(() => {
@@ -354,8 +389,67 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       background: 'linear-gradient(135deg, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%)'
     }}>
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
+
+        {/* Filter Dropdown */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setFilterOpen(!filterOpen)}
+            className="text-sm px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm"
+          >
+            Filter Voyages {selectedFilters.size > 0 && `(${selectedFilters.size})`} ▾
+          </button>
+
+          {filterOpen && (
+            <div className="absolute right-0 z-20 mt-2 w-72 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-96 overflow-y-auto">
+              <div className="p-3 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-gray-900">Voyage Attributes</span>
+                  {selectedFilters.size > 0 && (
+                    <button
+                      onClick={() => setSelectedFilters(new Set())}
+                      className="text-xs text-gray-600 hover:text-gray-900"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Show only voyages with all selected attributes</p>
+              </div>
+              <div className="p-2">
+                {filterOptions.map(({ key, label }) => {
+                  const isSelected = selectedFilters.has(key);
+                  return (
+                    <label
+                      key={key}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          const newFilters = new Set(selectedFilters);
+                          if (e.target.checked) {
+                            newFilters.add(key);
+                          } else {
+                            newFilters.delete(key);
+                          }
+                          setSelectedFilters(newFilters);
+                        }}
+                        className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                      />
+                      <span className="text-sm text-gray-700">
+                        {label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Year Navigation */}

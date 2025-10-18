@@ -199,18 +199,50 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       </div>
 
       {/* Boolean Attributes */}
-      {activeTags.length > 0 && (
-        <div className="mb-4 pb-4 border-b border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Voyage Attributes</h4>
-          <div className="flex flex-wrap gap-2">
-            {activeTags.map((tag, idx) => (
-              <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                {tag}
-              </span>
+      {/* Voyage Attributes */}
+      <div className="mb-4 pb-4 border-b border-gray-200">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Voyage Attributes</h4>
+
+        {isEditing ? (
+          <div className="space-y-2">
+            {/* Auto-computed fields (read-only) */}
+            {autoComputedFields.map(field => (
+              <div key={field.key} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={currentVoyage[field.key] === true}
+                  disabled
+                  className="mr-2 opacity-50 cursor-not-allowed"
+                />
+                <label className="text-sm text-gray-500 italic">{field.label} (auto-computed)</label>
+              </div>
+            ))}
+
+            {/* Editable boolean fields */}
+            {booleanFields.map(field => (
+              <div key={field.key} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={currentVoyage[field.key] === true}
+                  onChange={(e) => updateField(field.key, e.target.checked)}
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">{field.label}</label>
+              </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          activeTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {activeTags.map((tag, idx) => (
+                <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )
+        )}
+      </div>
 
       {/* Summary */}
       {currentVoyage.summary_markdown && (
