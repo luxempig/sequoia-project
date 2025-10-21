@@ -514,23 +514,6 @@ export default function VoyageList() {
                         editMode={editMode}
                         onSave={handleVoyageSave}
                         onDelete={handleVoyageDelete}
-                        onDuplicate={(newSlug) => {
-                          // Duplicate with current voyage slug as source
-                          fetch(`/api/curator/voyages/${v.voyage_slug}/duplicate`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ new_slug: newSlug })
-                          })
-                            .then(res => {
-                              if (!res.ok) throw new Error('Failed to duplicate');
-                              alert('Voyage duplicated successfully!');
-                              window.location.reload();
-                            })
-                            .catch(err => {
-                              console.error(err);
-                              alert('Failed to duplicate voyage');
-                            });
-                        }}
                       />
                     ))}
                 </section>
