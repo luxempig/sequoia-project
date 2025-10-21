@@ -62,10 +62,7 @@ export default function VoyageList() {
     const saved = sessionStorage.getItem('voyageListViewMode');
     return (saved === 'timeline' ? 'timeline' : 'list') as 'list' | 'timeline';
   });
-  const [expandedView, setExpandedView] = useState<boolean>(() => {
-    // Always use expanded view (compact view option hidden)
-    return true;
-  });
+  // Always show expanded view - compact view removed entirely
   const [editMode, setEditMode] = useState<boolean>(() => {
     const saved = sessionStorage.getItem('voyageListEditMode');
     return saved === 'true';
@@ -305,11 +302,6 @@ export default function VoyageList() {
     sessionStorage.setItem('voyageListViewMode', viewMode);
   }, [viewMode]);
 
-  // Save expandedView when it changes
-  useEffect(() => {
-    sessionStorage.setItem('voyageListExpandedView', expandedView.toString());
-  }, [expandedView]);
-
   // Save editMode when it changes
   useEffect(() => {
     sessionStorage.setItem('voyageListEditMode', editMode.toString());
@@ -460,23 +452,6 @@ export default function VoyageList() {
 
           {viewMode === 'list' && (
             <>
-              {/* Compact/Expanded toggle hidden - always using expanded view
-              <div className="flex rounded-md border border-gray-300 bg-white">
-                <button
-                  type="button"
-                  onClick={() => setExpandedView(!expandedView)}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    expandedView
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  title="Show full details for each voyage"
-                >
-                  {expandedView ? 'Compact' : 'Expanded'}
-                </button>
-              </div>
-              */}
-
               <div className="flex rounded-md border border-gray-300 bg-white">
                 <button
                   type="button"
@@ -533,43 +508,30 @@ export default function VoyageList() {
                     .filter((v) => v.start_date)
                     .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
                     .map((v) => (
-                      expandedView ? (
-                        <VoyageCardExpanded
-                          key={v.voyage_slug}
-                          voyage={v}
-                          editMode={editMode}
-                          onSave={handleVoyageSave}
-                          onDelete={handleVoyageDelete}
-                          onDuplicate={(newSlug) => {
-                            // Duplicate with current voyage slug as source
-                            fetch(`http://3.14.31.211/api/curator/voyages/${v.voyage_slug}/duplicate`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ new_slug: newSlug })
+                      <VoyageCardExpanded
+                        key={v.voyage_slug}
+                        voyage={v}
+                        editMode={editMode}
+                        onSave={handleVoyageSave}
+                        onDelete={handleVoyageDelete}
+                        onDuplicate={(newSlug) => {
+                          // Duplicate with current voyage slug as source
+                          fetch(`http://3.14.31.211/api/curator/voyages/${v.voyage_slug}/duplicate`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ new_slug: newSlug })
+                          })
+                            .then(res => {
+                              if (!res.ok) throw new Error('Failed to duplicate');
+                              alert('Voyage duplicated successfully!');
+                              window.location.reload();
                             })
-                              .then(res => {
-                                if (!res.ok) throw new Error('Failed to duplicate');
-                                alert('Voyage duplicated successfully!');
-                                window.location.reload();
-                              })
-                              .catch(err => {
-                                console.error(err);
-                                alert('Failed to duplicate voyage');
-                              });
-                          }}
-                        />
-                      ) : (
-                        <Link
-                          key={v.voyage_slug}
-                          to={`/voyages/${v.voyage_slug}`}
-                          className="block hover:shadow-lg transition-shadow"
-                          onClick={() => {
-                            sessionStorage.setItem('voyageListScrollPosition', window.scrollY.toString());
-                          }}
-                        >
-                          <VoyageCard voyage={v} />
-                        </Link>
-                      )
+                            .catch(err => {
+                              console.error(err);
+                              alert('Failed to duplicate voyage');
+                            });
+                        }}
+                      />
                     ))}
                 </section>
               ))}
