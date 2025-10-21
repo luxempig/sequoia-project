@@ -388,6 +388,79 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     setCurrentDay(voyageDate.format('D'));
   };
 
+  // Navigate to next/previous media
+  const navigateMedia = (direction: 'prev' | 'next') => {
+    // Build chronological list of all dates with media
+    const mediaDates: Array<{ year: string; month: string; day: string; date: dayjs.Dayjs }> = [];
+
+    years.forEach(year => {
+      const yearMonths = Object.keys(timelineData[year]).sort((a, b) =>
+        dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+      );
+
+      yearMonths.forEach(month => {
+        const monthDays = Object.keys(timelineData[year][month]).sort((a, b) => parseInt(a) - parseInt(b));
+
+        monthDays.forEach(day => {
+          const dayData = timelineData[year][month][day];
+          // Only include days that have media
+          if (dayData.media && dayData.media.length > 0) {
+            mediaDates.push({
+              year,
+              month,
+              day,
+              date: dayjs(`${year}-${dayjs().month(dayjs(`${month} 1`).month()).format('MM')}-${day.padStart(2, '0')}`)
+            });
+          }
+        });
+      });
+    });
+
+    // Sort by actual date
+    mediaDates.sort((a, b) => a.date.valueOf() - b.date.valueOf());
+
+    // Find current position
+    const currentIndex = mediaDates.findIndex(d =>
+      d.year === currentYear && d.month === currentMonth && d.day === currentDay
+    );
+
+    if (currentIndex === -1 && mediaDates.length > 0) {
+      // Not on a media date, find nearest
+      const currentDate = dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-${currentDay.padStart(2, '0')}`);
+
+      if (direction === 'next') {
+        const nextMediaIndex = mediaDates.findIndex(d => d.date.isAfter(currentDate));
+        if (nextMediaIndex !== -1) {
+          const target = mediaDates[nextMediaIndex];
+          setCurrentYear(target.year);
+          setCurrentMonth(target.month);
+          setCurrentDay(target.day);
+        }
+      } else {
+        for (let i = mediaDates.length - 1; i >= 0; i--) {
+          if (mediaDates[i].date.isBefore(currentDate)) {
+            const target = mediaDates[i];
+            setCurrentYear(target.year);
+            setCurrentMonth(target.month);
+            setCurrentDay(target.day);
+            break;
+          }
+        }
+      }
+      return;
+    }
+
+    // Navigate to next or previous media date
+    const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    if (targetIndex >= 0 && targetIndex < mediaDates.length) {
+      const target = mediaDates[targetIndex];
+      setCurrentYear(target.year);
+      setCurrentMonth(target.month);
+      setCurrentDay(target.day);
+    }
+  };
+
   if (!currentYear || !currentMonth || !currentDay) {
     return <div className="text-center py-8 text-gray-500">No timeline data available</div>;
   }
@@ -405,77 +478,19 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     <div className="bg-gradient-to-b from-gray-200 to-gray-300 p-6 rounded-lg shadow-lg" style={{
       background: 'linear-gradient(135deg, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%)'
     }}>
-      {/* Header and Filters */}
+      {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-red-700 mb-4" style={{ fontFamily: 'serif' }}>timeline</h2>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 items-end">
-          {/* President/Owner Filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium text-gray-700 mb-1">Owner/President</label>
-            <select
-              value={selectedPresident}
-              onChange={(e) => setSelectedPresident(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white shadow-sm focus:ring-2 focus:ring-gray-400"
-            >
-              <option value="">All Owners/Presidents</option>
-              {presidents
-                .filter((p) => !['reagan-ronald', 'bush-george-w', 'obama-barack', 'post-presidential'].includes(p.president_slug))
-                .map((p) => (
-                  <option key={p.president_slug} value={p.president_slug}>
-                    {p.full_name}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          {/* Start Date Filter */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
-            <input
-              type="date"
-              value={startDateFilter}
-              onChange={(e) => setStartDateFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-gray-400"
-            />
-          </div>
-
-          {/* End Date Filter */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
-            <input
-              type="date"
-              value={endDateFilter}
-              onChange={(e) => setEndDateFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-gray-400"
-            />
-          </div>
-
-          {/* Clear Filters Button */}
-          {(selectedPresident || startDateFilter || endDateFilter) && (
-            <button
-              onClick={() => {
-                setSelectedPresident("");
-                setStartDateFilter("");
-                setEndDateFilter("");
-              }}
-              className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium shadow-sm"
-            >
-              Clear Filters
-            </button>
-          )}
-        </div>
+        <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
       </div>
 
       {/* Year Navigation */}
       <div className="flex items-stretch mb-4 shadow-md">
         <button
-          onClick={() => navigateDay('prev')}
+          onClick={() => navigateVoyage('prev')}
           className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-r border-gray-600 transition-colors text-xs"
-          title="Previous Day"
+          title="Previous Voyage"
         >
-          ← Previous Day
+          ← Previous Voyage
         </button>
 
         <div className="bg-gray-600 text-white px-6 py-2 font-bold text-base tracking-wide">
@@ -492,11 +507,11 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         </div>
 
         <button
-          onClick={() => navigateDay('next')}
+          onClick={() => navigateVoyage('next')}
           className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-l border-gray-600 transition-colors text-xs"
-          title="Next Day"
+          title="Next Voyage"
         >
-          Next Day →
+          Next Voyage →
         </button>
       </div>
 
@@ -679,7 +694,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         </div>
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Voyages */}
       <div className="flex justify-between mt-6">
         <button
           onClick={() => navigateVoyage('prev')}
@@ -695,6 +710,25 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           title="Skip to Next Voyage"
         >
           Next Voyage →
+        </button>
+      </div>
+
+      {/* Navigation Arrows - Media */}
+      <div className="flex justify-between mt-3">
+        <button
+          onClick={() => navigateMedia('prev')}
+          className="px-6 py-3 bg-blue-400 hover:bg-blue-500 text-white font-bold text-lg border border-blue-600 shadow-md transition-colors"
+          title="Skip to Previous Media"
+        >
+          ← Previous Media
+        </button>
+
+        <button
+          onClick={() => navigateMedia('next')}
+          className="px-6 py-3 bg-blue-400 hover:bg-blue-500 text-white font-bold text-lg border border-blue-600 shadow-md transition-colors"
+          title="Skip to Next Media"
+        >
+          Next Media →
         </button>
       </div>
 
