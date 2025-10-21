@@ -32,7 +32,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     return sessionStorage.getItem('timelineDay') || "";
   });
   const [timelineData, setTimelineData] = useState<TimelineData>({});
-  const [mediaData, setMediaData] = useState<{ [voyageSlug: string]: MediaItem[] }>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Timeline-specific filters (separate from list view)
@@ -215,35 +214,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     if (currentDay) sessionStorage.setItem('timelineDay', currentDay);
   }, [currentDay]);
 
-  // Fetch media for visible voyages
-  useEffect(() => {
-    const currentMonthData = timelineData[currentYear]?.[currentMonth];
-    if (!currentMonthData) return;
-
-    const voyageSlugs = Object.values(currentMonthData)
-      .flatMap(dayData => dayData.voyages.map(v => v.voyage_slug));
-
-    Promise.all(
-      voyageSlugs.map(slug =>
-        api.getVoyageMedia(slug).catch(() => [])
-      )
-    ).then(results => {
-      const mediaMap: { [voyageSlug: string]: MediaItem[] } = {};
-      voyageSlugs.forEach((slug, index) => {
-        // Filter to only show Drive/Dropbox media in timeline
-        const allMedia = results[index] || [];
-        const driveDropboxMedia = allMedia.filter(m => {
-          const url = m.url || m.public_derivative_url || m.s3_url || '';
-          return url.includes('drive.google.com') ||
-                 url.includes('dropbox.com') ||
-                 url.includes('s3.amazonaws.com') ||
-                 url.includes('sequoia-');
-        });
-        mediaMap[slug] = driveDropboxMedia;
-      });
-      setMediaData(mediaMap);
-    });
-  }, [timelineData, currentYear, currentMonth]);
+  // No longer needed - we only show media organized by its own date field
 
   const years = Object.keys(timelineData).sort();
   const months = (currentYear && timelineData[currentYear]) ? Object.keys(timelineData[currentYear]).sort((a, b) =>
@@ -336,51 +307,49 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
   // Navigate to next/previous voyage
   const navigateVoyage = (direction: 'prev' | 'next') => {
-    // Get all voyages sorted by date
+    // Get ALL voyages sorted by date (unfiltered - navigate through entire timeline)
     const sortedVoyages = [...voyages]
       .filter(v => v.start_date)
       .sort((a, b) => dayjs(a.start_date).valueOf() - dayjs(b.start_date).valueOf());
 
     if (sortedVoyages.length === 0) return;
 
-    // Find first voyage in current view
-    const currentMonthDays = Object.keys(currentMonthData).sort((a, b) => parseInt(a) - parseInt(b));
+    // Find current position based on current date
+    const currentDate = dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-${currentDay.padStart(2, '0')}`);
+
+    // Find the voyage closest to current date
     let currentVoyageIndex = -1;
 
-    for (const day of currentMonthDays) {
-      const dayVoyages = currentMonthData[day].voyages;
-      if (dayVoyages.length > 0) {
-        const firstVoyage = dayVoyages[0];
-        currentVoyageIndex = sortedVoyages.findIndex(v => v.voyage_slug === firstVoyage.voyage_slug);
-        break;
-      }
-    }
+    // First try to find a voyage on the exact current date
+    currentVoyageIndex = sortedVoyages.findIndex(v =>
+      dayjs(v.start_date).isSame(currentDate, 'day')
+    );
 
     if (currentVoyageIndex === -1) {
-      // No voyage in current view, find nearest
-      const currentDate = dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-01`);
-
+      // No voyage on current date, find nearest depending on direction
       if (direction === 'next') {
-        currentVoyageIndex = sortedVoyages.findIndex(v => dayjs(v.start_date).isAfter(currentDate));
+        // Find first voyage after current date
+        currentVoyageIndex = sortedVoyages.findIndex(v => dayjs(v.start_date).isAfter(currentDate, 'day'));
         if (currentVoyageIndex === -1) return; // No more voyages
+        currentVoyageIndex--; // Step back so we increment to the found one
       } else {
         // Find last voyage before current date
         for (let i = sortedVoyages.length - 1; i >= 0; i--) {
-          if (dayjs(sortedVoyages[i].start_date).isBefore(currentDate)) {
-            currentVoyageIndex = i;
+          if (dayjs(sortedVoyages[i].start_date).isBefore(currentDate, 'day')) {
+            currentVoyageIndex = i + 1; // Step forward so we decrement to the found one
             break;
           }
         }
         if (currentVoyageIndex === -1) return; // No earlier voyages
       }
-    } else {
-      // Navigate to next/prev voyage
-      currentVoyageIndex = direction === 'next' ? currentVoyageIndex + 1 : currentVoyageIndex - 1;
     }
 
-    if (currentVoyageIndex < 0 || currentVoyageIndex >= sortedVoyages.length) return;
+    // Navigate to next or previous
+    const targetIndex = direction === 'next' ? currentVoyageIndex + 1 : currentVoyageIndex - 1;
 
-    const targetVoyage = sortedVoyages[currentVoyageIndex];
+    if (targetIndex < 0 || targetIndex >= sortedVoyages.length) return;
+
+    const targetVoyage = sortedVoyages[targetIndex];
     const voyageDate = dayjs(targetVoyage.start_date);
 
     setCurrentYear(voyageDate.format('YYYY'));
@@ -561,18 +530,8 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           <div>
             {currentMonthData[currentDay] && (() => {
               const dayData = currentMonthData[currentDay];
-              const dayMedia: MediaItem[] = [];
-
-              // Collect media from voyages on this day
-              dayData.voyages.forEach(voyage => {
-                const voyageMedia = mediaData[voyage.voyage_slug] || [];
-                dayMedia.push(...voyageMedia);
-              });
-
-              // Add standalone media for this day (from timeline data)
-              if (dayData.media && dayData.media.length > 0) {
-                dayMedia.push(...dayData.media);
-              }
+              // Only show media organized by its own date field (not voyage date)
+              const dayMedia = dayData.media || [];
 
               return (
                 <div className="min-h-36 p-4 bg-gray-100">
@@ -606,23 +565,29 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                                 className="w-full h-20 object-cover"
                                 loading="lazy"
                                 onError={(e) => {
+                                  // Prevent repeated error handling
+                                  const img = e.currentTarget;
+                                  if (img.dataset.errorHandled === 'true') return;
+                                  img.dataset.errorHandled = 'true';
+
                                   // Hide image on error and show fallback based on media type
-                                  e.currentTarget.style.display = 'none';
-                                  const parent = e.currentTarget.parentElement;
-                                  if (parent) {
+                                  img.style.display = 'none';
+                                  const parent = img.parentElement;
+                                  if (parent && !parent.querySelector('.error-fallback')) {
                                     const fallback = document.createElement('div');
+                                    fallback.classList.add('error-fallback');
                                     const type = media.media_type?.toLowerCase();
                                     if (type === 'pdf') {
-                                      fallback.className = 'w-full h-20 bg-red-50 border-2 border-red-200 flex flex-col items-center justify-center text-red-600 text-xs font-medium';
+                                      fallback.className = 'error-fallback w-full h-20 bg-red-50 border-2 border-red-200 flex flex-col items-center justify-center text-red-600 text-xs font-medium';
                                       fallback.innerHTML = '<div class="text-2xl mb-1">📄</div><div>PDF Document</div>';
                                     } else if (type === 'video') {
-                                      fallback.className = 'w-full h-20 bg-gray-800 flex flex-col items-center justify-center text-white text-xs font-medium';
+                                      fallback.className = 'error-fallback w-full h-20 bg-gray-800 flex flex-col items-center justify-center text-white text-xs font-medium';
                                       fallback.innerHTML = '<div class="text-2xl mb-1">▶️</div><div>Video</div>';
                                     } else if (type === 'audio') {
-                                      fallback.className = 'w-full h-20 bg-blue-50 border-2 border-blue-200 flex flex-col items-center justify-center text-blue-600 text-xs font-medium';
+                                      fallback.className = 'error-fallback w-full h-20 bg-blue-50 border-2 border-blue-200 flex flex-col items-center justify-center text-blue-600 text-xs font-medium';
                                       fallback.innerHTML = '<div class="text-2xl mb-1">🔊</div><div>Audio</div>';
                                     } else {
-                                      fallback.className = 'w-full h-20 bg-gray-100 border-2 border-gray-300 flex flex-col items-center justify-center text-gray-600 text-xs font-medium';
+                                      fallback.className = 'error-fallback w-full h-20 bg-gray-100 border-2 border-gray-300 flex flex-col items-center justify-center text-gray-600 text-xs font-medium';
                                       fallback.innerHTML = '<div class="text-2xl mb-1">📎</div><div>Document</div>';
                                     }
                                     parent.insertBefore(fallback, parent.firstChild);
