@@ -9,7 +9,14 @@ const VoyageEditor: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [presidents, setPresidents] = useState<President[]>([]);
   const [showNewPresidentModal, setShowNewPresidentModal] = useState(false);
-  const [newPresidentName, setNewPresidentName] = useState("");
+  const [newPresidentData, setNewPresidentData] = useState({
+    full_name: '',
+    start_year: '',
+    end_year: '',
+    birth_year: '',
+    death_year: '',
+    wikipedia_url: '',
+  });
 
   // Initialize with blank voyage
   const [voyage, setVoyage] = useState<Partial<Voyage>>({
@@ -51,8 +58,13 @@ const VoyageEditor: React.FC = () => {
   };
 
   const handleCreateNewPresident = async () => {
-    if (!newPresidentName.trim()) {
+    if (!newPresidentData.full_name.trim()) {
       alert('Please enter a full name');
+      return;
+    }
+
+    if (!newPresidentData.start_year) {
+      alert('Please enter the start year of presidency/ownership');
       return;
     }
 
@@ -62,12 +74,12 @@ const VoyageEditor: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           person_slug: 'auto', // Auto-generate from name
-          full_name: newPresidentName.trim(),
+          full_name: newPresidentData.full_name.trim(),
           role_title: 'President',
           organization: null,
-          birth_year: null,
-          death_year: null,
-          wikipedia_url: null,
+          birth_year: newPresidentData.birth_year ? parseInt(newPresidentData.birth_year) : null,
+          death_year: newPresidentData.death_year ? parseInt(newPresidentData.death_year) : null,
+          wikipedia_url: newPresidentData.wikipedia_url.trim() || null,
           notes_internal: null,
           tags: null
         })
@@ -75,23 +87,53 @@ const VoyageEditor: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Failed to create president');
+        throw new Error(error.detail || 'Failed to create president/owner');
       }
 
-      const newPresident = await response.json();
+      const newPerson = await response.json();
+
+      // Create president entry with term dates
+      const presidentResponse = await fetch('/api/curator/presidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          president_slug: newPerson.person_slug,
+          person_slug: newPerson.person_slug,
+          start_year: parseInt(newPresidentData.start_year),
+          end_year: newPresidentData.end_year ? parseInt(newPresidentData.end_year) : null,
+        })
+      });
+
+      if (!presidentResponse.ok) {
+        throw new Error('Failed to create president/owner entry');
+      }
+
+      const newPresident = await presidentResponse.json();
 
       // Add to presidents list and select it
-      setPresidents(prev => [...prev, newPresident]);
-      updateField('president_slug_from_voyage', newPresident.person_slug);
+      setPresidents(prev => [...prev, {
+        ...newPresident,
+        full_name: newPresidentData.full_name,
+        birth_year: newPresidentData.birth_year ? parseInt(newPresidentData.birth_year) : null,
+        death_year: newPresidentData.death_year ? parseInt(newPresidentData.death_year) : null,
+      }]);
+      updateField('president_slug_from_voyage', newPresident.president_slug);
 
       // Close modal and reset
       setShowNewPresidentModal(false);
-      setNewPresidentName("");
+      setNewPresidentData({
+        full_name: '',
+        start_year: '',
+        end_year: '',
+        birth_year: '',
+        death_year: '',
+        wikipedia_url: '',
+      });
 
-      alert(`President ${newPresidentName} created successfully!`);
+      alert(`President/Owner ${newPresidentData.full_name} created successfully!`);
     } catch (error) {
       console.error('Create president failed:', error);
-      alert(`Failed to create president: ${error}`);
+      alert(`Failed to create president/owner: ${error}`);
     }
   };
 
@@ -249,7 +291,7 @@ const VoyageEditor: React.FC = () => {
               onClick={() => setShowNewPresidentModal(true)}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium whitespace-nowrap"
             >
-              + New President
+              + New President/Owner
             </button>
           </div>
         </div>
@@ -434,15 +476,91 @@ const VoyageEditor: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    value={newPresidentName}
-                    onChange={(e) => setNewPresidentName(e.target.value)}
+                    value={newPresidentData.full_name}
+                    onChange={(e) => setNewPresidentData({ ...newPresidentData, full_name: e.target.value })}
                     className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., Franklin D. Roosevelt"
-                    onKeyPress={(e) => e.key === 'Enter' && handleCreateNewPresident()}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     The system will automatically generate a unique ID from the name.
                   </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Year of Term <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={newPresidentData.start_year}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, start_year: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 1933"
+                      min="1600"
+                      max="2100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      End Year of Term
+                    </label>
+                    <input
+                      type="number"
+                      value={newPresidentData.end_year}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, end_year: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 1945"
+                      min="1600"
+                      max="2100"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Birth Year
+                    </label>
+                    <input
+                      type="number"
+                      value={newPresidentData.birth_year}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, birth_year: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 1882"
+                      min="1600"
+                      max="2100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Death Year
+                    </label>
+                    <input
+                      type="number"
+                      value={newPresidentData.death_year}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, death_year: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 1945"
+                      min="1600"
+                      max="2100"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Wikipedia URL
+                  </label>
+                  <input
+                    type="url"
+                    value={newPresidentData.wikipedia_url}
+                    onChange={(e) => setNewPresidentData({ ...newPresidentData, wikipedia_url: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://en.wikipedia.org/wiki/..."
+                  />
                 </div>
               </div>
             </div>
@@ -451,15 +569,15 @@ const VoyageEditor: React.FC = () => {
             <div className="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse border-t border-gray-200">
               <button
                 type="button"
-                disabled={!newPresidentName.trim()}
+                disabled={!newPresidentData.full_name.trim() || !newPresidentData.start_year}
                 onClick={handleCreateNewPresident}
                 className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm ${
-                  !newPresidentName.trim()
+                  !newPresidentData.full_name.trim() || !newPresidentData.start_year
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
                 }`}
               >
-                Create President
+                Create President/Owner
               </button>
               <button
                 type="button"
