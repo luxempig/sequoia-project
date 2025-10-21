@@ -63,8 +63,8 @@ export default function VoyageList() {
     return (saved === 'timeline' ? 'timeline' : 'list') as 'list' | 'timeline';
   });
   const [expandedView, setExpandedView] = useState<boolean>(() => {
-    const saved = sessionStorage.getItem('voyageListExpandedView');
-    return saved === 'true';
+    // Always use expanded view (compact view option hidden)
+    return true;
   });
   const [editMode, setEditMode] = useState<boolean>(() => {
     const saved = sessionStorage.getItem('voyageListEditMode');
@@ -388,6 +388,7 @@ export default function VoyageList() {
 
           {viewMode === 'list' && (
             <>
+              {/* Compact/Expanded toggle hidden - always using expanded view
               <div className="flex rounded-md border border-gray-300 bg-white">
                 <button
                   type="button"
@@ -402,6 +403,7 @@ export default function VoyageList() {
                   {expandedView ? 'Compact' : 'Expanded'}
                 </button>
               </div>
+              */}
 
               <div className="flex rounded-md border border-gray-300 bg-white">
                 <button
