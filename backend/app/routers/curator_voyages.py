@@ -160,8 +160,8 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
     """Create a new voyage"""
     try:
         with db_cursor() as cur:
-            # Auto-generate slug if not provided
-            if not voyage.voyage_slug:
+            # Auto-generate slug if not provided or empty string
+            if not voyage.voyage_slug or voyage.voyage_slug.strip() == '':
                 voyage.voyage_slug = generate_voyage_slug(
                     voyage.president_slug_from_voyage,
                     voyage.start_date,
