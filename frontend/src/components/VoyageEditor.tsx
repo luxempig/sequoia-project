@@ -92,32 +92,21 @@ const VoyageEditor: React.FC = () => {
 
       const newPerson = await response.json();
 
-      // Create president entry with term dates
-      const presidentResponse = await fetch('/api/curator/presidents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          president_slug: newPerson.person_slug,
-          person_slug: newPerson.person_slug,
-          start_year: parseInt(newPresidentData.start_year),
-          end_year: newPresidentData.end_year ? parseInt(newPresidentData.end_year) : null,
-        })
-      });
-
-      if (!presidentResponse.ok) {
-        throw new Error('Failed to create president/owner entry');
-      }
-
-      const newPresident = await presidentResponse.json();
-
-      // Add to presidents list and select it
-      setPresidents(prev => [...prev, {
-        ...newPresident,
+      // For now, use person_slug as president_slug directly
+      // TODO: Create proper president entry with term dates via /api/curator/presidents
+      const tempPresident = {
+        president_slug: newPerson.person_slug,
+        person_slug: newPerson.person_slug,
         full_name: newPresidentData.full_name,
+        start_year: parseInt(newPresidentData.start_year),
+        end_year: newPresidentData.end_year ? parseInt(newPresidentData.end_year) : null,
         birth_year: newPresidentData.birth_year ? parseInt(newPresidentData.birth_year) : null,
         death_year: newPresidentData.death_year ? parseInt(newPresidentData.death_year) : null,
-      }]);
-      updateField('president_slug_from_voyage', newPresident.president_slug);
+      };
+
+      // Add to presidents list and select it
+      setPresidents(prev => [...prev, tempPresident]);
+      updateField('president_slug_from_voyage', newPerson.person_slug);
 
       // Close modal and reset
       setShowNewPresidentModal(false);
