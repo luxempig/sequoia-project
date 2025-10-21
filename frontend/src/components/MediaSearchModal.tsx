@@ -145,12 +145,12 @@ const MediaSearchModal: React.FC<MediaSearchModalProps> = ({
             ) : results.length === 0 ? (
               <div className="text-center py-8 text-gray-500">No media found</div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {results.map((media) => (
                   <div
                     key={media.media_slug}
                     onClick={() => setSelectedMedia(media)}
-                    className={`cursor-pointer border-2 rounded-lg p-2 transition-all ${
+                    className={`cursor-pointer border-2 rounded-lg p-3 transition-all min-h-[280px] ${
                       selectedMedia?.media_slug === media.media_slug
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 hover:border-gray-300"
@@ -166,10 +166,16 @@ const MediaSearchModal: React.FC<MediaSearchModalProps> = ({
                     </div>
 
                     {/* Info */}
-                    <div className="text-xs">
-                      <p className="font-medium text-gray-900 truncate">{media.title || "Untitled"}</p>
+                    <div className="text-xs space-y-1">
+                      <p className="font-medium text-gray-900 truncate" title={media.title}>{media.title || "Untitled"}</p>
                       <p className="text-gray-500 truncate">{media.media_type}</p>
-                      {media.date && <p className="text-gray-400">{media.date}</p>}
+                      {media.date && <p className="text-gray-600 font-semibold">{media.date}</p>}
+                      {media.credit && <p className="text-gray-500 truncate" title={media.credit}>Credit: {media.credit}</p>}
+                      {media.description_markdown && (
+                        <p className="text-gray-400 line-clamp-2" title={media.description_markdown}>
+                          {media.description_markdown}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -192,8 +198,11 @@ const MediaSearchModal: React.FC<MediaSearchModalProps> = ({
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{selectedMedia.title || "Untitled"}</p>
                   <p className="text-sm text-gray-500">Type: {selectedMedia.media_type}</p>
-                  {selectedMedia.date && <p className="text-sm text-gray-500">Date: {selectedMedia.date}</p>}
+                  {selectedMedia.date && <p className="text-sm text-gray-700 font-semibold">Date: {selectedMedia.date}</p>}
                   {selectedMedia.credit && <p className="text-sm text-gray-500">Credit: {selectedMedia.credit}</p>}
+                  {selectedMedia.description_markdown && (
+                    <p className="text-sm text-gray-600 mt-2">{selectedMedia.description_markdown}</p>
+                  )}
                 </div>
               </div>
             </div>
