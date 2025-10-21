@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { Voyage, MediaItem, President } from "../types";
@@ -52,27 +52,29 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     api.listPresidents().then(setPresidents).catch(() => setPresidents([]));
   }, []);
 
-  // Filter voyages by president and date range
-  const filteredVoyages = voyages.filter(voyage => {
-    // President filter
-    if (selectedPresident && voyage.president_slug_from_voyage !== selectedPresident) {
-      return false;
-    }
-
-    // Date range filters
-    if (startDateFilter && voyage.start_date) {
-      if (dayjs(voyage.start_date).isBefore(dayjs(startDateFilter), 'day')) {
+  // Filter voyages by president and date range (memoized to prevent infinite loops)
+  const filteredVoyages = useMemo(() => {
+    return voyages.filter(voyage => {
+      // President filter
+      if (selectedPresident && voyage.president_slug_from_voyage !== selectedPresident) {
         return false;
       }
-    }
-    if (endDateFilter && voyage.start_date) {
-      if (dayjs(voyage.start_date).isAfter(dayjs(endDateFilter), 'day')) {
-        return false;
-      }
-    }
 
-    return true;
-  });
+      // Date range filters
+      if (startDateFilter && voyage.start_date) {
+        if (dayjs(voyage.start_date).isBefore(dayjs(startDateFilter), 'day')) {
+          return false;
+        }
+      }
+      if (endDateFilter && voyage.start_date) {
+        if (dayjs(voyage.start_date).isAfter(dayjs(endDateFilter), 'day')) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [voyages, selectedPresident, startDateFilter, endDateFilter]);
 
   // Save filters to sessionStorage
   useEffect(() => {
