@@ -11,7 +11,6 @@ interface VoyageCardExpandedProps {
   editMode: boolean;
   onSave?: (voyage: Voyage) => void;
   onDelete?: (voyageSlug: string) => void;
-  onDuplicate?: (voyageSlug: string) => void;
 }
 
 const formatDate = (iso: string | null | undefined) => {
@@ -271,15 +270,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
-  // Duplicate voyage
-  const handleDuplicate = () => {
-    const newSlug = prompt(`Enter slug for duplicated voyage:`, `${voyage.voyage_slug}-copy`);
-    if (!newSlug) return;
-    if (onDuplicate) {
-      onDuplicate(newSlug);
-    }
-  };
-
   // Auto-computed fields (has_photo, has_video) - shown but not editable
   const autoComputedFields = [
     { key: 'has_photo' as keyof Voyage, label: 'Has Photos' },
@@ -355,14 +345,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 >
                   Edit
                 </button>
-                {onDuplicate && (
-                  <button
-                    onClick={handleDuplicate}
-                    className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
-                  >
-                    Duplicate
-                  </button>
-                )}
                 {onDelete && (
                   <button
                     onClick={handleDelete}
