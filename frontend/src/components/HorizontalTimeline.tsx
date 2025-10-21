@@ -115,9 +115,9 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         const month = date.format('MMMM');
         const day = date.format('D');
 
-        // Only include media from sequoia-canonical bucket
-        const s3Url = media.s3_url || '';
-        if (!s3Url.includes('sequoia-canonical')) return;
+        // Include media with valid URLs (s3, drive, dropbox)
+        const url = media.s3_url || media.url || media.public_derivative_url || '';
+        if (!url) return; // Skip media without any URL
 
         if (!organized[year]) organized[year] = {};
         if (!organized[year][month]) organized[year][month] = {};
