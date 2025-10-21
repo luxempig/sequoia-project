@@ -44,6 +44,7 @@ class VoyagePassengerLink(BaseModel):
     voyage_slug: str
     capacity_role: Optional[str] = Field(None, description="Role on this specific voyage (e.g., 'Guest', 'Admiral')")
     notes: Optional[str] = Field(None, description="Notes specific to this person on this voyage")
+    is_crew: Optional[bool] = Field(False, description="Is this person crew?")
 
 
 def generate_person_slug(full_name: str) -> str:
@@ -211,11 +212,11 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
 
             # Insert or update the link
             cur.execute("""
-                INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, capacity_role, notes)
-                VALUES (%(voyage_slug)s, %(person_slug)s, %(capacity_role)s, %(notes)s)
+                INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, capacity_role, notes, is_crew)
+                VALUES (%(voyage_slug)s, %(person_slug)s, %(capacity_role)s, %(notes)s, %(is_crew)s)
                 ON CONFLICT (voyage_slug, person_slug)
                 DO UPDATE SET
-                    capacity_role = EXCLUDED.capacity_role,
+                    capacity_role = EXCLUDED.capacity_role, is_crew = EXCLUDED.is_crew,
                     notes = EXCLUDED.notes
             """, link.model_dump())
 
