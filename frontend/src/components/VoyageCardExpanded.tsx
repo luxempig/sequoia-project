@@ -331,12 +331,29 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       </div>
 
       {/* Type */}
-      {currentVoyage.voyage_type && (
+      {isEditing ? (
         <div className="mb-4">
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-medium capitalize text-sm">
-            {currentVoyage.voyage_type}
-          </span>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Voyage Type</label>
+          <select
+            value={currentVoyage.voyage_type || ''}
+            onChange={(e) => updateField('voyage_type', e.target.value || null)}
+            className="border rounded px-3 py-1 text-sm"
+          >
+            <option value="">-- None --</option>
+            <option value="official">Official</option>
+            <option value="private">Private</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="other">Other</option>
+          </select>
         </div>
+      ) : (
+        currentVoyage.voyage_type && currentVoyage.voyage_type.toLowerCase() !== 'unknown' && (
+          <div className="mb-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 font-medium capitalize text-sm">
+              {currentVoyage.voyage_type}
+            </span>
+          </div>
+        )
       )}
 
       {/* Date and Time Information */}
