@@ -166,7 +166,7 @@ export default function VoyageList() {
   const handleVoyageSave = async (updatedVoyage: Voyage) => {
     try {
       // Call backend API to update voyage
-      const response = await fetch(`http://3.14.31.211/api/curator/voyages/${updatedVoyage.voyage_slug}`, {
+      const response = await fetch(`/api/curator/voyages/${updatedVoyage.voyage_slug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ export default function VoyageList() {
   // Handle deleting voyage
   const handleVoyageDelete = async (voyageSlug: string) => {
     try {
-      const response = await fetch(`http://3.14.31.211/api/curator/voyages/${voyageSlug}`, {
+      const response = await fetch(`/api/curator/voyages/${voyageSlug}`, {
         method: 'DELETE'
       });
 
@@ -241,7 +241,7 @@ export default function VoyageList() {
     };
 
     try {
-      const response = await fetch('http://3.14.31.211/api/curator/voyages', {
+      const response = await fetch('/api/curator/voyages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -516,7 +516,7 @@ export default function VoyageList() {
                         onDelete={handleVoyageDelete}
                         onDuplicate={(newSlug) => {
                           // Duplicate with current voyage slug as source
-                          fetch(`http://3.14.31.211/api/curator/voyages/${v.voyage_slug}/duplicate`, {
+                          fetch(`/api/curator/voyages/${v.voyage_slug}/duplicate`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ new_slug: newSlug })
