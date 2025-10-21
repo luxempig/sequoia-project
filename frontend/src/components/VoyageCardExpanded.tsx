@@ -46,7 +46,7 @@ const stripMarkdown = (text: string | null | undefined) => {
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
 };
 
-const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMode, onSave, onDelete, onDuplicate }) => {
+const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMode, onSave, onDelete }) => {
   const [editedVoyage, setEditedVoyage] = useState<Voyage>(voyage);
   const [isEditing, setIsEditing] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
