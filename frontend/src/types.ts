@@ -72,6 +72,7 @@ export interface Person {
   // From voyage_passengers join (when fetched via by-voyage)
   capacity_role?: string | null;
   voyage_notes?: string | null;
+  is_crew?: boolean | null;
 
   // Legacy fields for backward compatibility
   role_title?: string | null;

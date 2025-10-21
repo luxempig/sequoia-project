@@ -150,6 +150,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
     if (!role) return;
 
+    const bioUrl = prompt(`Enter bio/Wikipedia URL for ${fullName} (optional):`, "");
+    const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
+
     try {
       // Create the person
       const createResponse = await fetch('/api/curator/people', {
@@ -162,7 +165,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           organization: null,
           birth_year: null,
           death_year: null,
-          wikipedia_url: null,
+          wikipedia_url: bioUrl.trim() || null,
           notes_internal: null,
           tags: null
         })
@@ -182,7 +185,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         body: JSON.stringify({
           person_slug: newPerson.person_slug,
           voyage_slug: voyage.voyage_slug,
-          capacity_role: role
+          capacity_role: role,
+          is_crew: isCrew,
+          notes: null
         })
       });
 
@@ -205,6 +210,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
     if (!role) return;
 
+    const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
+
     try {
       const response = await fetch('/api/curator/people/link-to-voyage', {
         method: 'POST',
@@ -212,7 +219,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         body: JSON.stringify({
           person_slug: personSlug,
           voyage_slug: voyage.voyage_slug,
-          capacity_role: role
+          capacity_role: role,
+          is_crew: isCrew,
+          notes: null
         })
       });
 
@@ -683,10 +692,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           <div className="space-y-6">
             {/* Crew Section */}
             {(() => {
-              const crew = people.filter(p => {
-                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
-                return role.includes('crew') || role.includes('captain') || role.includes('officer');
-              });
+              const crew = people.filter(p => p.is_crew === true);
               return crew.length > 0 ? (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Crew ({crew.length})</h4>
@@ -720,10 +726,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
             {/* Passengers & Guests Section */}
             {(() => {
-              const passengers = people.filter(p => {
-                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
-                return !(role.includes('crew') || role.includes('captain') || role.includes('officer'));
-              });
+              const passengers = people.filter(p => p.is_crew !== true);
               return passengers.length > 0 ? (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Passengers & Guests ({passengers.length})</h4>
