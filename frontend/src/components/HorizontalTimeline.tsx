@@ -33,6 +33,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   });
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [isLoadingTimeline, setIsLoadingTimeline] = useState(true);
 
   // Timeline-specific filters (separate from list view)
   const [selectedPresident, setSelectedPresident] = useState<string>(() => {
@@ -88,6 +89,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
   // Organize voyages by year/month/day
   useEffect(() => {
+    setIsLoadingTimeline(true);
     const organized: TimelineData = {};
 
     filteredVoyages.forEach(voyage => {
@@ -127,6 +129,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       });
 
       setTimelineData(organized);
+      setIsLoadingTimeline(false);
 
       // Set initial year, month, and day - prefer saved position, fallback to first available
       const years = Object.keys(organized).sort();
@@ -165,6 +168,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     }).catch(err => {
       console.error('Failed to fetch media for timeline:', err);
       setTimelineData(organized);
+      setIsLoadingTimeline(false);
 
       // Set initial year, month, and day even if media fetch fails
       const years = Object.keys(organized).sort();
@@ -437,6 +441,15 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       setCurrentDay(target.day);
     }
   };
+
+  if (isLoadingTimeline) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
+        <p className="text-gray-600">Loading timeline...</p>
+      </div>
+    );
+  }
 
   if (!currentYear || !currentMonth || !currentDay) {
     return <div className="text-center py-8 text-gray-500">No timeline data available</div>;
