@@ -144,6 +144,64 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
+  const createAndLinkNewPerson = async () => {
+    const fullName = prompt("Enter person's full name:");
+    if (!fullName || !fullName.trim()) return;
+
+    const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
+    if (!role) return;
+
+    try {
+      // Create the person
+      const createResponse = await fetch('/api/curator/people', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: 'auto', // Auto-generate from name
+          full_name: fullName.trim(),
+          role_title: role,
+          organization: null,
+          birth_year: null,
+          death_year: null,
+          wikipedia_url: null,
+          notes_internal: null,
+          tags: null
+        })
+      });
+
+      if (!createResponse.ok) {
+        const error = await createResponse.json();
+        throw new Error(error.detail || 'Failed to create person');
+      }
+
+      const newPerson = await createResponse.json();
+
+      // Link to voyage
+      const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: newPerson.person_slug,
+          voyage_slug: voyage.voyage_slug,
+          capacity_role: role
+        })
+      });
+
+      if (linkResponse.ok) {
+        alert(`${fullName} created and linked successfully!`);
+        setPersonSearch("");
+        setSearchResults([]);
+        // Reload people
+        api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+      } else {
+        alert(`Person created but failed to link to voyage`);
+      }
+    } catch (error) {
+      console.error('Create/link failed:', error);
+      alert(`Failed to create person: ${error}`);
+    }
+  };
+
   const linkPerson = async (personSlug: string, fullName: string) => {
     const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
     if (!role) return;
@@ -515,10 +573,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         </div>
       )}
 
-      {/* Source URLs */}
+      {/* Sources */}
       {isEditing || (currentVoyage.source_urls && currentVoyage.source_urls.length > 0) ? (
         <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Source URLs</h4>
+          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Sources</h4>
           {isEditing ? (
             <div className="space-y-2">
               {sourceUrls.map((url, index) => (
@@ -543,7 +601,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   value={newSourceUrl}
                   onChange={(e) => setNewSourceUrl(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
-                  placeholder="https://..."
+                  placeholder="URL or source name (e.g., National Archives or https://...)"
                   className="flex-1 border rounded px-2 py-1 text-xs"
                 />
                 <button
@@ -556,22 +614,36 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             </div>
           ) : (
             <ul className="space-y-1">
-              {currentVoyage.source_urls?.map((source, index) => (
-                <li key={index} className="text-sm text-gray-700">
-                  {source.startsWith('http') ? (
-                    <a
-                      href={source}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline break-all"
-                    >
-                      {source}
-                    </a>
-                  ) : (
-                    <span>• {source}</span>
-                  )}
-                </li>
-              ))}
+              {currentVoyage.source_urls?.map((source, index) => {
+                const isUrl = source.startsWith('http://') || source.startsWith('https://');
+                if (isUrl) {
+                  // Extract readable name from URL (domain or path)
+                  let displayName = source;
+                  try {
+                    const url = new URL(source);
+                    displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
+                  } catch {}
+
+                  return (
+                    <li key={index} className="text-sm">
+                      <a
+                        href={source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                      >
+                        🔗 {displayName}
+                      </a>
+                    </li>
+                  );
+                } else {
+                  return (
+                    <li key={index} className="text-sm text-gray-700">
+                      • {source}
+                    </li>
+                  );
+                }
+              })}
             </ul>
           )}
         </div>
@@ -584,17 +656,25 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         {/* Person Search (Edit Mode Only) */}
         {isEditing && (
           <div className="mb-4 bg-blue-50 p-3 rounded">
-            <label className="block text-xs font-medium text-gray-700 mb-1">Search & Link People</label>
-            <input
-              type="text"
-              value={personSearch}
-              onChange={(e) => {
-                setPersonSearch(e.target.value);
-                searchPeople(e.target.value);
-              }}
-              placeholder="Search by name..."
-              className="w-full border rounded px-2 py-1 text-sm"
-            />
+            <label className="block text-xs font-medium text-gray-700 mb-1">Add People to Voyage</label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={personSearch}
+                onChange={(e) => {
+                  setPersonSearch(e.target.value);
+                  searchPeople(e.target.value);
+                }}
+                placeholder="Search by name..."
+                className="flex-1 border rounded px-2 py-1 text-sm"
+              />
+              <button
+                onClick={createAndLinkNewPerson}
+                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap"
+              >
+                + Create New
+              </button>
+            </div>
             {searching && <p className="text-xs text-gray-500 mt-1">Searching...</p>}
             {searchResults.length > 0 && (
               <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
