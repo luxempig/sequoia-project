@@ -61,6 +61,7 @@ class VoyageMediaLink(BaseModel):
     voyage_slug: str
     sort_order: Optional[int] = Field(None, description="Display order (lower numbers first)")
     notes: Optional[str] = Field(None, description="Notes specific to this media on this voyage")
+    media_category: Optional[str] = Field('general', description="Category: general, source, or additional_source")
 
 
 @router.post("/", response_model=Dict[str, Any])
@@ -243,12 +244,13 @@ def link_media_to_voyage(link: VoyageMediaLink) -> Dict[str, str]:
 
             # Insert or update the link
             cur.execute("""
-                INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, sort_order, notes)
-                VALUES (%(voyage_slug)s, %(media_slug)s, %(sort_order)s, %(notes)s)
+                INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, sort_order, notes, media_category)
+                VALUES (%(voyage_slug)s, %(media_slug)s, %(sort_order)s, %(notes)s, %(media_category)s)
                 ON CONFLICT (voyage_slug, media_slug)
                 DO UPDATE SET
                     sort_order = EXCLUDED.sort_order,
-                    notes = EXCLUDED.notes
+                    notes = EXCLUDED.notes,
+                    media_category = EXCLUDED.media_category
             """, link.model_dump())
 
             LOG.info(f"Linked media {link.media_slug} to voyage {link.voyage_slug}")
@@ -308,6 +310,7 @@ async def upload_media_file(
     credit: Optional[str] = Form(None),
     date: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    media_category: Optional[str] = Form('general'),
     bucket: str = Form("sequoia-canonical")
 ) -> Dict[str, Any]:
     """
@@ -428,10 +431,10 @@ async def upload_media_file(
             # Link to voyage if provided
             if voyage_slug:
                 cur.execute("""
-                    INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, sort_order)
-                    VALUES (%s, %s, 999)
+                    INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, sort_order, media_category)
+                    VALUES (%s, %s, 999, %s)
                     ON CONFLICT (voyage_slug, media_slug) DO NOTHING
-                """, (voyage_slug, media_slug))
+                """, (voyage_slug, media_slug, media_category))
 
         LOG.info(f"Uploaded media: {media_slug} ({file_size} bytes) to {s3_url}")
 
