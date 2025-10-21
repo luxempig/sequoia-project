@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import { Voyage, Person, MediaItem } from "../types";
 import { api } from "../api";
 import MediaGallery from "./MediaGallery";
+import MediaSearchModal from "./MediaSearchModal";
+import MediaUploadDialog from "./MediaUploadDialog";
 
 interface VoyageCardExpandedProps {
   voyage: Voyage;
@@ -62,12 +64,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [searchResults, setSearchResults] = useState<Person[]>([]);
   const [searching, setSearching] = useState(false);
 
-  // Media upload state
-  const [uploadingMedia, setUploadingMedia] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [mediaTitle, setMediaTitle] = useState("");
-  const [mediaCredit, setMediaCredit] = useState("");
-  const [mediaDate, setMediaDate] = useState("");
+  // Media modal state
+  const [showMediaSearch, setShowMediaSearch] = useState(false);
+  const [showMediaUpload, setShowMediaUpload] = useState(false);
 
   // Load people and media when component mounts
   useEffect(() => {
@@ -173,45 +172,35 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
-  // Media upload
-  const uploadMedia = async () => {
-    if (!selectedFile) return;
-
-    setUploadingMedia(true);
+  // Media workflow handlers
+  const handleMediaLinkFromSearch = async (media: any) => {
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('media_slug', `${voyage.voyage_slug}-${Date.now()}`);
-      formData.append('voyage_slug', voyage.voyage_slug);
-      formData.append('title', mediaTitle || selectedFile.name);
-      formData.append('credit', mediaCredit);
-      if (mediaDate) {
-        formData.append('date', mediaDate);
-      }
-
-      const response = await fetch('/api/curator/media/upload', {
+      const response = await fetch('/api/curator/media/link-to-voyage', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_slug: media.media_slug,
+          voyage_slug: voyage.voyage_slug,
+          sort_order: null,
+          notes: ""
+        })
       });
 
       if (response.ok) {
-        alert('Media uploaded successfully!');
-        setSelectedFile(null);
-        setMediaTitle("");
-        setMediaCredit("");
-        setMediaDate("");
         // Reload media
         api.getVoyageMedia(voyage.voyage_slug).then(setMedia);
       } else {
-        const error = await response.json();
-        alert(`Upload failed: ${error.detail || 'Unknown error'}`);
+        alert('Failed to link media to voyage');
       }
     } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed');
-    } finally {
-      setUploadingMedia(false);
+      console.error('Link failed:', error);
+      alert('Failed to link media');
     }
+  };
+
+  const handleMediaUploadSuccess = (mediaSlug: string) => {
+    // Reload media after successful upload
+    api.getVoyageMedia(voyage.voyage_slug).then(setMedia);
   };
 
   // Delete voyage
@@ -629,40 +618,81 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         ) : people.length === 0 ? (
           <p className="text-sm text-gray-600">No people recorded for this voyage.</p>
         ) : (
-          <ul className="space-y-2">
-            {people.map((p) => {
-              const bioLink = p.bio || p.wikipedia_url;
-              const roleToDisplay = p.capacity_role || p.role_title || p.title;
+          <div className="space-y-6">
+            {/* Crew Section */}
+            {(() => {
+              const crew = people.filter(p => {
+                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
+                return role.includes('crew') || role.includes('captain') || role.includes('officer');
+              });
+              return crew.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Crew ({crew.length})</h4>
+                  <ul className="space-y-2">
+                    {crew.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
+                          <span className="mt-1">•</span>
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null;
+            })()}
 
-              return (
-                <li key={p.person_slug} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1">•</span>
-                  <div>
-                    <div className="font-medium">
-                      {bioLink ? (
-                        <a
-                          href={bioLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {p.full_name}
-                        </a>
-                      ) : (
-                        p.full_name
-                      )}
-                    </div>
-                    {roleToDisplay && (
-                      <div className="text-gray-700 text-xs">{roleToDisplay}</div>
-                    )}
-                    {p.voyage_notes && (
-                      <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+            {/* Passengers & Guests Section */}
+            {(() => {
+              const passengers = people.filter(p => {
+                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
+                return !(role.includes('crew') || role.includes('captain') || role.includes('officer'));
+              });
+              return passengers.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Passengers & Guests ({passengers.length})</h4>
+                  <ul className="space-y-2">
+                    {passengers.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2">
+                          <span className="mt-1">•</span>
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null;
+            })()}
+          </div>
         )}
       </div>
 
@@ -671,48 +701,21 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         <div className="pt-4 border-t border-gray-200">
           <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Media ({media.filter(m => m.s3_url?.includes('sequoia-canonical')).length})</h4>
 
-          {/* Media Upload (Edit Mode Only) */}
+          {/* Media Management Buttons (Edit Mode Only) */}
           {isEditing && (
-            <div className="mb-4 bg-green-50 p-3 rounded">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Upload Media</label>
-              <input
-                type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                accept="image/*,video/*,application/pdf"
-                className="w-full text-xs mb-2"
-              />
-              {selectedFile && (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={mediaTitle}
-                    onChange={(e) => setMediaTitle(e.target.value)}
-                    placeholder="Title (optional)"
-                    className="w-full border rounded px-2 py-1 text-xs"
-                  />
-                  <input
-                    type="text"
-                    value={mediaCredit}
-                    onChange={(e) => setMediaCredit(e.target.value)}
-                    placeholder="Credit/Source"
-                    className="w-full border rounded px-2 py-1 text-xs"
-                  />
-                  <input
-                    type="date"
-                    value={mediaDate}
-                    onChange={(e) => setMediaDate(e.target.value)}
-                    placeholder="Date"
-                    className="w-full border rounded px-2 py-1 text-xs"
-                  />
-                  <button
-                    onClick={uploadMedia}
-                    disabled={uploadingMedia}
-                    className="w-full bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs disabled:opacity-50"
-                  >
-                    {uploadingMedia ? 'Uploading...' : 'Upload'}
-                  </button>
-                </div>
-              )}
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setShowMediaSearch(true)}
+                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm font-medium"
+              >
+                🔍 Link Existing Media
+              </button>
+              <button
+                onClick={() => setShowMediaUpload(true)}
+                className="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-medium"
+              >
+                ⬆️ Upload New Media
+              </button>
             </div>
           )}
 
@@ -723,6 +726,23 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           )}
         </div>
       )}
+
+      {/* Media Search Modal */}
+      <MediaSearchModal
+        isOpen={showMediaSearch}
+        onClose={() => setShowMediaSearch(false)}
+        onSelect={handleMediaLinkFromSearch}
+        excludeMediaSlugs={media.map(m => m.media_slug)}
+      />
+
+      {/* Media Upload Dialog */}
+      <MediaUploadDialog
+        isOpen={showMediaUpload}
+        onClose={() => setShowMediaUpload(false)}
+        onSuccess={handleMediaUploadSuccess}
+        voyageSlug={voyage.voyage_slug}
+        autoLinkToVoyage={true}
+      />
     </div>
   );
 };
