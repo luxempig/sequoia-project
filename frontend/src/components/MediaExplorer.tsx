@@ -151,7 +151,7 @@ const MediaExplorer: React.FC = () => {
   const handleEditClick = async (file: FileItem) => {
     // Try to find media record in database by S3 URL
     try {
-      const allMedia = await api.listMedia(new URLSearchParams({ limit: '1000' }));
+      const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
       const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
 
       if (mediaItem) {
@@ -197,7 +197,7 @@ const MediaExplorer: React.FC = () => {
   const handleDelete = async (file: FileItem) => {
     try {
       // Find media record in database
-      const allMedia = await api.listMedia(new URLSearchParams({ limit: '1000' }));
+      const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
       const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
 
       if (!mediaItem) {
