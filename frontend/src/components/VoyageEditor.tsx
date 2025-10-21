@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Voyage } from "../types";
+import { Voyage, President } from "../types";
+import { api } from "../api";
 import Layout from "./Layout";
 
 const VoyageEditor: React.FC = () => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [presidents, setPresidents] = useState<President[]>([]);
+  const [showNewPresidentModal, setShowNewPresidentModal] = useState(false);
+  const [newPresidentName, setNewPresidentName] = useState("");
 
   // Initialize with blank voyage
   const [voyage, setVoyage] = useState<Partial<Voyage>>({
@@ -35,8 +39,60 @@ const VoyageEditor: React.FC = () => {
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
 
+  // Load presidents on mount
+  useEffect(() => {
+    api.listPresidents()
+      .then(setPresidents)
+      .catch(console.error);
+  }, []);
+
   const updateField = (field: keyof Voyage, value: any) => {
     setVoyage(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateNewPresident = async () => {
+    if (!newPresidentName.trim()) {
+      alert('Please enter a full name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/curator/people', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: 'auto', // Auto-generate from name
+          full_name: newPresidentName.trim(),
+          role_title: 'President',
+          organization: null,
+          birth_year: null,
+          death_year: null,
+          wikipedia_url: null,
+          notes_internal: null,
+          tags: null
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to create president');
+      }
+
+      const newPresident = await response.json();
+
+      // Add to presidents list and select it
+      setPresidents(prev => [...prev, newPresident]);
+      updateField('president_slug_from_voyage', newPresident.person_slug);
+
+      // Close modal and reset
+      setShowNewPresidentModal(false);
+      setNewPresidentName("");
+
+      alert(`President ${newPresidentName} created successfully!`);
+    } catch (error) {
+      console.error('Create president failed:', error);
+      alert(`Failed to create president: ${error}`);
+    }
   };
 
   const addSourceUrl = () => {
@@ -118,7 +174,7 @@ const VoyageEditor: React.FC = () => {
         <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-200">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Create New Voyage</h1>
-            <p className="text-sm text-gray-600 mt-1">Fill in the voyage details below. Voyage ID will be auto-generated.</p>
+            <p className="text-sm text-gray-600 mt-1">Fill in the voyage details below. The voyage ID will be automatically generated.</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -172,17 +228,30 @@ const VoyageEditor: React.FC = () => {
 
         {/* President/Owner */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            President/Owner Slug
-            <span className="text-gray-500 ml-2 text-xs">(e.g., roosevelt-franklin, kennedy-john)</span>
-          </label>
-          <input
-            type="text"
-            value={voyage.president_slug_from_voyage || ''}
-            onChange={(e) => updateField('president_slug_from_voyage', e.target.value || null)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-            placeholder="e.g., roosevelt-franklin"
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">President/Owner</label>
+          <div className="flex gap-2">
+            <select
+              value={voyage.president_slug_from_voyage || ''}
+              onChange={(e) => updateField('president_slug_from_voyage', e.target.value || null)}
+              className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+            >
+              <option value="">-- Select President/Owner --</option>
+              {presidents
+                .filter((p) => !['reagan-ronald', 'bush-george-w', 'obama-barack', 'post-presidential'].includes(p.president_slug))
+                .map((p) => (
+                  <option key={p.president_slug} value={p.president_slug}>
+                    {p.full_name}
+                  </option>
+                ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setShowNewPresidentModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium whitespace-nowrap"
+            >
+              + New President
+            </button>
+          </div>
         </div>
 
         {/* Date and Location Information */}
@@ -329,6 +398,81 @@ const VoyageEditor: React.FC = () => {
         </div>
       </div>
     </div>
+
+    {/* New President Modal */}
+    {showNewPresidentModal && (
+      <div className="fixed z-50 inset-0 overflow-y-auto" role="dialog" aria-modal="true">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          {/* Background overlay */}
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowNewPresidentModal(false)}></div>
+
+          {/* Modal */}
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            {/* Header */}
+            <div className="bg-white px-6 pt-5 pb-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Create New President/Owner
+                </h3>
+                <button onClick={() => setShowNewPresidentModal(false)} className="text-gray-400 hover:text-gray-500">
+                  <span className="sr-only">Close</span>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="bg-white px-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newPresidentName}
+                    onChange={(e) => setNewPresidentName(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Franklin D. Roosevelt"
+                    onKeyPress={(e) => e.key === 'Enter' && handleCreateNewPresident()}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    The system will automatically generate a unique ID from the name.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse border-t border-gray-200">
+              <button
+                type="button"
+                disabled={!newPresidentName.trim()}
+                onClick={handleCreateNewPresident}
+                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm ${
+                  !newPresidentName.trim()
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                Create President
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNewPresidentModal(false)}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     </Layout>
   );
 };
