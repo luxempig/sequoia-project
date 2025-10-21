@@ -498,7 +498,18 @@ export default function VoyageList() {
             <HorizontalTimeline voyages={filteredVoyages} />
           ) : (
             <div className="timeline">
-              {Object.entries(grouped).map(([hdr, items]) => (
+              {Object.entries(grouped)
+                .sort(([, itemsA], [, itemsB]) => {
+                  // Sort presidency groups by earliest voyage start_date
+                  const earliestA = itemsA.filter(v => v.start_date).sort((a, b) =>
+                    String(a.start_date).localeCompare(String(b.start_date))
+                  )[0]?.start_date || '';
+                  const earliestB = itemsB.filter(v => v.start_date).sort((a, b) =>
+                    String(a.start_date).localeCompare(String(b.start_date))
+                  )[0]?.start_date || '';
+                  return String(earliestA).localeCompare(String(earliestB));
+                })
+                .map(([hdr, items]) => (
                 <section key={hdr} className="mb-8">
                   <h2 className="sticky top-0 z-10 py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900">
                     {hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`}
