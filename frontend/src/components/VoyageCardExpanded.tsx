@@ -8,6 +8,8 @@ interface VoyageCardExpandedProps {
   voyage: Voyage;
   editMode: boolean;
   onSave?: (voyage: Voyage) => void;
+  onDelete?: (voyageSlug: string) => void;
+  onDuplicate?: (voyageSlug: string) => void;
 }
 
 const formatDate = (iso: string | null | undefined) => {
@@ -43,7 +45,7 @@ const stripMarkdown = (text: string | null | undefined) => {
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
 };
 
-const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMode, onSave }) => {
+const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMode, onSave, onDelete, onDuplicate }) => {
   const [editedVoyage, setEditedVoyage] = useState<Voyage>(voyage);
   const [isEditing, setIsEditing] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
@@ -212,6 +214,25 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
+  // Delete voyage
+  const handleDelete = () => {
+    if (!confirm(`Are you sure you want to delete voyage "${voyage.title || voyage.voyage_slug}"? This cannot be undone.`)) {
+      return;
+    }
+    if (onDelete) {
+      onDelete(voyage.voyage_slug);
+    }
+  };
+
+  // Duplicate voyage
+  const handleDuplicate = () => {
+    const newSlug = prompt(`Enter slug for duplicated voyage:`, `${voyage.voyage_slug}-copy`);
+    if (!newSlug) return;
+    if (onDuplicate) {
+      onDuplicate(newSlug);
+    }
+  };
+
   // Auto-computed fields (has_photo, has_video) - shown but not editable
   const autoComputedFields = [
     { key: 'has_photo' as keyof Voyage, label: 'Has Photos' },
@@ -280,12 +301,30 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-              >
-                Edit
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+                {onDuplicate && (
+                  <button
+                    onClick={handleDuplicate}
+                    className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                  >
+                    Duplicate
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={handleDelete}
+                    className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}

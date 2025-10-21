@@ -195,6 +195,78 @@ export default function VoyageList() {
     }
   };
 
+  // Handle deleting voyage
+  const handleVoyageDelete = async (voyageSlug: string) => {
+    try {
+      const response = await fetch(`http://3.14.31.211/api/curator/voyages/${voyageSlug}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete voyage');
+      }
+
+      // Remove from local state
+      setVoyages(prevVoyages => prevVoyages.filter(v => v.voyage_slug !== voyageSlug));
+      alert('Voyage deleted successfully');
+    } catch (error) {
+      console.error('Error deleting voyage:', error);
+      alert('Failed to delete voyage. Please try again.');
+    }
+  };
+
+  // Handle creating new voyage
+  const handleCreateNewVoyage = async () => {
+    const newSlug = prompt('Enter slug for new voyage (e.g., president-name-YYYY-MM):');
+    if (!newSlug) return;
+
+    const newVoyage = {
+      voyage_slug: newSlug,
+      title: '',
+      start_date: null,
+      end_date: null,
+      origin: null,
+      destination: null,
+      voyage_type: 'official',
+      has_photo: false,
+      has_video: false,
+      presidential_use: false,
+      has_royalty: false,
+      has_foreign_leader: false,
+      mention_camp_david: false,
+      mention_mount_vernon: false,
+      mention_captain: false,
+      mention_crew: false,
+      mention_rmd: false,
+      mention_yacht_spin: false,
+      mention_menu: false,
+      mention_drinks_wine: false,
+    };
+
+    try {
+      const response = await fetch('http://3.14.31.211/api/curator/voyages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newVoyage)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create voyage');
+      }
+
+      const createdVoyage = await response.json();
+      alert(`Voyage "${newSlug}" created successfully!`);
+
+      // Add to local state
+      setVoyages(prevVoyages => [...prevVoyages, createdVoyage]);
+    } catch (error) {
+      console.error('Error creating voyage:', error);
+      alert('Failed to create voyage. Please try again.');
+    }
+  };
+
   // Filter voyages by selected boolean fields
   const filteredVoyages = useMemo(() => {
     if (selectedFilters.size === 0) return voyages;
@@ -419,6 +491,17 @@ export default function VoyageList() {
                   {editMode ? 'Editing' : 'Edit Mode'}
                 </button>
               </div>
+
+              {editMode && (
+                <button
+                  type="button"
+                  onClick={handleCreateNewVoyage}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
+                  title="Create a new voyage"
+                >
+                  + New Voyage
+                </button>
+              )}
             </>
           )}
 
@@ -456,6 +539,24 @@ export default function VoyageList() {
                           voyage={v}
                           editMode={editMode}
                           onSave={handleVoyageSave}
+                          onDelete={handleVoyageDelete}
+                          onDuplicate={(newSlug) => {
+                            // Duplicate with current voyage slug as source
+                            fetch(`http://3.14.31.211/api/curator/voyages/${v.voyage_slug}/duplicate`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ new_slug: newSlug })
+                            })
+                              .then(res => {
+                                if (!res.ok) throw new Error('Failed to duplicate');
+                                alert('Voyage duplicated successfully!');
+                                window.location.reload();
+                              })
+                              .catch(err => {
+                                console.error(err);
+                                alert('Failed to duplicate voyage');
+                              });
+                          }}
                         />
                       ) : (
                         <Link
