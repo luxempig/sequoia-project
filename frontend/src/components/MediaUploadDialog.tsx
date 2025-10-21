@@ -95,8 +95,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
         throw new Error(errorData.detail || "Upload failed");
       }
 
-      const uploadedMedia = await uploadResponse.json();
-      const mediaSlug = uploadedMedia.media_slug;
+      await uploadResponse.json(); // Just validate response
 
       // If should link to voyage, do it
       if (autoLinkToVoyage && voyageSlug) {
