@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./Layout";
 import { api } from "../api";
+import { MediaItem } from "../types";
 
 interface BreadcrumbItem {
   name: string;
@@ -29,17 +30,6 @@ interface S3BrowseResponse {
   folders: Folder[];
   files: FileItem[];
   total_items: number;
-}
-
-interface MediaItem {
-  media_slug: string;
-  title?: string;
-  credit?: string;
-  date?: string;
-  description_markdown?: string;
-  media_type?: string;
-  s3_url?: string;
-  public_derivative_url?: string;
 }
 
 const MediaExplorer: React.FC = () => {
@@ -167,11 +157,11 @@ const MediaExplorer: React.FC = () => {
       if (mediaItem) {
         setEditingMedia(mediaItem);
         setEditForm({
-          title: mediaItem.title || "",
-          credit: mediaItem.credit || "",
-          date: mediaItem.date || "",
-          description: mediaItem.description_markdown || "",
-          media_type: mediaItem.media_type || "image"
+          title: mediaItem.title ?? "",
+          credit: mediaItem.credit ?? "",
+          date: mediaItem.date ?? "",
+          description: mediaItem.description_markdown ?? "",
+          media_type: mediaItem.media_type ?? "image"
         });
         setShowEditModal(true);
       } else {
