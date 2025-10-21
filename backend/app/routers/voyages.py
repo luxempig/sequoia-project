@@ -187,7 +187,7 @@ def voyage_people(voyage_slug: str) -> List[Dict[str, Any]]:
     with db_cursor(read_only=True) as cur:
         cur.execute(
             """
-            SELECT p.*, vp.capacity_role, vp.notes AS voyage_notes
+            SELECT p.*, vp.capacity_role, vp.notes AS voyage_notes, vp.is_crew
             FROM sequoia.voyage_passengers vp
             JOIN sequoia.people p ON p.person_slug = vp.person_slug
             WHERE vp.voyage_slug = %s
