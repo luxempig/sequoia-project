@@ -30,11 +30,7 @@ export default function HomePage() {
               >
                 this Google doc
               </a>
-              ! Feel free to use the{' '}
-              <Link to="/curators" className="text-blue-600 hover:text-blue-800 underline font-medium">
-                curator page
-              </Link>
-              {' '}to fill in missing information.
+              ! Feel free to use the voyage editor to fill in missing information.
             </p>
           </div>
 
