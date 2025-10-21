@@ -67,15 +67,22 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
     setError("");
 
     try {
+      // Generate media_slug from title and date
+      const datePrefix = date ? date.replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const mediaSlug = `${voyageSlug || 'media'}-${titleSlug}-${datePrefix}-${Date.now().toString().slice(-4)}`;
+
       // Create FormData
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("media_slug", mediaSlug);
       formData.append("title", title);
       formData.append("media_type", mediaType);
       if (credit) formData.append("credit", credit);
       if (date) formData.append("date", date);
-      if (description) formData.append("description_markdown", description);
+      if (description) formData.append("description", description);
       if (tags) formData.append("tags", tags);
+      if (voyageSlug) formData.append("voyage_slug", voyageSlug);
 
       // Upload media
       const uploadResponse = await fetch("/api/curator/media/upload", {
