@@ -83,6 +83,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       if (description) formData.append("description", description);
       if (tags) formData.append("tags", tags);
       if (voyageSlug) formData.append("voyage_slug", voyageSlug);
+      // Note: president_slug can be added here if needed for standalone uploads
 
       // Upload media
       const uploadResponse = await fetch("/api/curator/media/upload", {

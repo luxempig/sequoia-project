@@ -302,9 +302,11 @@ async def upload_media_file(
     file: UploadFile = File(...),
     media_slug: str = Form(...),
     voyage_slug: Optional[str] = Form(None),
+    president_slug: Optional[str] = Form(None),
     title: Optional[str] = Form(None),
     media_type: Optional[str] = Form(None),
     credit: Optional[str] = Form(None),
+    date: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     bucket: str = Form("sequoia-canonical")
 ) -> Dict[str, Any]:
@@ -312,7 +314,7 @@ async def upload_media_file(
     Upload a file to S3 and create a media record
 
     This handles the full flow:
-    1. Upload file to S3
+    1. Upload file to S3 with formatted filename
     2. Create media record in database
     3. Optionally link to a voyage
     """
@@ -321,19 +323,44 @@ async def upload_media_file(
         file_content = await file.read()
         file_size = len(file_content)
 
-        # Determine S3 key with proper hierarchy: media/{owner}/{voyage}/{filename}
+        # Get file extension
+        file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+
+        # Format filename as: date_credit_president.ext
+        filename_parts = []
+        if date:
+            filename_parts.append(date.replace('-', ''))  # YYYYMMDD format
+        if credit:
+            import re
+            credit_slug = re.sub(r'[^a-z0-9-]', '', credit.lower().replace(' ', '-'))[:30]
+            filename_parts.append(credit_slug)
+
+        # Determine president/owner
+        owner = None
         if voyage_slug:
-            # Extract owner from voyage_slug (e.g., "roosevelt-franklin-1938-01" -> "roosevelt-franklin")
-            # Voyage slugs are formatted as: {lastname}-{firstname}-{year}-{month}
+            # Extract owner from voyage_slug
             parts = voyage_slug.split('-')
             if len(parts) >= 2:
-                owner = f"{parts[0]}-{parts[1]}"  # e.g., "roosevelt-franklin"
+                owner = f"{parts[0]}-{parts[1]}"
             else:
-                owner = parts[0]  # fallback
+                owner = parts[0]
+        elif president_slug:
+            owner = president_slug
 
-            s3_key = f"media/{owner}/{voyage_slug}/{file.filename}"
+        if owner:
+            filename_parts.append(owner)
         else:
-            s3_key = f"media/{media_slug}/{file.filename}"
+            filename_parts.append('unattached')
+
+        formatted_filename = '_'.join(filename_parts) + f'.{file_ext}'
+
+        # Determine S3 key with proper hierarchy
+        if voyage_slug:
+            s3_key = f"media/{owner}/{voyage_slug}/{formatted_filename}"
+        elif owner and owner != 'unattached':
+            s3_key = f"media/{owner}/{formatted_filename}"
+        else:
+            s3_key = f"media/unattached/{formatted_filename}"
 
         # Upload to S3
         s3_url = upload_to_s3(
@@ -370,11 +397,11 @@ async def upload_media_file(
             cur.execute("""
                 INSERT INTO sequoia.media (
                     media_slug, title, media_type, s3_url, public_derivative_url,
-                    credit, description_markdown,
+                    credit, date, description_markdown,
                     created_at, updated_at
                 ) VALUES (
                     %(media_slug)s, %(title)s, %(media_type)s, %(s3_url)s, %(thumbnail_url)s,
-                    %(credit)s, %(description)s,
+                    %(credit)s, %(date)s, %(description)s,
                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
                 ON CONFLICT (media_slug)
@@ -382,6 +409,7 @@ async def upload_media_file(
                     title = EXCLUDED.title,
                     s3_url = EXCLUDED.s3_url,
                     public_derivative_url = EXCLUDED.public_derivative_url,
+                    date = EXCLUDED.date,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING *
             """, {
@@ -391,6 +419,7 @@ async def upload_media_file(
                 's3_url': s3_url,
                 'thumbnail_url': thumbnail_url,
                 'credit': credit,
+                'date': date,
                 'description': description
             })
 
