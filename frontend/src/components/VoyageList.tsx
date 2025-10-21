@@ -1,6 +1,7 @@
 import { api } from "../api";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import Layout from "./Layout";
 import VoyageCard from "./VoyageCard";
 import VoyageCardExpanded from "./VoyageCardExpanded";
 import HorizontalTimeline from "./HorizontalTimeline";
@@ -323,12 +324,9 @@ export default function VoyageList() {
   }, []);
 
   return (
-    <div ref={scrollContainerRef} className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
-      <Link to="/" className="text-gray-600 hover:text-gray-900 inline-block mb-8 font-medium">
-        ← Home
-      </Link>
-
-      <form
+    <Layout>
+      <div ref={scrollContainerRef} className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
+        <form
         onSubmit={apply}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -530,6 +528,7 @@ export default function VoyageList() {
           )}
         </>
       )}
-    </div>
+      </div>
+    </Layout>
   );
 }
