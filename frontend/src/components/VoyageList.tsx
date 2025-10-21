@@ -239,7 +239,7 @@ export default function VoyageList() {
     };
 
     try {
-      const response = await fetch('/api/curator/voyages', {
+      const response = await fetch('/api/curator/voyages/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

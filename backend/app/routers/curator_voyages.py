@@ -187,7 +187,9 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
                     detail=f"Invalid voyage_type: {voyage.voyage_type}. Must be one of: official, private, maintenance, other"
                 )
 
-            # Insert the voyage
+            # Insert the voyage (excluding legacy fields that don't exist in DB)
+            voyage_data = voyage.model_dump(exclude={'significant', 'royalty'})
+
             cur.execute("""
                 INSERT INTO sequoia.voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
@@ -199,7 +201,6 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
                     mention_camp_david, mention_mount_vernon, mention_captain, mention_crew,
                     mention_rmd, mention_yacht_spin, mention_menu, mention_drinks_wine,
                     presidential_initials, royalty_details, foreign_leader_country,
-                    significant, royalty,
                     created_at, updated_at
                 ) VALUES (
                     %(voyage_slug)s, %(title)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s,
@@ -211,11 +212,10 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
                     %(mention_camp_david)s, %(mention_mount_vernon)s, %(mention_captain)s, %(mention_crew)s,
                     %(mention_rmd)s, %(mention_yacht_spin)s, %(mention_menu)s, %(mention_drinks_wine)s,
                     %(presidential_initials)s, %(royalty_details)s, %(foreign_leader_country)s,
-                    %(significant)s, %(royalty)s,
                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
                 RETURNING *
-            """, voyage.model_dump())
+            """, voyage_data)
 
             row = cur.fetchone()
             LOG.info(f"Created voyage: {voyage.voyage_slug}")
