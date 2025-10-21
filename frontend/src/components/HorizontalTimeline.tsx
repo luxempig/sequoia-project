@@ -458,7 +458,8 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   }
 
   const handleMediaClick = (media: MediaItem) => {
-    const url = media.url || media.public_derivative_url || media.s3_url || '';
+    // Prefer high-quality original (s3_url) over thumbnail (public_derivative_url)
+    const url = media.s3_url || media.url || media.public_derivative_url || '';
     if (looksLikeImage(url)) {
       setLightboxSrc(url);
     } else if (looksLikeVideo(url) || url) {
