@@ -483,36 +483,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
       </div>
 
-      {/* Year Navigation */}
-      <div className="flex items-stretch mb-4 shadow-md">
-        <button
-          onClick={() => navigateVoyage('prev')}
-          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-r border-gray-600 transition-colors text-xs"
-          title="Previous Voyage"
-        >
-          ← Previous Voyage
-        </button>
-
-        <div className="bg-gray-600 text-white px-6 py-2 font-bold text-base tracking-wide">
-          {currentYear.slice(-2)}
+      {/* Current Date Display */}
+      <div className="mb-4 text-center bg-gray-200 px-8 py-4 border-2 border-gray-500 shadow-md" style={{
+        background: 'linear-gradient(to bottom, #f3f4f6 0%, #e5e7eb 100%)'
+      }}>
+        <div className="text-3xl font-light text-gray-800 tracking-wide">
+          {dayjs(`${currentYear}-${dayjs().month(dayjs(`${currentMonth} 1`).month()).format('MM')}-${currentDay.padStart(2, '0')}`).format('MMMM D, YYYY')}
         </div>
-
-        <div className="bg-gray-200 px-8 py-2 flex-1 text-center border-l-2 border-gray-600" style={{
-          background: 'linear-gradient(to bottom, #f3f4f6 0%, #e5e7eb 100%)'
-        }}>
-          <div className="text-2xl font-light text-gray-700 tracking-widest" style={{ letterSpacing: '3px' }}>
-            {currentYear}
-          </div>
-          <div className="text-xl text-gray-800 mt-1 font-medium">{currentMonth}</div>
-        </div>
-
-        <button
-          onClick={() => navigateVoyage('next')}
-          className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-gray-800 font-bold border-l border-gray-600 transition-colors text-xs"
-          title="Next Voyage"
-        >
-          Next Voyage →
-        </button>
       </div>
 
       {/* Main Timeline Content */}
