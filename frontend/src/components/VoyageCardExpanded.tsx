@@ -67,6 +67,22 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [showMediaSearch, setShowMediaSearch] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
 
+  // Person edit modal state
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+  const [personFormData, setPersonFormData] = useState<{
+    full_name: string;
+    role_title: string;
+    bio: string;
+    capacity_role: string;
+    is_crew: boolean;
+  }>({
+    full_name: '',
+    role_title: '',
+    bio: '',
+    capacity_role: '',
+    is_crew: false
+  });
+
   // Load people and media when component mounts
   useEffect(() => {
     setLoadingPeople(true);
@@ -235,6 +251,71 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     } catch (error) {
       console.error('Link failed:', error);
       alert('Failed to link person');
+    }
+  };
+
+  // Open edit modal for a person
+  const openEditPerson = (person: Person) => {
+    setEditingPerson(person);
+    setPersonFormData({
+      full_name: person.full_name || '',
+      role_title: person.role_title || person.role || '',
+      bio: person.bio || person.wikipedia_url || '',
+      capacity_role: person.capacity_role || '',
+      is_crew: person.is_crew || false
+    });
+  };
+
+  // Save edited person
+  const saveEditedPerson = async () => {
+    if (!editingPerson) return;
+
+    try {
+      // Update the person record (global)
+      const personResponse = await fetch(`/api/curator/people/${editingPerson.person_slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: editingPerson.person_slug,
+          full_name: personFormData.full_name,
+          role_title: personFormData.role_title,
+          organization: editingPerson.organization || null,
+          birth_year: editingPerson.birth_year || null,
+          death_year: editingPerson.death_year || null,
+          wikipedia_url: personFormData.bio || null,
+          notes_internal: editingPerson.notes_internal || null,
+          tags: editingPerson.tags || null
+        })
+      });
+
+      if (!personResponse.ok) {
+        throw new Error('Failed to update person');
+      }
+
+      // Update the voyage-specific link (capacity_role and is_crew)
+      const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person_slug: editingPerson.person_slug,
+          voyage_slug: voyage.voyage_slug,
+          capacity_role: personFormData.capacity_role,
+          is_crew: personFormData.is_crew,
+          notes: editingPerson.voyage_notes || null
+        })
+      });
+
+      if (linkResponse.ok) {
+        alert('Person updated successfully!');
+        setEditingPerson(null);
+        // Reload people to show updated info
+        api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+      } else {
+        alert('Person updated but failed to update voyage link');
+      }
+    } catch (error) {
+      console.error('Update failed:', error);
+      alert(`Failed to update person: ${error}`);
     }
   };
 
@@ -703,7 +784,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       return (
                         <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
                           <span className="mt-1">•</span>
-                          <div className="text-sm">
+                          <div className="flex-1 text-sm">
                             <div className="font-medium">
                               {bioLink ? (
                                 <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -716,6 +797,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
+                          {isEditing && (
+                            <button
+                              onClick={() => openEditPerson(p)}
+                              className="text-lg hover:scale-110 transition-transform"
+                              title="Edit person"
+                            >
+                              ✏️
+                            </button>
+                          )}
                         </li>
                       );
                     })}
@@ -737,7 +827,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       return (
                         <li key={p.person_slug} className="flex items-start gap-2">
                           <span className="mt-1">•</span>
-                          <div className="text-sm">
+                          <div className="flex-1 text-sm">
                             <div className="font-medium">
                               {bioLink ? (
                                 <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -750,6 +840,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
+                          {isEditing && (
+                            <button
+                              onClick={() => openEditPerson(p)}
+                              className="text-lg hover:scale-110 transition-transform"
+                              title="Edit person"
+                            >
+                              ✏️
+                            </button>
+                          )}
                         </li>
                       );
                     })}
@@ -808,6 +907,114 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         voyageSlug={voyage.voyage_slug}
         autoLinkToVoyage={true}
       />
+
+      {/* Person Edit Modal */}
+      {editingPerson && (
+        <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setEditingPerson(null)}></div>
+
+            {/* Center modal */}
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                      Edit Person: {editingPerson.full_name}
+                    </h3>
+
+                    <div className="space-y-4">
+                      {/* Full Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input
+                          type="text"
+                          value={personFormData.full_name}
+                          onChange={(e) => setPersonFormData({ ...personFormData, full_name: e.target.value })}
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      {/* General Role/Title */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          General Role/Title <span className="text-gray-500 text-xs">(applies to all voyages)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={personFormData.role_title}
+                          onChange={(e) => setPersonFormData({ ...personFormData, role_title: e.target.value })}
+                          placeholder="e.g., Secretary of State, Admiral, etc."
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      {/* Capacity Role on This Voyage */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Role on This Voyage <span className="text-gray-500 text-xs">(specific to this voyage only)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={personFormData.capacity_role}
+                          onChange={(e) => setPersonFormData({ ...personFormData, capacity_role: e.target.value })}
+                          placeholder="e.g., Guest, Passenger, etc."
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      {/* Bio/Wikipedia URL */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bio/Wikipedia URL</label>
+                        <input
+                          type="text"
+                          value={personFormData.bio}
+                          onChange={(e) => setPersonFormData({ ...personFormData, bio: e.target.value })}
+                          placeholder="https://..."
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      {/* Is Crew Checkbox */}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="is_crew"
+                          checked={personFormData.is_crew}
+                          onChange={(e) => setPersonFormData({ ...personFormData, is_crew: e.target.checked })}
+                          className="mr-2 h-4 w-4"
+                        />
+                        <label htmlFor="is_crew" className="text-sm font-medium text-gray-700">
+                          Is Crew Member <span className="text-gray-500 text-xs">(on this voyage)</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={saveEditedPerson}
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => setEditingPerson(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
