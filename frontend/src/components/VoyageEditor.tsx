@@ -45,6 +45,8 @@ const VoyageEditor: React.FC = () => {
 
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [sourceMediaFiles, setSourceMediaFiles] = useState<File[]>([]);
+  const [uploadingSourceMedia, setUploadingSourceMedia] = useState(false);
 
   // Load presidents on mount
   useEffect(() => {
@@ -156,6 +158,17 @@ const VoyageEditor: React.FC = () => {
     updateField('source_urls', updated as any);
   };
 
+  const handleSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSourceMediaFiles([...sourceMediaFiles, ...Array.from(e.target.files)]);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  const removeSourceMediaFile = (index: number) => {
+    setSourceMediaFiles(sourceMediaFiles.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     // Validate required fields
     if (!voyage.start_date) {
@@ -183,6 +196,29 @@ const VoyageEditor: React.FC = () => {
       }
 
       const createdVoyage = await response.json();
+
+      // Upload source media files if any
+      if (sourceMediaFiles.length > 0) {
+        setUploadingSourceMedia(true);
+        for (const file of sourceMediaFiles) {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('media_slug', 'auto');
+            formData.append('voyage_slug', createdVoyage.voyage_slug);
+            formData.append('media_category', 'source');
+            formData.append('title', file.name);
+
+            await fetch('/api/curator/media/upload', {
+              method: 'POST',
+              body: formData
+            });
+          } catch (err) {
+            console.error(`Failed to upload source media ${file.name}:`, err);
+          }
+        }
+        setUploadingSourceMedia(false);
+      }
 
       // Navigate to the newly created voyage
       navigate(`/voyages/${createdVoyage.voyage_slug}`);
@@ -225,14 +261,14 @@ const VoyageEditor: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={handleSave}
-              disabled={saving || !voyage.start_date}
+              disabled={saving || uploadingSourceMedia || !voyage.start_date}
               className={`px-4 py-2 rounded font-medium ${
-                saving || !voyage.start_date
+                saving || uploadingSourceMedia || !voyage.start_date
                   ? 'bg-gray-300 cursor-not-allowed text-gray-500'
                   : 'bg-green-600 text-white hover:bg-green-700'
               }`}
             >
-              {saving ? 'Saving...' : 'Save Voyage'}
+              {uploadingSourceMedia ? 'Uploading source media...' : saving ? 'Saving...' : 'Save Voyage'}
             </button>
             <button
               onClick={handleCancel}
@@ -398,8 +434,11 @@ const VoyageEditor: React.FC = () => {
 
         {/* Sources */}
         <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">Sources</h4>
-          <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Sources</h4>
+
+          {/* Text/URL Sources */}
+          <div className="space-y-2 mb-4">
+            <label className="text-xs font-medium text-gray-600">Text/URL Sources:</label>
             {sourceUrls.map((url, index) => (
               <div key={index} className="flex items-center gap-2">
                 <input
@@ -410,7 +449,7 @@ const VoyageEditor: React.FC = () => {
                 />
                 <button
                   onClick={() => removeSourceUrl(index)}
-                  className="text-red-600 hover:text-red-800 px-3 py-2"
+                  className="text-red-600 hover:text-red-800 px-3 py-2 text-sm"
                 >
                   Remove
                 </button>
@@ -423,14 +462,44 @@ const VoyageEditor: React.FC = () => {
                 onChange={(e) => setNewSourceUrl(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
                 placeholder="URL or source name (e.g., National Archives or https://...)"
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
               />
               <button
                 onClick={addSourceUrl}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
               >
-                Add
+                Add Text
               </button>
+            </div>
+          </div>
+
+          {/* Media Sources */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-600">Media Sources (PDFs, images, documents):</label>
+            {sourceMediaFiles.map((file, index) => (
+              <div key={index} className="flex items-center gap-2 bg-blue-50 p-2 rounded">
+                <span className="flex-1 text-sm text-gray-700">📎 {file.name}</span>
+                <span className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</span>
+                <button
+                  onClick={() => removeSourceMediaFile(index)}
+                  className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <div>
+              <label className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer text-sm">
+                <span>+ Attach Media Source</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx"
+                  onChange={handleSourceMediaFileChange}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-gray-500 mt-1">Upload PDFs, images, or documents as source materials</p>
             </div>
           </div>
         </div>
