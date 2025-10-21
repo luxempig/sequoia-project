@@ -195,10 +195,6 @@ const MediaExplorer: React.FC = () => {
   };
 
   const handleDelete = async (file: FileItem) => {
-    if (!confirm(`Are you sure you want to delete ${file.name}? This will remove it from the database and S3.`)) {
-      return;
-    }
-
     try {
       // Find media record in database
       const allMedia = await api.listMedia(new URLSearchParams({ limit: '1000' }));
@@ -206,6 +202,35 @@ const MediaExplorer: React.FC = () => {
 
       if (!mediaItem) {
         alert("Media not found in database. Cannot delete.");
+        return;
+      }
+
+      // Check which voyages use this media
+      const usageResponse = await fetch(`/api/curator/media/${mediaItem.media_slug}/usage`);
+      if (!usageResponse.ok) {
+        throw new Error("Failed to check media usage");
+      }
+
+      const usageData = await usageResponse.json();
+      const voyages = usageData.voyages || [];
+
+      // Build confirmation message
+      let confirmMessage = `Are you sure you want to delete "${file.name}"?\n\n`;
+      confirmMessage += "This will permanently remove it from:\n";
+      confirmMessage += "• Database\n";
+      confirmMessage += "• S3 storage (both original and thumbnail)\n";
+
+      if (voyages.length > 0) {
+        confirmMessage += `\nThis media is currently used in ${voyages.length} voyage${voyages.length > 1 ? 's' : ''}:\n`;
+        voyages.forEach((v: any) => {
+          confirmMessage += `\n• ${v.title || v.voyage_slug} (${v.start_date || 'no date'})`;
+        });
+        confirmMessage += "\n\nIt will be removed from all these voyages.";
+      } else {
+        confirmMessage += "\nThis media is not currently attached to any voyages.";
+      }
+
+      if (!confirm(confirmMessage)) {
         return;
       }
 
