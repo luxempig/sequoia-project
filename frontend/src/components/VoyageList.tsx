@@ -175,7 +175,8 @@ export default function VoyageList() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save voyage');
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       // Update local state
@@ -186,9 +187,11 @@ export default function VoyageList() {
       );
 
       console.log('Voyage saved successfully');
+      alert('✓ Voyage saved successfully');
     } catch (error) {
       console.error('Error saving voyage:', error);
-      alert('Failed to save voyage. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to save voyage: ${errorMessage}`);
     }
   };
 
