@@ -92,21 +92,36 @@ const VoyageEditor: React.FC = () => {
 
       const newPerson = await response.json();
 
-      // For now, use person_slug as president_slug directly
-      // TODO: Create proper president entry with term dates via /api/curator/presidents
-      const tempPresident = {
-        president_slug: newPerson.person_slug,
-        person_slug: newPerson.person_slug,
-        full_name: newPresidentData.full_name,
-        start_year: parseInt(newPresidentData.start_year),
-        end_year: newPresidentData.end_year ? parseInt(newPresidentData.end_year) : null,
-        birth_year: newPresidentData.birth_year ? parseInt(newPresidentData.birth_year) : null,
-        death_year: newPresidentData.death_year ? parseInt(newPresidentData.death_year) : null,
+      // Create president/owner entry with term dates
+      const presidentResponse = await fetch('/api/curator/presidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          president_slug: newPerson.person_slug,
+          person_slug: newPerson.person_slug,
+          start_year: parseInt(newPresidentData.start_year),
+          end_year: newPresidentData.end_year ? parseInt(newPresidentData.end_year) : null,
+        })
+      });
+
+      if (!presidentResponse.ok) {
+        const error = await presidentResponse.json();
+        throw new Error(error.detail || 'Failed to create president/owner entry');
+      }
+
+      const newPresident = await presidentResponse.json();
+
+      // Add full person data to the president object for display
+      const presidentWithPersonData = {
+        ...newPresident,
+        full_name: newPerson.full_name,
+        birth_year: newPerson.birth_year,
+        death_year: newPerson.death_year,
       };
 
       // Add to presidents list and select it
-      setPresidents(prev => [...prev, tempPresident]);
-      updateField('president_slug_from_voyage', newPerson.person_slug);
+      setPresidents(prev => [...prev, presidentWithPersonData]);
+      updateField('president_slug_from_voyage', newPresident.president_slug);
 
       // Close modal and reset
       setShowNewPresidentModal(false);
