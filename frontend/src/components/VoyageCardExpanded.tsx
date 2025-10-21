@@ -67,6 +67,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [showMediaSearch, setShowMediaSearch] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
 
+  // Media loading function
+  const loadMedia = () => {
+    setLoadingMedia(true);
+    api.getVoyageMedia(voyage.voyage_slug)
+      .then(setMedia)
+      .catch(() => setMedia([]))
+      .finally(() => setLoadingMedia(false));
+  };
+
   // Person edit modal state
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [personFormData, setPersonFormData] = useState<{
@@ -335,7 +344,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       if (response.ok) {
         // Reload media
-        api.getVoyageMedia(voyage.voyage_slug).then(setMedia);
+        loadMedia();
       } else {
         alert('Failed to link media to voyage');
       }
@@ -347,7 +356,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
   const handleMediaUploadSuccess = (mediaSlug: string) => {
     // Reload media after successful upload
-    api.getVoyageMedia(voyage.voyage_slug).then(setMedia);
+    loadMedia();
   };
 
   // Delete voyage
@@ -886,7 +895,11 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           {loadingMedia ? (
             <p className="text-sm text-gray-500">Loading...</p>
           ) : (
-            <MediaGallery voyageSlug={currentVoyage.voyage_slug} />
+            <MediaGallery
+              voyageSlug={currentVoyage.voyage_slug}
+              editMode={isEditing}
+              onMediaChange={loadMedia}
+            />
           )}
         </div>
       )}

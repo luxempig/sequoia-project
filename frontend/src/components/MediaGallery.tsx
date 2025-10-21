@@ -69,26 +69,53 @@ const toTile = (m: MediaItem): Tile | null => {
   return { id: m.media_slug, kind: "other", url: s3Url, caption };
 };
 
-const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
+interface MediaGalleryProps {
+  voyageSlug: string;
+  editMode?: boolean;
+  onMediaChange?: () => void; // Callback when media is removed
+}
+
+const MediaGallery: React.FC<MediaGalleryProps> = ({ voyageSlug, editMode = false, onMediaChange }) => {
   const [raw, setRaw] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [openSrc, setOpenSrc] = useState<string | null>(null);
 
-  useEffect(() => {
-    let alive = true;
+  const loadMedia = () => {
     setLoading(true);
     api
       .getVoyageMedia(voyageSlug)
       .then((data) => {
-        if (!alive) return;
         const mediaData = Array.isArray(data) ? data : [];
         setRaw(mediaData);
       })
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadMedia();
   }, [voyageSlug]);
+
+  const handleRemoveMedia = async (mediaSlug: string, mediaTitle: string) => {
+    if (!confirm(`Remove "${mediaTitle}" from this voyage? (The media will still exist in the media explorer)`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/curator/media/unlink-from-voyage?media_slug=${encodeURIComponent(mediaSlug)}&voyage_slug=${encodeURIComponent(voyageSlug)}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        loadMedia(); // Reload media list
+        if (onMediaChange) onMediaChange();
+      } else {
+        alert('Failed to remove media from voyage');
+      }
+    } catch (error) {
+      console.error('Remove failed:', error);
+      alert('Failed to remove media');
+    }
+  };
 
   const tiles = useMemo(
     () => raw.map(toTile).filter(Boolean) as Tile[],
@@ -106,8 +133,18 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
             const displayUrl = t.url;  // Thumbnail or image
             const originalUrl = t.originalUrl || t.url;  // Full resolution original
 
+            const mediaItem = raw.find(m => m.media_slug === t.id);
             return (
-              <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm">
+              <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm relative">
+                {editMode && (
+                  <button
+                    onClick={() => handleRemoveMedia(t.id, mediaItem?.title || "media")}
+                    className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow-lg"
+                    title="Remove from voyage"
+                  >
+                    ✕
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setOpenSrc(originalUrl)}
@@ -134,8 +171,18 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
           }
 
           if (t.kind === "video") {
+            const mediaItem = raw.find(m => m.media_slug === t.id);
             return (
-              <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm">
+              <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm relative">
+                {editMode && (
+                  <button
+                    onClick={() => handleRemoveMedia(t.id, mediaItem?.title || "media")}
+                    className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow-lg"
+                    title="Remove from voyage"
+                  >
+                    ✕
+                  </button>
+                )}
                 <video
                   className="w-full aspect-square bg-black object-cover"
                   controls
@@ -165,9 +212,19 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
           // Determine document type for better icon
           const isPDF = t.url.toLowerCase().includes('.pdf') || t.caption?.toLowerCase().includes('pdf');
           const isAudio = t.url.toLowerCase().match(/\.(mp3|wav|ogg|m4a)$/);
+          const mediaItem = raw.find(m => m.media_slug === t.id);
 
           return (
-            <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm p-4 flex items-start gap-3">
+            <figure key={t.id} className="rounded overflow-hidden bg-white ring-1 ring-gray-200 shadow-sm p-4 flex items-start gap-3 relative">
+              {editMode && (
+                <button
+                  onClick={() => handleRemoveMedia(t.id, mediaItem?.title || "media")}
+                  className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow-lg"
+                  title="Remove from voyage"
+                >
+                  ✕
+                </button>
+              )}
               <div className={`shrink-0 w-10 h-10 rounded flex items-center justify-center text-xl ${
                 isPDF ? 'bg-red-50 border border-red-200' :
                 isAudio ? 'bg-blue-50 border border-blue-200' :
