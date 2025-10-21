@@ -165,7 +165,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           organization: null,
           birth_year: null,
           death_year: null,
-          wikipedia_url: bioUrl.trim() || null,
+          wikipedia_url: bioUrl?.trim() || null,
           notes_internal: null,
           tags: null
         })
