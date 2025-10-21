@@ -8,15 +8,59 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from app.db import db_cursor
 import logging
+import re
 
 LOG = logging.getLogger("app.routers.curator_voyages")
 
 router = APIRouter(prefix="/api/curator/voyages", tags=["curator-voyages"])
 
 
+def slugify(text: str) -> str:
+    """Convert text to URL-friendly slug"""
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[-\s]+', '-', text)
+    return text
+
+
+def generate_voyage_slug(president_slug: Optional[str], start_date: Optional[str], cur) -> str:
+    """
+    Auto-generate voyage slug from president and date
+    Format: president-YYYY-MM-DD or voyage-YYYY-MM-DD if no president
+    Handles deduplication with -2, -3, etc.
+    """
+    if not start_date:
+        # No date provided, use timestamp
+        base_slug = f"voyage-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    else:
+        # Extract YYYY-MM-DD
+        date_part = start_date[:10] if len(start_date) >= 10 else start_date
+
+        if president_slug:
+            base_slug = f"{president_slug}-{date_part}"
+        else:
+            base_slug = f"voyage-{date_part}"
+
+    # Check if slug exists and deduplicate
+    final_slug = base_slug
+    counter = 2
+
+    while True:
+        cur.execute(
+            "SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s",
+            (final_slug,)
+        )
+        if not cur.fetchone():
+            break
+        final_slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return final_slug
+
+
 class VoyageCreate(BaseModel):
     """Schema for creating a new voyage"""
-    voyage_slug: str = Field(..., description="Unique identifier (e.g., 'truman-1945-01')")
+    voyage_slug: Optional[str] = Field(None, description="Unique identifier (auto-generated if not provided)")
     title: Optional[str] = None
     start_date: Optional[str] = Field(None, description="ISO date YYYY-MM-DD")
     end_date: Optional[str] = Field(None, description="ISO date YYYY-MM-DD")
@@ -116,16 +160,25 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
     """Create a new voyage"""
     try:
         with db_cursor() as cur:
-            # Check if voyage_slug already exists
-            cur.execute(
-                "SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s",
-                (voyage.voyage_slug,)
-            )
-            if cur.fetchone():
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"Voyage with slug '{voyage.voyage_slug}' already exists"
+            # Auto-generate slug if not provided
+            if not voyage.voyage_slug:
+                voyage.voyage_slug = generate_voyage_slug(
+                    voyage.president_slug_from_voyage,
+                    voyage.start_date,
+                    cur
                 )
+                LOG.info(f"Auto-generated voyage slug: {voyage.voyage_slug}")
+            else:
+                # Check if manually provided slug already exists
+                cur.execute(
+                    "SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s",
+                    (voyage.voyage_slug,)
+                )
+                if cur.fetchone():
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"Voyage with slug '{voyage.voyage_slug}' already exists"
+                    )
 
             # Validate voyage_type
             if voyage.voyage_type and voyage.voyage_type not in ['official', 'private', 'maintenance', 'other']:

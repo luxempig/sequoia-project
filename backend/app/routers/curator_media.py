@@ -144,14 +144,39 @@ def update_media(media_slug: str, updates: MediaUpdate) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+@router.get("/{media_slug}/usage")
+def check_media_usage(media_slug: str) -> Dict[str, Any]:
+    """Check which voyages use this media"""
+    try:
+        with db_cursor() as cur:
+            # Get voyages using this media
+            cur.execute("""
+                SELECT v.voyage_slug, v.title, v.start_date, v.end_date
+                FROM sequoia.voyage_media vm
+                JOIN sequoia.voyages v ON v.voyage_slug = vm.voyage_slug
+                WHERE vm.media_slug = %s
+                ORDER BY v.start_date
+            """, (media_slug,))
+            voyages = cur.fetchall()
+
+            return {
+                "media_slug": media_slug,
+                "usage_count": len(voyages),
+                "voyages": [dict(row) for row in voyages]
+            }
+    except Exception as e:
+        LOG.error(f"Error checking media usage: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
 @router.delete("/{media_slug}")
-def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, str]:
+def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any]:
     """Delete a media item and optionally remove from S3"""
     try:
         with db_cursor() as cur:
             # Check if media exists and get S3 URL
             cur.execute(
-                "SELECT media_slug, s3_url FROM sequoia.media WHERE media_slug = %s",
+                "SELECT media_slug, s3_url, public_derivative_url FROM sequoia.media WHERE media_slug = %s",
                 (media_slug,)
             )
             media_row = cur.fetchone()
@@ -159,6 +184,7 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, str
                 raise HTTPException(status_code=404, detail=f"Media '{media_slug}' not found")
 
             s3_url = media_row['s3_url']
+            derivative_url = media_row['public_derivative_url']
 
             # Delete voyage associations first
             cur.execute("DELETE FROM sequoia.voyage_media WHERE media_slug = %s", (media_slug,))
@@ -169,11 +195,19 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, str
 
             # Optionally delete from S3
             s3_deleted = False
-            if delete_from_s3 and s3_url:
-                try:
-                    s3_deleted = delete_from_s3_bucket(s3_url)
-                except Exception as s3_error:
-                    LOG.warning(f"Failed to delete from S3: {s3_error}")
+            derivative_deleted = False
+            if delete_from_s3:
+                if s3_url:
+                    try:
+                        s3_deleted = delete_from_s3_bucket(s3_url)
+                    except Exception as s3_error:
+                        LOG.warning(f"Failed to delete from S3: {s3_error}")
+
+                if derivative_url:
+                    try:
+                        derivative_deleted = delete_from_s3_bucket(derivative_url)
+                    except Exception as s3_error:
+                        LOG.warning(f"Failed to delete derivative from S3: {s3_error}")
 
             LOG.info(f"Deleted media: {media_slug} (removed from {voyages_deleted} voyages, S3 deleted: {s3_deleted})")
 
@@ -181,7 +215,8 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, str
                 "message": f"Media '{media_slug}' deleted successfully",
                 "media_slug": media_slug,
                 "voyages_removed_from": voyages_deleted,
-                "s3_deleted": s3_deleted
+                "s3_deleted": s3_deleted,
+                "derivative_deleted": derivative_deleted
             }
 
     except HTTPException:

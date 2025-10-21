@@ -290,48 +290,87 @@ export default function VoyageDetail() {
         </section>
       )}
 
-      {/* People */}
+      {/* People - Split into Crew and Passengers */}
       <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
         <h3 className="text-lg font-semibold mb-3">People</h3>
         {people.length === 0 ? (
           <p className="text-gray-600">No people recorded for this voyage.</p>
         ) : (
-          <ul className="space-y-2">
-            {people.map((p) => {
-              // Determine which bio link to use (prefer bio field, fall back to wikipedia_url)
-              const bioLink = p.bio || p.wikipedia_url;
-              // Use capacity_role for the role (don't duplicate with role_title)
-              const roleToDisplay = p.capacity_role || p.role_title || p.title;
+          <div className="space-y-6">
+            {/* Crew Section */}
+            {(() => {
+              const crew = people.filter(p => {
+                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
+                return role.includes('crew') || role.includes('captain') || role.includes('officer');
+              });
+              return crew.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Crew ({crew.length})</h4>
+                  <ul className="space-y-2">
+                    {crew.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
+                          <span className="mt-1">•</span>
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null;
+            })()}
 
-              return (
-                <li key={p.person_slug} className="flex items-start gap-2">
-                  <span className="mt-1">•</span>
-                  <div className="text-sm">
-                    <div className="font-medium">
-                      {bioLink ? (
-                        <a
-                          href={bioLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {p.full_name}
-                        </a>
-                      ) : (
-                        p.full_name
-                      )}
-                    </div>
-                    {roleToDisplay && (
-                      <div className="text-gray-700">{roleToDisplay}</div>
-                    )}
-                    {p.voyage_notes && (
-                      <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+            {/* Passengers & Guests Section */}
+            {(() => {
+              const passengers = people.filter(p => {
+                const role = (p.capacity_role || p.role_title || p.title || '').toLowerCase();
+                return !(role.includes('crew') || role.includes('captain') || role.includes('officer'));
+              });
+              return passengers.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Passengers & Guests ({passengers.length})</h4>
+                  <ul className="space-y-2">
+                    {passengers.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2">
+                          <span className="mt-1">•</span>
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null;
+            })()}
+          </div>
         )}
       </section>
     </div>
