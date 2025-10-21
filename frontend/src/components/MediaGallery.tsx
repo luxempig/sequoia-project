@@ -38,7 +38,6 @@ type Tile = {
   url: string;
   caption?: string;
   originalUrl?: string;  // For thumbnails, this is the full-res original
-  date?: string | null;  // Media date
 };
 
 const toTile = (m: MediaItem): Tile | null => {
@@ -51,23 +50,23 @@ const toTile = (m: MediaItem): Tile | null => {
   else if (m.media_type) parts.push(m.media_type);
   else parts.push("Media");
 
+  if (m.date) parts.push(m.date);
   if (m.description_markdown) parts.push(m.description_markdown);
 
   const caption = parts.join(" — ");
-  const date = m.date || null;
 
   // Always use original S3 file, never thumbnails
   if (looksLikeImage(s3Url) || m.media_type === 'image') {
-    return { id: m.media_slug, kind: "image", url: s3Url, caption, originalUrl: s3Url, date };
+    return { id: m.media_slug, kind: "image", url: s3Url, caption, originalUrl: s3Url };
   }
   if (looksLikeVideo(s3Url) || m.media_type === 'video') {
-    return { id: m.media_slug, kind: "video", url: s3Url, caption, date };
+    return { id: m.media_slug, kind: "video", url: s3Url, caption };
   }
   // For PDFs, show as document tile
   if (m.media_type === 'pdf') {
-    return { id: m.media_slug, kind: "other", url: s3Url, caption, date };
+    return { id: m.media_slug, kind: "other", url: s3Url, caption };
   }
-  return { id: m.media_slug, kind: "other", url: s3Url, caption, date };
+  return { id: m.media_slug, kind: "other", url: s3Url, caption };
 };
 
 const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
@@ -125,9 +124,6 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
                   />
                 </button>
                 <figcaption className="p-2 text-xs text-gray-700">
-                  {t.date && (
-                    <div className="text-xs font-semibold text-gray-900 mb-1">{t.date}</div>
-                  )}
                   <div className="line-clamp-3">{t.caption || "Media"}</div>
                   <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                     Open original →
@@ -157,9 +153,6 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
                   <source src={t.url} />
                 </video>
                 <figcaption className="p-2 text-xs text-gray-700">
-                  {t.date && (
-                    <div className="text-xs font-semibold text-gray-900 mb-1">{t.date}</div>
-                  )}
                   <div className="line-clamp-3">{t.caption || "Video"}</div>
                   <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                     Open original
@@ -186,9 +179,6 @@ const MediaGallery: React.FC<{ voyageSlug: string }> = ({ voyageSlug }) => {
                 <div className="text-gray-800 font-medium mb-1">
                   {isPDF ? 'PDF Document' : isAudio ? 'Audio File' : 'Document'}
                 </div>
-                {t.date && (
-                  <div className="text-xs font-semibold text-gray-900 mb-1">{t.date}</div>
-                )}
                 <div className="text-gray-600 text-xs line-clamp-2 mb-2">{t.caption || "External media"}</div>
                 <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
                   Open in new tab →
