@@ -362,6 +362,9 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     // Build chronological list of all dates with media
     const mediaDates: Array<{ year: string; month: string; day: string; date: dayjs.Dayjs }> = [];
 
+    console.log('navigateMedia called, direction:', direction);
+    console.log('Timeline data:', timelineData);
+
     years.forEach(year => {
       const yearMonths = Object.keys(timelineData[year]).sort((a, b) =>
         dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
@@ -388,10 +391,15 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     // Sort by actual date
     mediaDates.sort((a, b) => a.date.valueOf() - b.date.valueOf());
 
+    console.log('Found media dates:', mediaDates.length);
+    console.log('Media dates:', mediaDates);
+
     // Find current position
     const currentIndex = mediaDates.findIndex(d =>
       d.year === currentYear && d.month === currentMonth && d.day === currentDay
     );
+
+    console.log('Current index:', currentIndex, 'Current date:', {currentYear, currentMonth, currentDay});
 
     if (currentIndex === -1 && mediaDates.length > 0) {
       // Not on a media date, find nearest
