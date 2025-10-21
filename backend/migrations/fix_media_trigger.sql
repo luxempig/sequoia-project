@@ -5,9 +5,12 @@
 
 -- Drop the broken trigger from media table
 DROP TRIGGER IF EXISTS update_voyage_media_flags_trigger ON sequoia.media;
+DROP TRIGGER IF EXISTS media_update_trigger ON sequoia.media;
+DROP TRIGGER IF EXISTS voyage_media_insert_trigger ON sequoia.voyage_media;
+DROP TRIGGER IF EXISTS voyage_media_delete_trigger ON sequoia.voyage_media;
 
 -- Drop the function if it exists (we'll recreate it properly)
-DROP FUNCTION IF EXISTS sequoia.update_voyage_media_flags();
+DROP FUNCTION IF EXISTS sequoia.update_voyage_media_flags() CASCADE;
 
 -- Create the function to update has_photo and has_video flags
 CREATE OR REPLACE FUNCTION sequoia.update_voyage_media_flags()
