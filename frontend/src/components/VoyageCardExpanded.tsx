@@ -443,6 +443,27 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
+  const handleDetachMedia = async (mediaSlug: string, category: string) => {
+    if (!confirm('Remove this media from the voyage?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/curator/media/unlink-from-voyage?media_slug=${mediaSlug}&voyage_slug=${voyage.voyage_slug}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to detach media');
+      }
+
+      alert('✓ Media removed from voyage');
+      loadMedia(); // Reload media list
+    } catch (error) {
+      alert(`Failed to remove media: ${error}`);
+    }
+  };
+
   // Delete voyage
   const handleDelete = () => {
     if (!confirm(`Are you sure you want to delete voyage "${voyage.title || voyage.voyage_slug}"? This cannot be undone.`)) {
@@ -787,6 +808,41 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 </div>
               </div>
 
+              {/* Currently Attached Media */}
+              {sourceMedia.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Attached Source Media ({sourceMedia.length}):</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {sourceMedia.map((media) => (
+                      <div key={media.media_slug} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
+                          {media.media_type === 'image' ? (
+                            <img
+                              src={media.public_derivative_url || media.s3_url || media.url || ''}
+                              alt={media.title || 'Source'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                              <div className="text-2xl">
+                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleDetachMedia(media.media_slug, 'source')}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
+                          title="Remove from voyage"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Upload Source Media */}
               <div className="space-y-2">
                 <button
@@ -931,6 +987,41 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   </div>
                 </div>
               </div>
+
+              {/* Currently Attached Media */}
+              {additionalSourceMedia.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Attached Additional Source Media ({additionalSourceMedia.length}):</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {additionalSourceMedia.map((media) => (
+                      <div key={media.media_slug} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
+                          {media.media_type === 'image' ? (
+                            <img
+                              src={media.public_derivative_url || media.s3_url || media.url || ''}
+                              alt={media.title || 'Additional Source'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                              <div className="text-2xl">
+                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleDetachMedia(media.media_slug, 'additional_source')}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
+                          title="Remove from voyage"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Upload Additional Source Media */}
               <div className="space-y-2">
