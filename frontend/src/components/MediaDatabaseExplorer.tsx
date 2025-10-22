@@ -97,8 +97,8 @@ const MediaDatabaseExplorer: React.FC = () => {
           message: `Are you sure you want to permanently delete "${media.title || media.media_slug}"?`,
           details: [
             'This will:',
-            '• Delete from database',
-            '• Delete from S3 storage',
+            '• Delete from database only',
+            '• S3 files will NOT be deleted',
             '',
             'This action cannot be undone.'
           ],
@@ -124,7 +124,7 @@ const MediaDatabaseExplorer: React.FC = () => {
     try {
       setDeleteInProgress(true);
 
-      const response = await fetch(`/api/curator/media/${media.media_slug}?delete_from_s3=true`, {
+      const response = await fetch(`/api/curator/media/${media.media_slug}?delete_from_s3=false`, {
         method: 'DELETE'
       });
 
@@ -143,10 +143,9 @@ const MediaDatabaseExplorer: React.FC = () => {
         details: [
           result.voyages_removed_from > 0 ? `• Removed from ${result.voyages_removed_from} voyage(s)` : '',
           '• Deleted from database',
-          result.s3_deleted ? '• Deleted from S3 canonical bucket' : '',
-          result.derivative_deleted ? '• Deleted from S3 public bucket' : '',
+          '• S3 files preserved',
           '',
-          'This action cannot be undone.'
+          'Database record removed successfully.'
         ].filter(Boolean)
       });
 

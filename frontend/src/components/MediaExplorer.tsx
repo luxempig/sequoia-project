@@ -252,8 +252,8 @@ const MediaExplorer: React.FC = () => {
         return;
       }
 
-      // Delete media (this will delete from DB and S3)
-      const response = await fetch(`/api/curator/media/${mediaItem.media_slug}?delete_from_s3=true`, {
+      // Delete media (only from DB, not from S3)
+      const response = await fetch(`/api/curator/media/${mediaItem.media_slug}?delete_from_s3=false`, {
         method: "DELETE"
       });
 
@@ -307,7 +307,7 @@ const MediaExplorer: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Media Explorer</h1>
-                <p className="text-gray-600">Browse, upload, edit, and delete media in sequoia-canonical S3 bucket</p>
+                <p className="text-gray-600">Browse, upload, and edit media in sequoia-canonical S3 bucket</p>
               </div>
               <button
                 onClick={() => setShowUploadModal(true)}
@@ -565,7 +565,7 @@ const MediaExplorer: React.FC = () => {
                       onClick={() => handleDelete(selectedFile)}
                       className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      Delete from S3 & DB
+                      Delete from Database
                     </button>
                   </div>
                 </div>
