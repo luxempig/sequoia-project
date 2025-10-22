@@ -6,7 +6,7 @@ interface MediaUploadDialogProps {
   onSuccess: (mediaSlug: string) => void;
   voyageSlug?: string; // If provided, will link to this voyage
   autoLinkToVoyage?: boolean; // If true, automatically link after upload
-  mediaCategory?: 'general' | 'source' | 'additional_source'; // Category for this upload
+  mediaCategory?: 'source' | 'additional_source'; // Category for this upload
 }
 
 const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
@@ -15,7 +15,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   onSuccess,
   voyageSlug,
   autoLinkToVoyage = false,
-  mediaCategory = 'general',
+  mediaCategory: initialMediaCategory = 'source',
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -29,6 +29,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   const [previewUrl, setPreviewUrl] = useState("");
   const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
   const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
+  const [mediaCategory, setMediaCategory] = useState<'source' | 'additional_source'>(initialMediaCategory);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -207,6 +208,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
     setError("");
     setShowDuplicateConfirm(false);
     setPotentialDuplicates([]);
+    setMediaCategory(initialMediaCategory);
   };
 
   const handleClose = () => {
@@ -297,6 +299,27 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                   <option value="other">Other</option>
                 </select>
               </div>
+
+              {/* Media Category (only show when linked to voyage) */}
+              {voyageSlug && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={mediaCategory}
+                    onChange={(e) => setMediaCategory(e.target.value as 'source' | 'additional_source')}
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="source">Source</option>
+                    <option value="additional_source">Additional Source</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Sources appear in the main Sources section, Additional Sources appear separately
+                  </p>
+                </div>
+              )}
+
 
               {/* Credit */}
               <div>
