@@ -170,6 +170,78 @@ def check_media_usage(media_slug: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+@router.post("/link-to-voyage", response_model=Dict[str, str])
+def link_media_to_voyage(link: VoyageMediaLink) -> Dict[str, str]:
+    """Link media to a voyage"""
+    try:
+        with db_cursor() as cur:
+            # Verify media exists
+            cur.execute("SELECT media_slug FROM sequoia.media WHERE media_slug = %s", (link.media_slug,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail=f"Media '{link.media_slug}' not found")
+
+            # Verify voyage exists
+            cur.execute("SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s", (link.voyage_slug,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail=f"Voyage '{link.voyage_slug}' not found")
+
+            # Insert or update the link
+            cur.execute("""
+                INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, media_category, sort_order, notes)
+                VALUES (%(voyage_slug)s, %(media_slug)s, %(media_category)s, %(sort_order)s, %(notes)s)
+                ON CONFLICT (voyage_slug, media_slug)
+                DO UPDATE SET
+                    media_category = EXCLUDED.media_category,
+                    sort_order = EXCLUDED.sort_order,
+                    notes = EXCLUDED.notes
+            """, link.model_dump())
+
+            LOG.info(f"Linked media {link.media_slug} to voyage {link.voyage_slug}")
+
+            return {
+                "message": "Media linked to voyage successfully",
+                "media_slug": link.media_slug,
+                "voyage_slug": link.voyage_slug
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error linking media to voyage: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.delete("/unlink-from-voyage")
+def unlink_media_from_voyage(media_slug: str, voyage_slug: str) -> Dict[str, str]:
+    """Remove media from a voyage"""
+    try:
+        with db_cursor() as cur:
+            cur.execute(
+                "DELETE FROM sequoia.voyage_media WHERE voyage_slug = %s AND media_slug = %s",
+                (voyage_slug, media_slug)
+            )
+
+            if cur.rowcount == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No link found between media '{media_slug}' and voyage '{voyage_slug}'"
+                )
+
+            LOG.info(f"Unlinked media {media_slug} from voyage {voyage_slug}")
+
+            return {
+                "message": "Media unlinked from voyage successfully",
+                "media_slug": media_slug,
+                "voyage_slug": voyage_slug
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error unlinking media from voyage: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
 @router.delete("/{media_slug}")
 def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any]:
     """Delete a media item and optionally remove from S3"""
@@ -224,78 +296,6 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any
         raise
     except Exception as e:
         LOG.error(f"Error deleting media: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-
-@router.post("/link-to-voyage", response_model=Dict[str, str])
-def link_media_to_voyage(link: VoyageMediaLink) -> Dict[str, str]:
-    """Link media to a voyage"""
-    try:
-        with db_cursor() as cur:
-            # Verify media exists
-            cur.execute("SELECT media_slug FROM sequoia.media WHERE media_slug = %s", (link.media_slug,))
-            if not cur.fetchone():
-                raise HTTPException(status_code=404, detail=f"Media '{link.media_slug}' not found")
-
-            # Verify voyage exists
-            cur.execute("SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s", (link.voyage_slug,))
-            if not cur.fetchone():
-                raise HTTPException(status_code=404, detail=f"Voyage '{link.voyage_slug}' not found")
-
-            # Insert or update the link
-            cur.execute("""
-                INSERT INTO sequoia.voyage_media (voyage_slug, media_slug, sort_order, notes, media_category)
-                VALUES (%(voyage_slug)s, %(media_slug)s, %(sort_order)s, %(notes)s, %(media_category)s)
-                ON CONFLICT (voyage_slug, media_slug)
-                DO UPDATE SET
-                    sort_order = EXCLUDED.sort_order,
-                    notes = EXCLUDED.notes,
-                    media_category = EXCLUDED.media_category
-            """, link.model_dump())
-
-            LOG.info(f"Linked media {link.media_slug} to voyage {link.voyage_slug}")
-
-            return {
-                "message": "Media linked to voyage successfully",
-                "media_slug": link.media_slug,
-                "voyage_slug": link.voyage_slug
-            }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        LOG.error(f"Error linking media to voyage: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-
-@router.delete("/unlink-from-voyage")
-def unlink_media_from_voyage(media_slug: str, voyage_slug: str) -> Dict[str, str]:
-    """Remove media from a voyage"""
-    try:
-        with db_cursor() as cur:
-            cur.execute(
-                "DELETE FROM sequoia.voyage_media WHERE voyage_slug = %s AND media_slug = %s",
-                (voyage_slug, media_slug)
-            )
-
-            if cur.rowcount == 0:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"No link found between media '{media_slug}' and voyage '{voyage_slug}'"
-                )
-
-            LOG.info(f"Unlinked media {media_slug} from voyage {voyage_slug}")
-
-            return {
-                "message": "Media unlinked from voyage successfully",
-                "media_slug": media_slug,
-                "voyage_slug": voyage_slug
-            }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        LOG.error(f"Error unlinking media from voyage: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
