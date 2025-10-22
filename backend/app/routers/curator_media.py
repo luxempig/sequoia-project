@@ -489,7 +489,7 @@ async def upload_media_file(
 def search_media(
     q: Optional[str] = None,
     media_type: Optional[str] = None,
-    limit: int = 50
+    limit: int = 2000
 ) -> List[Dict[str, Any]]:
     """Search for media (useful for autocomplete in forms)"""
     try:
@@ -600,8 +600,7 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, director
             Key=thumb_key,
             Body=thumb_bytes,
             ContentType='image/jpeg',
-            CacheControl='public, max-age=31536000',  # Cache for 1 year
-            ACL='public-read'  # Make thumbnails publicly accessible
+            CacheControl='public, max-age=31536000'  # Cache for 1 year
         )
 
         thumbnail_url = f"https://{public_bucket}.s3.amazonaws.com/{thumb_key}"
@@ -622,8 +621,7 @@ def upload_to_s3(file_content: bytes, bucket: str, key: str, content_type: str) 
             Bucket=bucket,
             Key=key,
             Body=file_content,
-            ContentType=content_type,
-            ACL='public-read'  # Make files publicly accessible
+            ContentType=content_type
         )
 
         s3_url = f"https://{bucket}.s3.amazonaws.com/{key}"

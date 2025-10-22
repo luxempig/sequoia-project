@@ -19,7 +19,7 @@ def list_media(
     voyage_slug: Optional[str] = Query(None, description="Filter by a specific voyage via voyage_media"),
     presign: bool = Query(False),
     ttl: Optional[int] = Query(None, ge=60, le=86400),
-    limit: int = Query(200, ge=1, le=500),
+    limit: int = Query(200, ge=1, le=2000),
     offset: int = Query(0, ge=0),
 ) -> List[Dict[str, Any]]:
     conn = get_connection()
