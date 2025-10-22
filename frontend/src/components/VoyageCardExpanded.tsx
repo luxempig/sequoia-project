@@ -572,12 +572,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       {isEditing ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-700">Start Date</label>
+            <label className="block text-xs font-medium text-gray-700">Start Date (YYYY-MM-DD)</label>
             <input
               type="date"
               value={currentVoyage.start_date || ''}
               onChange={(e) => updateField('start_date', e.target.value || null)}
               className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="YYYY-MM-DD"
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">Start Location</label>
             <input
@@ -590,12 +591,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           </div>
 
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-700">End Date</label>
+            <label className="block text-xs font-medium text-gray-700">End Date (YYYY-MM-DD)</label>
             <input
               type="date"
               value={currentVoyage.end_date || ''}
               onChange={(e) => updateField('end_date', e.target.value || null)}
               className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="YYYY-MM-DD"
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">End Location</label>
             <input

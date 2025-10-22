@@ -242,11 +242,12 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date (YYYY-MM-DD)</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  placeholder="YYYY-MM-DD"
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
