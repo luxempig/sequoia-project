@@ -573,7 +573,6 @@ const MediaExplorer: React.FC = () => {
             </div>
           )}
         </div>
-        </div>
       </div>
 
       {/* Upload Modal */}
