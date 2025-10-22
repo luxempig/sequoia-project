@@ -325,3 +325,30 @@ def search_people(
     except Exception as e:
         LOG.error(f"Error searching people: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.get("/check-similar", response_model=List[Dict[str, Any]])
+def check_similar_people(full_name: str) -> List[Dict[str, Any]]:
+    """Check for people with similar first names (for duplicate prevention)"""
+    try:
+        with db_cursor(read_only=True) as cur:
+            # Extract first name (split on space, take first part)
+            first_name = full_name.split()[0] if full_name else ""
+
+            if not first_name:
+                return []
+
+            # Find people with matching first name
+            cur.execute("""
+                SELECT * FROM sequoia.people
+                WHERE full_name ILIKE %s
+                ORDER BY full_name
+                LIMIT 10
+            """, (f"{first_name}%",))
+
+            rows = cur.fetchall()
+            return [dict(row) for row in rows]
+
+    except Exception as e:
+        LOG.error(f"Error checking similar people: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

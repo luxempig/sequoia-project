@@ -206,9 +206,27 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     const fullName = prompt("Enter person's full name:");
     if (!fullName || !fullName.trim()) return;
 
-    const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
-    if (!role) return;
+    // Check for similar people with same first name
+    try {
+      const similarResponse = await fetch(`/api/curator/people/check-similar?full_name=${encodeURIComponent(fullName.trim())}`);
+      if (similarResponse.ok) {
+        const similarPeople = await similarResponse.json();
+        if (similarPeople.length > 0) {
+          const names = similarPeople.map((p: Person) => `  • ${p.full_name}${p.role_title ? ` (${p.role_title})` : ''}`).join('\n');
+          const proceed = confirm(
+            `⚠️ Found existing people with similar names:\n\n${names}\n\nAre you sure you want to create a new person named "${fullName}"?\n\nClick OK to create new person, or Cancel to go back and select an existing person.`
+          );
+          if (!proceed) {
+            return; // User chose to cancel
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to check for similar people:', error);
+      // Continue anyway if the check fails
+    }
 
+    const role = prompt(`Enter role/title for ${fullName}:`, "");
     const bioUrl = prompt(`Enter bio/Wikipedia URL for ${fullName} (optional):`, "");
     const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
 
@@ -220,7 +238,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         body: JSON.stringify({
           person_slug: 'auto', // Auto-generate from name
           full_name: fullName.trim(),
-          role_title: role,
+          role_title: role || null,
           organization: null,
           birth_year: null,
           death_year: null,
@@ -237,21 +255,21 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       const newPerson = await createResponse.json();
 
-      // Link to voyage
+      // Link to voyage (no capacity_role needed)
       const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           person_slug: newPerson.person_slug,
           voyage_slug: voyage.voyage_slug,
-          capacity_role: role,
+          capacity_role: null,
           is_crew: isCrew,
           notes: null
         })
       });
 
       if (linkResponse.ok) {
-        alert(`${fullName} created and linked successfully!`);
+        alert(`✓ ${fullName} created and linked successfully!`);
         setPersonSearch("");
         setSearchResults([]);
         // Reload people
@@ -266,9 +284,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   };
 
   const linkPerson = async (personSlug: string, fullName: string) => {
-    const role = prompt(`Enter role for ${fullName} on this voyage:`, "Passenger");
-    if (!role) return;
-
     const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
 
     try {
@@ -278,14 +293,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         body: JSON.stringify({
           person_slug: personSlug,
           voyage_slug: voyage.voyage_slug,
-          capacity_role: role,
+          capacity_role: null,
           is_crew: isCrew,
           notes: null
         })
       });
 
       if (response.ok) {
-        alert(`${fullName} linked successfully!`);
+        alert(`✓ ${fullName} linked successfully!`);
         setPersonSearch("");
         setSearchResults([]);
         // Reload people
