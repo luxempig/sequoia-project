@@ -94,4 +94,5 @@ export interface MediaItem {
   // From voyage_media join (when using /media/by-voyage)
   sort_order?: number | null;
   voyage_media_notes?: string | null;
+  media_category?: string | null; // 'general', 'source', 'additional_source'
 }

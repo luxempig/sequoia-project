@@ -6,6 +6,7 @@ interface MediaUploadDialogProps {
   onSuccess: (mediaSlug: string) => void;
   voyageSlug?: string; // If provided, will link to this voyage
   autoLinkToVoyage?: boolean; // If true, automatically link after upload
+  mediaCategory?: 'general' | 'source' | 'additional_source'; // Category for this upload
 }
 
 const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
@@ -14,6 +15,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   onSuccess,
   voyageSlug,
   autoLinkToVoyage = false,
+  mediaCategory = 'general',
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -78,9 +80,10 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       formData.append("media_slug", mediaSlug);
       formData.append("title", title);
       formData.append("media_type", mediaType);
+      formData.append("media_category", mediaCategory);
       if (credit) formData.append("credit", credit);
       if (date) formData.append("date", date);
-      if (description) formData.append("description", description);
+      if (description) formData.append("description_markdown", description);
       if (tags) formData.append("tags", tags);
       if (voyageSlug) formData.append("voyage_slug", voyageSlug);
       // Note: president_slug can be added here if needed for standalone uploads

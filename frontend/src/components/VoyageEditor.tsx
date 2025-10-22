@@ -51,13 +51,17 @@ const VoyageEditor: React.FC = () => {
 
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
-  const [sourceMediaFiles, setSourceMediaFiles] = useState<File[]>([]);
+  const [sourceMediaFiles, setSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
   const [uploadingSourceMedia, setUploadingSourceMedia] = useState(false);
 
   // Additional sources (separate from primary sources)
   const [additionalSourceUrls, setAdditionalSourceUrls] = useState<string[]>([]);
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
-  const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<File[]>([]);
+  const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
+
+  // Existing media (loaded in edit mode)
+  const [existingSourceMedia, setExistingSourceMedia] = useState<any[]>([]);
+  const [existingAdditionalSourceMedia, setExistingAdditionalSourceMedia] = useState<any[]>([]);
 
   // Passenger management
   const [selectedPassengers, setSelectedPassengers] = useState<Array<{person_slug: string, full_name: string, role_title?: string, is_crew: boolean}>>([]);
@@ -83,9 +87,10 @@ const VoyageEditor: React.FC = () => {
 
     const loadVoyageData = async () => {
       try {
-        const [voyageData, peopleData] = await Promise.all([
+        const [voyageData, peopleData, mediaData] = await Promise.all([
           api.getVoyage(slug),
-          api.getVoyagePeople(slug)
+          api.getVoyagePeople(slug),
+          api.getVoyageMedia(slug)
         ]);
 
         // Set voyage data
@@ -110,6 +115,12 @@ const VoyageEditor: React.FC = () => {
           is_crew: p.is_crew || false
         }));
         setSelectedPassengers(passengers);
+
+        // Filter and set existing media by category
+        const sources = mediaData.filter((m: any) => m.media_category === 'source');
+        const additionalSources = mediaData.filter((m: any) => m.media_category === 'additional_source');
+        setExistingSourceMedia(sources);
+        setExistingAdditionalSourceMedia(additionalSources);
 
       } catch (error) {
         console.error('Failed to load voyage data:', error);
@@ -227,13 +238,25 @@ const VoyageEditor: React.FC = () => {
 
   const handleSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSourceMediaFiles([...sourceMediaFiles, ...Array.from(e.target.files)]);
+      const newFiles = Array.from(e.target.files).map(file => ({
+        file,
+        date: '',
+        credit: '',
+        description: ''
+      }));
+      setSourceMediaFiles([...sourceMediaFiles, ...newFiles]);
       e.target.value = ''; // Reset input
     }
   };
 
   const removeSourceMediaFile = (index: number) => {
     setSourceMediaFiles(sourceMediaFiles.filter((_, i) => i !== index));
+  };
+
+  const updateSourceMediaMetadata = (index: number, field: 'date' | 'credit' | 'description', value: string) => {
+    const updated = [...sourceMediaFiles];
+    updated[index][field] = value;
+    setSourceMediaFiles(updated);
   };
 
   // Additional source handlers
@@ -250,13 +273,25 @@ const VoyageEditor: React.FC = () => {
 
   const handleAdditionalSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setAdditionalSourceMediaFiles([...additionalSourceMediaFiles, ...Array.from(e.target.files)]);
+      const newFiles = Array.from(e.target.files).map(file => ({
+        file,
+        date: '',
+        credit: '',
+        description: ''
+      }));
+      setAdditionalSourceMediaFiles([...additionalSourceMediaFiles, ...newFiles]);
       e.target.value = '';
     }
   };
 
   const removeAdditionalSourceMediaFile = (index: number) => {
     setAdditionalSourceMediaFiles(additionalSourceMediaFiles.filter((_, i) => i !== index));
+  };
+
+  const updateAdditionalSourceMediaMetadata = (index: number, field: 'date' | 'credit' | 'description', value: string) => {
+    const updated = [...additionalSourceMediaFiles];
+    updated[index][field] = value;
+    setAdditionalSourceMediaFiles(updated);
   };
 
   // Passenger handlers
@@ -406,21 +441,24 @@ const VoyageEditor: React.FC = () => {
       // Upload source media files if any
       if (sourceMediaFiles.length > 0) {
         setUploadingSourceMedia(true);
-        for (const file of sourceMediaFiles) {
+        for (const fileWithMetadata of sourceMediaFiles) {
           try {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', fileWithMetadata.file);
             formData.append('media_slug', 'auto');
             formData.append('voyage_slug', voyageSlug);
             formData.append('media_category', 'source');
-            formData.append('title', file.name);
+            formData.append('title', fileWithMetadata.file.name);
+            if (fileWithMetadata.date) formData.append('date', fileWithMetadata.date);
+            if (fileWithMetadata.credit) formData.append('credit', fileWithMetadata.credit);
+            if (fileWithMetadata.description) formData.append('description_markdown', fileWithMetadata.description);
 
             await fetch('/api/curator/media/upload', {
               method: 'POST',
               body: formData
             });
           } catch (err) {
-            console.error(`Failed to upload source media ${file.name}:`, err);
+            console.error(`Failed to upload source media ${fileWithMetadata.file.name}:`, err);
           }
         }
         setUploadingSourceMedia(false);
@@ -428,21 +466,24 @@ const VoyageEditor: React.FC = () => {
 
       // Upload additional source media files if any
       if (additionalSourceMediaFiles.length > 0) {
-        for (const file of additionalSourceMediaFiles) {
+        for (const fileWithMetadata of additionalSourceMediaFiles) {
           try {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', fileWithMetadata.file);
             formData.append('media_slug', 'auto');
             formData.append('voyage_slug', voyageSlug);
             formData.append('media_category', 'additional_source');
-            formData.append('title', file.name);
+            formData.append('title', fileWithMetadata.file.name);
+            if (fileWithMetadata.date) formData.append('date', fileWithMetadata.date);
+            if (fileWithMetadata.credit) formData.append('credit', fileWithMetadata.credit);
+            if (fileWithMetadata.description) formData.append('description_markdown', fileWithMetadata.description);
 
             await fetch('/api/curator/media/upload', {
               method: 'POST',
               body: formData
             });
           } catch (err) {
-            console.error(`Failed to upload additional source media ${file.name}:`, err);
+            console.error(`Failed to upload additional source media ${fileWithMetadata.file.name}:`, err);
           }
         }
       }
@@ -703,6 +744,34 @@ const VoyageEditor: React.FC = () => {
         <div className="pt-4 border-t border-gray-200">
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Sources</h4>
 
+          {/* Existing Source Media (in edit mode) */}
+          {isEditMode && existingSourceMedia.length > 0 && (
+            <div className="space-y-2 mb-4">
+              <label className="text-xs font-medium text-gray-600">Existing Source Media:</label>
+              {existingSourceMedia.map((media) => {
+                const captionParts: string[] = [];
+                if (media.date) captionParts.push(media.date);
+                if (media.credit) captionParts.push(media.credit);
+                if (media.description_markdown) captionParts.push(media.description_markdown);
+                const caption = captionParts.join(' — ') || media.title || 'Source Media';
+
+                return (
+                  <div key={media.media_slug} className="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200">
+                    <span className="flex-1 text-sm text-gray-700">📎 {caption}</span>
+                    <a
+                      href={media.url || media.s3_url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      View
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* Text/URL Sources */}
           <div className="space-y-2 mb-4">
             <label className="text-xs font-medium text-gray-600">Text/URL Sources:</label>
@@ -743,16 +812,41 @@ const VoyageEditor: React.FC = () => {
           {/* Media Sources */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-600">Media Sources (PDFs, images, documents):</label>
-            {sourceMediaFiles.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-blue-50 p-2 rounded">
-                <span className="flex-1 text-sm text-gray-700">📎 {file.name}</span>
-                <span className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</span>
-                <button
-                  onClick={() => removeSourceMediaFile(index)}
-                  className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
-                >
-                  Remove
-                </button>
+            {sourceMediaFiles.map((fileWithMetadata, index) => (
+              <div key={index} className="bg-blue-50 p-3 rounded border border-blue-200 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-sm font-medium text-gray-700">📎 {fileWithMetadata.file.name}</span>
+                  <span className="text-xs text-gray-500">{(fileWithMetadata.file.size / 1024).toFixed(1)} KB</span>
+                  <button
+                    onClick={() => removeSourceMediaFile(index)}
+                    className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="date"
+                    value={fileWithMetadata.date}
+                    onChange={(e) => updateSourceMediaMetadata(index, 'date', e.target.value)}
+                    placeholder="Date"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                  <input
+                    type="text"
+                    value={fileWithMetadata.credit}
+                    onChange={(e) => updateSourceMediaMetadata(index, 'credit', e.target.value)}
+                    placeholder="Credit/Source"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                  <input
+                    type="text"
+                    value={fileWithMetadata.description}
+                    onChange={(e) => updateSourceMediaMetadata(index, 'description', e.target.value)}
+                    placeholder="Description"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                </div>
               </div>
             ))}
             <div>
@@ -774,6 +868,34 @@ const VoyageEditor: React.FC = () => {
         {/* Additional Sources */}
         <div className="pt-4 border-t border-gray-200">
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Additional Sources</h4>
+
+          {/* Existing Additional Source Media (in edit mode) */}
+          {isEditMode && existingAdditionalSourceMedia.length > 0 && (
+            <div className="space-y-2 mb-4">
+              <label className="text-xs font-medium text-gray-600">Existing Additional Source Media:</label>
+              {existingAdditionalSourceMedia.map((media) => {
+                const captionParts: string[] = [];
+                if (media.date) captionParts.push(media.date);
+                if (media.credit) captionParts.push(media.credit);
+                if (media.description_markdown) captionParts.push(media.description_markdown);
+                const caption = captionParts.join(' — ') || media.title || 'Additional Source Media';
+
+                return (
+                  <div key={media.media_slug} className="flex items-center gap-2 bg-purple-50 p-2 rounded border border-purple-200">
+                    <span className="flex-1 text-sm text-gray-700">📎 {caption}</span>
+                    <a
+                      href={media.url || media.s3_url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-purple-600 hover:underline"
+                    >
+                      View
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Text/URL Additional Sources */}
           <div className="space-y-2 mb-4">
@@ -815,16 +937,41 @@ const VoyageEditor: React.FC = () => {
           {/* Media Additional Sources */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-gray-600">Media Additional Sources (PDFs, images, documents):</label>
-            {additionalSourceMediaFiles.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-purple-50 p-2 rounded">
-                <span className="flex-1 text-sm text-gray-700">📎 {file.name}</span>
-                <span className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</span>
-                <button
-                  onClick={() => removeAdditionalSourceMediaFile(index)}
-                  className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
-                >
-                  Remove
-                </button>
+            {additionalSourceMediaFiles.map((fileWithMetadata, index) => (
+              <div key={index} className="bg-purple-50 p-3 rounded border border-purple-200 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-sm font-medium text-gray-700">📎 {fileWithMetadata.file.name}</span>
+                  <span className="text-xs text-gray-500">{(fileWithMetadata.file.size / 1024).toFixed(1)} KB</span>
+                  <button
+                    onClick={() => removeAdditionalSourceMediaFile(index)}
+                    className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="date"
+                    value={fileWithMetadata.date}
+                    onChange={(e) => updateAdditionalSourceMediaMetadata(index, 'date', e.target.value)}
+                    placeholder="Date"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                  <input
+                    type="text"
+                    value={fileWithMetadata.credit}
+                    onChange={(e) => updateAdditionalSourceMediaMetadata(index, 'credit', e.target.value)}
+                    placeholder="Credit/Source"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                  <input
+                    type="text"
+                    value={fileWithMetadata.description}
+                    onChange={(e) => updateAdditionalSourceMediaMetadata(index, 'description', e.target.value)}
+                    placeholder="Description"
+                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                  />
+                </div>
               </div>
             ))}
             <div>

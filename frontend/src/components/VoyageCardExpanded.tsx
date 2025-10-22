@@ -58,6 +58,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
 
+  // Additional Source URLs state
+  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<string[]>([]);
+  const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
+
   // Person search state
   const [personSearch, setPersonSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Person[]>([]);
@@ -66,6 +70,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   // Media modal state
   const [showMediaSearch, setShowMediaSearch] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
+  const [showSourceMediaUpload, setShowSourceMediaUpload] = useState(false);
+  const [showAdditionalSourceMediaUpload, setShowAdditionalSourceMediaUpload] = useState(false);
 
   // Media loading function
   const loadMedia = () => {
@@ -113,7 +119,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     } else if (typeof voyage.source_urls === 'string') {
       setSourceUrls([voyage.source_urls]);
     }
-  }, [voyage.voyage_slug, voyage.source_urls]);
+
+    // Initialize additional source URLs
+    if (voyage.additional_sources) {
+      const additionalUrls = voyage.additional_sources.split('\n').filter((s: string) => s.trim());
+      setAdditionalSourceUrls(additionalUrls);
+    }
+  }, [voyage.voyage_slug, voyage.source_urls, voyage.additional_sources]);
 
   const handleSave = async () => {
     if (onSave) {
@@ -145,6 +157,22 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     const updated = sourceUrls.filter((_, i) => i !== index);
     setSourceUrls(updated);
     updateField('source_urls', updated as any);
+  };
+
+  // Additional source URLs management
+  const addAdditionalSourceUrl = () => {
+    if (newAdditionalSourceUrl.trim()) {
+      const updated = [...additionalSourceUrls, newAdditionalSourceUrl.trim()];
+      setAdditionalSourceUrls(updated);
+      updateField('additional_sources', updated.join('\n'));
+      setNewAdditionalSourceUrl("");
+    }
+  };
+
+  const removeAdditionalSourceUrl = (index: number) => {
+    const updated = additionalSourceUrls.filter((_, i) => i !== index);
+    setAdditionalSourceUrls(updated);
+    updateField('additional_sources', updated.join('\n'));
   };
 
   // Person search and linking
@@ -659,37 +687,53 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         <div className="pt-4 border-t border-gray-200">
           <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Sources</h4>
           {isEditing ? (
-            <div className="space-y-2">
-              {sourceUrls.map((url, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={url}
-                    readOnly
-                    className="flex-1 border rounded px-2 py-1 bg-gray-50 text-xs"
-                  />
-                  <button
-                    onClick={() => removeSourceUrl(index)}
-                    className="text-red-600 hover:text-red-800 text-xs px-2"
-                  >
-                    Remove
-                  </button>
+            <div className="space-y-3">
+              {/* Text/URL Sources */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Text/URL Sources:</label>
+                <div className="space-y-2">
+                  {sourceUrls.map((url, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={url}
+                        readOnly
+                        className="flex-1 border rounded px-2 py-1 bg-gray-50 text-xs"
+                      />
+                      <button
+                        onClick={() => removeSourceUrl(index)}
+                        className="text-red-600 hover:text-red-800 text-xs px-2"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newSourceUrl}
+                      onChange={(e) => setNewSourceUrl(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
+                      placeholder="URL or source name (e.g., National Archives or https://...)"
+                      className="flex-1 border rounded px-2 py-1 text-xs"
+                    />
+                    <button
+                      onClick={addSourceUrl}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
+                    >
+                      Add Text
+                    </button>
+                  </div>
                 </div>
-              ))}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newSourceUrl}
-                  onChange={(e) => setNewSourceUrl(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
-                  placeholder="URL or source name (e.g., National Archives or https://...)"
-                  className="flex-1 border rounded px-2 py-1 text-xs"
-                />
+              </div>
+
+              {/* Upload Source Media */}
+              <div>
                 <button
-                  onClick={addSourceUrl}
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
+                  onClick={() => setShowSourceMediaUpload(true)}
+                  className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-xs font-medium"
                 >
-                  Add
+                  📎 Upload Source Media (PDF, images, documents)
                 </button>
               </div>
             </div>
@@ -726,6 +770,98 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 }
               })}
             </ul>
+          )}
+        </div>
+      ) : null}
+
+      {/* Additional Sources */}
+      {isEditing || (currentVoyage.additional_sources && currentVoyage.additional_sources.trim()) ? (
+        <div className="pt-4 border-t border-gray-200">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Additional Sources</h4>
+          {isEditing ? (
+            <div className="space-y-3">
+              {/* Text/URL Additional Sources */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Text/URL Additional Sources:</label>
+                <div className="space-y-2">
+                  {additionalSourceUrls.map((url, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={url}
+                        readOnly
+                        className="flex-1 border rounded px-2 py-1 bg-gray-50 text-xs"
+                      />
+                      <button
+                        onClick={() => removeAdditionalSourceUrl(index)}
+                        className="text-red-600 hover:text-red-800 text-xs px-2"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newAdditionalSourceUrl}
+                      onChange={(e) => setNewAdditionalSourceUrl(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addAdditionalSourceUrl()}
+                      placeholder="Additional reference or URL..."
+                      className="flex-1 border rounded px-2 py-1 text-xs"
+                    />
+                    <button
+                      onClick={addAdditionalSourceUrl}
+                      className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 text-xs"
+                    >
+                      Add Text
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Additional Source Media */}
+              <div>
+                <button
+                  onClick={() => setShowAdditionalSourceMediaUpload(true)}
+                  className="w-full bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 text-xs font-medium"
+                >
+                  📎 Upload Additional Source Media (PDF, images, documents)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {currentVoyage.additional_sources?.split('\n').filter(s => s.trim()).map((source, index) => {
+                const trimmed = source.trim();
+                const isUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://');
+                if (isUrl) {
+                  let displayName = trimmed;
+                  try {
+                    const url = new URL(trimmed);
+                    displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
+                  } catch {}
+
+                  return (
+                    <div key={index} className="text-sm">
+                      <a
+                        href={trimmed}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:text-purple-800 hover:underline inline-flex items-center gap-1"
+                      >
+                        🔗 {displayName}
+                      </a>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={index} className="text-sm text-gray-700">
+                      • {trimmed}
+                    </div>
+                  );
+                }
+              })}
+            </div>
           )}
         </div>
       ) : null}
@@ -807,13 +943,42 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
                           {isEditing && (
-                            <button
-                              onClick={() => openEditPerson(p)}
-                              className="text-lg hover:scale-110 transition-transform"
-                              title="Edit person"
-                            >
-                              ✏️
-                            </button>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => openEditPerson(p)}
+                                className="text-lg hover:scale-110 transition-transform"
+                                title="Edit person"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Remove ${p.full_name} from this voyage?`)) return;
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    if (response.ok) {
+                                      const result = await response.json();
+                                      if (result.person_deleted) {
+                                        alert(`${p.full_name} removed and deleted (no other voyages)`);
+                                      }
+                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+                                    } else {
+                                      alert('Failed to remove person');
+                                    }
+                                  } catch (error) {
+                                    console.error('Remove failed:', error);
+                                    alert('Failed to remove person');
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-transform text-lg"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           )}
                         </li>
                       );
@@ -850,13 +1015,42 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
                           {isEditing && (
-                            <button
-                              onClick={() => openEditPerson(p)}
-                              className="text-lg hover:scale-110 transition-transform"
-                              title="Edit person"
-                            >
-                              ✏️
-                            </button>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => openEditPerson(p)}
+                                className="text-lg hover:scale-110 transition-transform"
+                                title="Edit person"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Remove ${p.full_name} from this voyage?`)) return;
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    if (response.ok) {
+                                      const result = await response.json();
+                                      if (result.person_deleted) {
+                                        alert(`${p.full_name} removed and deleted (no other voyages)`);
+                                      }
+                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+                                    } else {
+                                      alert('Failed to remove person');
+                                    }
+                                  } catch (error) {
+                                    console.error('Remove failed:', error);
+                                    alert('Failed to remove person');
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-transform text-lg"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           )}
                         </li>
                       );
@@ -869,40 +1063,220 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         )}
       </div>
 
-      {/* Media Gallery */}
-      {(isEditing || media.filter(m => m.s3_url?.includes('sequoia-canonical')).length > 0) && (
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Media ({media.filter(m => m.s3_url?.includes('sequoia-canonical')).length})</h4>
+      {/* Media Gallery - General Media */}
+      {(() => {
+        const generalMedia = media.filter(m => {
+          const category = m.media_category || 'general';
+          return category === 'general' || !m.media_category;
+        });
+        return (isEditing || generalMedia.length > 0) && (
+          <div className="pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Media ({generalMedia.length})</h4>
 
-          {/* Media Management Buttons (Edit Mode Only) */}
-          {isEditing && (
-            <div className="mb-4 flex gap-2">
-              <button
-                onClick={() => setShowMediaSearch(true)}
-                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm font-medium"
-              >
-                🔍 Link Existing Media
-              </button>
-              <button
-                onClick={() => setShowMediaUpload(true)}
-                className="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-medium"
-              >
-                ⬆️ Upload New Media
-              </button>
+            {/* Media Management Buttons (Edit Mode Only) */}
+            {isEditing && (
+              <div className="mb-4 flex gap-2">
+                <button
+                  onClick={() => setShowMediaSearch(true)}
+                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm font-medium"
+                >
+                  🔍 Link Existing Media
+                </button>
+                <button
+                  onClick={() => setShowMediaUpload(true)}
+                  className="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-medium"
+                >
+                  ⬆️ Upload New Media
+                </button>
+              </div>
+            )}
+
+            {loadingMedia ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : (
+              <MediaGallery
+                voyageSlug={currentVoyage.voyage_slug}
+                editMode={isEditing}
+                onMediaChange={loadMedia}
+              />
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Sources - Media Files */}
+      {(() => {
+        const sourceMedia = media.filter(m => m.media_category === 'source');
+        return sourceMedia.length > 0 && (
+          <div className="pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Source Media ({sourceMedia.length})</h4>
+            <div className="space-y-3">
+              {sourceMedia.map((source) => {
+                const captionParts: string[] = [];
+                if (source.date) captionParts.push(source.date);
+                if (source.credit) captionParts.push(source.credit);
+                if (source.description_markdown) captionParts.push(source.description_markdown);
+                const caption = captionParts.join(' — ') || source.title || 'Source Document';
+
+                return (
+                  <div key={source.media_slug} className="border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors bg-blue-50">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
+                        <div className="flex gap-2 items-center">
+                          <a
+                            href={source.url || source.s3_url || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            View Source →
+                          </a>
+                          {isEditing && (
+                            <>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await fetch('/api/curator/media/link-to-voyage', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        media_slug: source.media_slug,
+                                        voyage_slug: voyage.voyage_slug,
+                                        media_category: 'additional_source',
+                                        sort_order: null,
+                                        notes: ''
+                                      })
+                                    });
+                                    loadMedia();
+                                  } catch (error) {
+                                    console.error('Move failed:', error);
+                                    alert('Failed to move media');
+                                  }
+                                }}
+                                className="text-xs text-purple-600 hover:text-purple-800 hover:underline"
+                                title="Move to Additional Sources"
+                              >
+                                → Additional
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm('Remove this media from voyage?')) return;
+                                  try {
+                                    await fetch(
+                                      `/api/curator/media/unlink-from-voyage?media_slug=${encodeURIComponent(source.media_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    loadMedia();
+                                  } catch (error) {
+                                    console.error('Detach failed:', error);
+                                    alert('Failed to detach media');
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+          </div>
+        );
+      })()}
 
-          {loadingMedia ? (
-            <p className="text-sm text-gray-500">Loading...</p>
-          ) : (
-            <MediaGallery
-              voyageSlug={currentVoyage.voyage_slug}
-              editMode={isEditing}
-              onMediaChange={loadMedia}
-            />
-          )}
-        </div>
-      )}
+      {/* Additional Sources - Media Files */}
+      {(() => {
+        const additionalSourceMedia = media.filter(m => m.media_category === 'additional_source');
+        return additionalSourceMedia.length > 0 && (
+          <div className="pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Additional Source Media ({additionalSourceMedia.length})</h4>
+            <div className="space-y-3">
+              {additionalSourceMedia.map((source) => {
+                const captionParts: string[] = [];
+                if (source.date) captionParts.push(source.date);
+                if (source.credit) captionParts.push(source.credit);
+                if (source.description_markdown) captionParts.push(source.description_markdown);
+                const caption = captionParts.join(' — ') || source.title || 'Additional Source Document';
+
+                return (
+                  <div key={source.media_slug} className="border border-purple-200 rounded-lg p-4 hover:bg-purple-50 transition-colors bg-purple-50">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
+                        <div className="flex gap-2 items-center">
+                          <a
+                            href={source.url || source.s3_url || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                          >
+                            View Source →
+                          </a>
+                          {isEditing && (
+                            <>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await fetch('/api/curator/media/link-to-voyage', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        media_slug: source.media_slug,
+                                        voyage_slug: voyage.voyage_slug,
+                                        media_category: 'source',
+                                        sort_order: null,
+                                        notes: ''
+                                      })
+                                    });
+                                    loadMedia();
+                                  } catch (error) {
+                                    console.error('Move failed:', error);
+                                    alert('Failed to move media');
+                                  }
+                                }}
+                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                                title="Move to Sources"
+                              >
+                                ← Sources
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm('Remove this media from voyage?')) return;
+                                  try {
+                                    await fetch(
+                                      `/api/curator/media/unlink-from-voyage?media_slug=${encodeURIComponent(source.media_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    loadMedia();
+                                  } catch (error) {
+                                    console.error('Detach failed:', error);
+                                    alert('Failed to detach media');
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Media Search Modal */}
       <MediaSearchModal
@@ -912,13 +1286,34 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         excludeMediaSlugs={media.map(m => m.media_slug)}
       />
 
-      {/* Media Upload Dialog */}
+      {/* Media Upload Dialog - General */}
       <MediaUploadDialog
         isOpen={showMediaUpload}
         onClose={() => setShowMediaUpload(false)}
         onSuccess={handleMediaUploadSuccess}
         voyageSlug={voyage.voyage_slug}
         autoLinkToVoyage={true}
+        mediaCategory="general"
+      />
+
+      {/* Media Upload Dialog - Sources */}
+      <MediaUploadDialog
+        isOpen={showSourceMediaUpload}
+        onClose={() => setShowSourceMediaUpload(false)}
+        onSuccess={handleMediaUploadSuccess}
+        voyageSlug={voyage.voyage_slug}
+        autoLinkToVoyage={true}
+        mediaCategory="source"
+      />
+
+      {/* Media Upload Dialog - Additional Sources */}
+      <MediaUploadDialog
+        isOpen={showAdditionalSourceMediaUpload}
+        onClose={() => setShowAdditionalSourceMediaUpload(false)}
+        onSuccess={handleMediaUploadSuccess}
+        voyageSlug={voyage.voyage_slug}
+        autoLinkToVoyage={true}
+        mediaCategory="additional_source"
       />
 
       {/* Person Edit Modal */}

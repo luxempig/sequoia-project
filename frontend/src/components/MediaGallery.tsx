@@ -41,6 +41,10 @@ type Tile = {
 };
 
 const toTile = (m: MediaItem): Tile | null => {
+  // Only show general media (not sources or additional sources)
+  const category = m.media_category || 'general';
+  if (category !== 'general') return null;
+
   // Only use S3 URLs from sequoia-canonical bucket
   const s3Url = m.s3_url || "";
   if (!s3Url || !s3Url.includes('sequoia-canonical')) return null;

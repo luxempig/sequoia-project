@@ -77,18 +77,18 @@ export default function VoyageDetail() {
   if (loading) return <p className="p-4">Loading…</p>;
   if (!voyage) return <p className="p-4">Voyage not found</p>;
 
-  // Only show media from S3 canonical bucket
-  const displayableMedia = media.filter(m => {
-    const s3Url = m.s3_url || '';
-    return s3Url.includes('sequoia-canonical');
+  // Filter media by category
+  const generalMedia = media.filter(m => {
+    const category = m.media_category || 'general';
+    return category === 'general' || !m.media_category;
   });
 
-  // Source links are non-S3 URLs from the url field
-  const sourceLinks = media.filter(m => {
-    const url = m.url || '';
-    const s3Url = m.s3_url || '';
-    // Show as source link if it has a URL but it's not an S3 URL
-    return url && !s3Url.includes('sequoia-canonical');
+  const sourceMedia = media.filter(m => {
+    return m.media_category === 'source';
+  });
+
+  const additionalSourceMedia = media.filter(m => {
+    return m.media_category === 'additional_source';
   });
 
   return (
@@ -285,20 +285,20 @@ export default function VoyageDetail() {
         )}
       </div>
 
-      {/* Media Gallery - Only S3 */}
-      {displayableMedia.length > 0 && (
+      {/* Media Gallery - General Media */}
+      {generalMedia.length > 0 && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Media</h3>
           <MediaGallery voyageSlug={voyageSlug} />
         </section>
       )}
 
-      {/* Sources - External links */}
-      {sourceLinks.length > 0 && (
+      {/* Sources - Media files */}
+      {sourceMedia.length > 0 && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Sources</h3>
           <div className="space-y-3">
-            {sourceLinks.map((source) => {
+            {sourceMedia.map((source) => {
               // Build caption from date, credit, and description
               const captionParts: string[] = [];
               if (source.date) captionParts.push(source.date);
@@ -316,6 +316,41 @@ export default function VoyageDetail() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        View Source →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Additional Sources - Media files */}
+      {additionalSourceMedia.length > 0 && (
+        <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold mb-3">Additional Sources</h3>
+          <div className="space-y-3">
+            {additionalSourceMedia.map((source) => {
+              // Build caption from date, credit, and description
+              const captionParts: string[] = [];
+              if (source.date) captionParts.push(source.date);
+              if (source.credit) captionParts.push(source.credit);
+              if (source.description_markdown) captionParts.push(source.description_markdown);
+              const caption = captionParts.join(' — ') || 'Additional Source Document';
+
+              return (
+                <div key={source.media_slug} className="border border-purple-200 rounded-lg p-4 hover:bg-purple-50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 mb-2">{caption}</p>
+                      <a
+                        href={source.url || source.s3_url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 hover:underline"
                       >
                         View Source →
                       </a>
