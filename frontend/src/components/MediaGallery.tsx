@@ -55,9 +55,10 @@ const toTile = (m: MediaItem): Tile | null => {
 
   const caption = parts.join(" — ");
 
-  // Always use original S3 file, never thumbnails
+  // Use thumbnail for display, original for full-size viewing
   if (looksLikeImage(s3Url) || m.media_type === 'image') {
-    return { id: m.media_slug, kind: "image", url: s3Url, caption, originalUrl: s3Url };
+    const thumbnailUrl = m.public_derivative_url || s3Url;
+    return { id: m.media_slug, kind: "image", url: thumbnailUrl, caption, originalUrl: s3Url };
   }
   if (looksLikeVideo(s3Url) || m.media_type === 'video') {
     return { id: m.media_slug, kind: "video", url: s3Url, caption };
