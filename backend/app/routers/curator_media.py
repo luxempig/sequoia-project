@@ -335,38 +335,17 @@ async def upload_media_file(
         # Generate unique ID for filename
         unique_id = str(uuid.uuid4())[:8]
 
-        # Fetch voyage title if voyage_slug is provided, otherwise use "unattached"
-        voyage_title_slug = "unattached"
+        # Fetch president/owner from voyage if provided, otherwise use "unattached"
+        president_owner = "unattached"
         if voyage_slug:
             with db_cursor(read_only=True) as cur:
-                cur.execute("SELECT title FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
+                cur.execute("SELECT president_slug_from_voyage FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
                 voyage_row = cur.fetchone()
-                if voyage_row and voyage_row['title']:
-                    # Slugify the voyage title
-                    voyage_title = voyage_row['title']
-                    voyage_title_slug = re.sub(r'[^a-z0-9-]', '-', voyage_title.lower())
-                    voyage_title_slug = re.sub(r'-+', '-', voyage_title_slug).strip('-')
+                if voyage_row and voyage_row['president_slug_from_voyage']:
+                    president_owner = voyage_row['president_slug_from_voyage']
 
-        # Build directory path: voyage-title/date/credit/
-        directory_parts = [voyage_title_slug]
-
-        # Add date (or "undated")
-        if date:
-            directory_parts.append(date.replace('/', '-'))
-        else:
-            directory_parts.append("undated")
-
-        # Add credit (or "uncredited")
-        if credit:
-            credit_slug = re.sub(r'[^a-z0-9-]', '-', credit.lower())
-            credit_slug = re.sub(r'-+', '-', credit_slug).strip('-')
-            if credit_slug:
-                directory_parts.append(credit_slug)
-            else:
-                directory_parts.append("uncredited")
-        else:
-            directory_parts.append("uncredited")
-
+        # Build directory path: president/media-type/
+        directory_parts = [president_owner, media_type or 'document']
         directory_path = '/'.join(directory_parts)
 
         # Build filename: date_description-slug_unique-id.ext

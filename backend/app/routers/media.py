@@ -110,7 +110,7 @@ def media_for_voyage(
         cur  = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
             """
-            SELECT m.*, vm.sort_order, vm.notes AS voyage_media_notes
+            SELECT m.*, vm.sort_order, vm.notes AS voyage_media_notes, vm.media_category
             FROM voyage_media vm
             JOIN media m ON m.media_slug = vm.media_slug
             WHERE vm.voyage_slug = %s
