@@ -276,8 +276,8 @@ def update_voyage(voyage_slug: str, updates: VoyageUpdate) -> Dict[str, Any]:
 
 
 @router.delete("/{voyage_slug}")
-def delete_voyage(voyage_slug: str) -> Dict[str, str]:
-    """Delete a voyage and all its relationships"""
+def delete_voyage(voyage_slug: str) -> Dict[str, Any]:
+    """Delete a voyage and all its relationships (orphaned passengers are deleted, media is preserved)"""
     try:
         with db_cursor() as cur:
             # Check if voyage exists
@@ -288,29 +288,52 @@ def delete_voyage(voyage_slug: str) -> Dict[str, str]:
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail=f"Voyage '{voyage_slug}' not found")
 
-            # Delete relationships first (CASCADE should handle this, but being explicit)
+            # Get all passengers linked to this voyage
+            cur.execute(
+                "SELECT person_slug FROM sequoia.voyage_passengers WHERE voyage_slug = %s",
+                (voyage_slug,)
+            )
+            passenger_slugs = [row['person_slug'] for row in cur.fetchall()]
+
+            # Delete passenger relationships
             cur.execute("DELETE FROM sequoia.voyage_passengers WHERE voyage_slug = %s", (voyage_slug,))
-            passengers_deleted = cur.rowcount
+            passengers_unlinked = cur.rowcount
 
+            # Delete orphaned passengers (those with no remaining voyage links)
+            orphaned_passengers = 0
+            for person_slug in passenger_slugs:
+                cur.execute(
+                    "SELECT COUNT(*) as count FROM sequoia.voyage_passengers WHERE person_slug = %s",
+                    (person_slug,)
+                )
+                result = cur.fetchone()
+                remaining_links = result['count'] if result else 0
+
+                if remaining_links == 0:
+                    cur.execute("DELETE FROM sequoia.people WHERE person_slug = %s", (person_slug,))
+                    orphaned_passengers += 1
+                    LOG.info(f"Deleted orphaned passenger: {person_slug}")
+
+            # Delete media relationships (keep media in database)
             cur.execute("DELETE FROM sequoia.voyage_media WHERE voyage_slug = %s", (voyage_slug,))
-            media_deleted = cur.rowcount
+            media_unlinked = cur.rowcount
 
+            # Delete president relationships
             cur.execute("DELETE FROM sequoia.voyage_presidents WHERE voyage_slug = %s", (voyage_slug,))
-            presidents_deleted = cur.rowcount
+            presidents_unlinked = cur.rowcount
 
             # Delete the voyage itself
             cur.execute("DELETE FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
 
-            LOG.info(f"Deleted voyage: {voyage_slug} (passengers: {passengers_deleted}, media: {media_deleted}, presidents: {presidents_deleted})")
+            LOG.info(f"Deleted voyage: {voyage_slug} (passengers unlinked: {passengers_unlinked}, orphaned deleted: {orphaned_passengers}, media unlinked: {media_unlinked}, presidents unlinked: {presidents_unlinked})")
 
             return {
                 "message": f"Voyage '{voyage_slug}' deleted successfully",
                 "voyage_slug": voyage_slug,
-                "relationships_deleted": {
-                    "passengers": passengers_deleted,
-                    "media": media_deleted,
-                    "presidents": presidents_deleted
-                }
+                "passengers_unlinked": passengers_unlinked,
+                "orphaned_passengers_deleted": orphaned_passengers,
+                "media_unlinked": media_unlinked,
+                "presidents_unlinked": presidents_unlinked
             }
 
     except HTTPException:
