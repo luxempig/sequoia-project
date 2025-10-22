@@ -11,6 +11,7 @@ const VoyageEditor: React.FC = () => {
   const [showNewPresidentModal, setShowNewPresidentModal] = useState(false);
   const [newPresidentData, setNewPresidentData] = useState({
     full_name: '',
+    party: '',
     start_year: '',
     end_year: '',
     birth_year: '',
@@ -120,7 +121,7 @@ const VoyageEditor: React.FC = () => {
         body: JSON.stringify({
           president_slug: newPerson.person_slug,
           full_name: newPresidentData.full_name.trim(),
-          party: null,
+          party: newPresidentData.party.trim() || null,
           term_start: term_start,
           term_end: term_end,
           wikipedia_url: newPresidentData.wikipedia_url.trim() || null,
@@ -143,6 +144,7 @@ const VoyageEditor: React.FC = () => {
       setShowNewPresidentModal(false);
       setNewPresidentData({
         full_name: '',
+        party: '',
         start_year: '',
         end_year: '',
         birth_year: '',
@@ -801,6 +803,19 @@ const VoyageEditor: React.FC = () => {
                   <p className="mt-1 text-xs text-gray-500">
                     The system will automatically generate a unique ID from the name.
                   </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Political Party
+                  </label>
+                  <input
+                    type="text"
+                    value={newPresidentData.party}
+                    onChange={(e) => setNewPresidentData({ ...newPresidentData, party: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Democratic, Republican, Whig"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
