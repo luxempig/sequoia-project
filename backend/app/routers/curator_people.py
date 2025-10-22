@@ -175,41 +175,6 @@ def update_person(person_slug: str, updates: PersonUpdate) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
-@router.delete("/{person_slug}")
-def delete_person(person_slug: str) -> Dict[str, str]:
-    """Delete a person and all voyage associations"""
-    try:
-        with db_cursor() as cur:
-            # Check if person exists
-            cur.execute(
-                "SELECT person_slug FROM sequoia.people WHERE person_slug = %s",
-                (person_slug,)
-            )
-            if not cur.fetchone():
-                raise HTTPException(status_code=404, detail=f"Person '{person_slug}' not found")
-
-            # Delete voyage associations first
-            cur.execute("DELETE FROM sequoia.voyage_passengers WHERE person_slug = %s", (person_slug,))
-            voyages_deleted = cur.rowcount
-
-            # Delete the person
-            cur.execute("DELETE FROM sequoia.people WHERE person_slug = %s", (person_slug,))
-
-            LOG.info(f"Deleted person: {person_slug} (removed from {voyages_deleted} voyages)")
-
-            return {
-                "message": f"Person '{person_slug}' deleted successfully",
-                "person_slug": person_slug,
-                "voyages_removed_from": voyages_deleted
-            }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        LOG.error(f"Error deleting person: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-
 @router.post("/link-to-voyage", response_model=Dict[str, str])
 def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
     """Link a person to a voyage as a passenger"""
@@ -294,6 +259,41 @@ def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, s
         raise
     except Exception as e:
         LOG.error(f"Error unlinking person from voyage: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.delete("/{person_slug}")
+def delete_person(person_slug: str) -> Dict[str, str]:
+    """Delete a person and all voyage associations"""
+    try:
+        with db_cursor() as cur:
+            # Check if person exists
+            cur.execute(
+                "SELECT person_slug FROM sequoia.people WHERE person_slug = %s",
+                (person_slug,)
+            )
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail=f"Person '{person_slug}' not found")
+
+            # Delete voyage associations first
+            cur.execute("DELETE FROM sequoia.voyage_passengers WHERE person_slug = %s", (person_slug,))
+            voyages_deleted = cur.rowcount
+
+            # Delete the person
+            cur.execute("DELETE FROM sequoia.people WHERE person_slug = %s", (person_slug,))
+
+            LOG.info(f"Deleted person: {person_slug} (removed from {voyages_deleted} voyages)")
+
+            return {
+                "message": f"Person '{person_slug}' deleted successfully",
+                "person_slug": person_slug,
+                "voyages_removed_from": voyages_deleted
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error deleting person: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
