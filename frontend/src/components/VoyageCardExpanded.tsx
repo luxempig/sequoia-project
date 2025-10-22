@@ -843,25 +843,41 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
               {/* Media Files */}
               {sourceMedia.length > 0 && (
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {sourceMedia.map((media) => {
-                    const captionParts: string[] = [];
-                    if (media.date) captionParts.push(media.date);
-                    if (media.credit) captionParts.push(media.credit);
-                    if (media.description_markdown) captionParts.push(media.description_markdown);
-                    const caption = captionParts.join(' — ') || media.title || 'Source Document';
+                    const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
+                    const fullUrl = media.s3_url || media.url || '#';
 
                     return (
-                      <div key={media.media_slug} className="text-sm">
-                        <a
-                          href={media.s3_url || media.url || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-700 hover:text-green-900 hover:underline inline-flex items-center gap-1"
-                        >
-                          📎 {caption}
-                        </a>
-                      </div>
+                      <a
+                        key={media.media_slug}
+                        href={fullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition-colors"
+                      >
+                        {media.media_type === 'image' ? (
+                          <img
+                            src={thumbnailUrl}
+                            alt={media.title || 'Source'}
+                            className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                            <div className="text-center p-2">
+                              <div className="text-3xl mb-1">
+                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                              </div>
+                              <div className="text-xs text-gray-600 line-clamp-2">{media.title}</div>
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <div className="text-white text-xs line-clamp-2">
+                            {media.title || media.credit || 'Source'}
+                          </div>
+                        </div>
+                      </a>
                     );
                   })}
                 </div>
@@ -972,25 +988,41 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
               {/* Media Files */}
               {additionalSourceMedia.length > 0 && (
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {additionalSourceMedia.map((media) => {
-                    const captionParts: string[] = [];
-                    if (media.date) captionParts.push(media.date);
-                    if (media.credit) captionParts.push(media.credit);
-                    if (media.description_markdown) captionParts.push(media.description_markdown);
-                    const caption = captionParts.join(' — ') || media.title || 'Additional Source Document';
+                    const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
+                    const fullUrl = media.s3_url || media.url || '#';
 
                     return (
-                      <div key={media.media_slug} className="text-sm">
-                        <a
-                          href={media.s3_url || media.url || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-700 hover:text-purple-900 hover:underline inline-flex items-center gap-1"
-                        >
-                          📎 {caption}
-                        </a>
-                      </div>
+                      <a
+                        key={media.media_slug}
+                        href={fullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-purple-500 transition-colors"
+                      >
+                        {media.media_type === 'image' ? (
+                          <img
+                            src={thumbnailUrl}
+                            alt={media.title || 'Additional Source'}
+                            className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                            <div className="text-center p-2">
+                              <div className="text-3xl mb-1">
+                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                              </div>
+                              <div className="text-xs text-gray-600 line-clamp-2">{media.title}</div>
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <div className="text-white text-xs line-clamp-2">
+                            {media.title || media.credit || 'Additional Source'}
+                          </div>
+                        </div>
+                      </a>
                     );
                   })}
                 </div>
