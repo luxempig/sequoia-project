@@ -60,15 +60,30 @@ def generate_person_slug(full_name: str) -> str:
 
 @router.post("/", response_model=Dict[str, Any])
 def create_person(person: PersonCreate) -> Dict[str, Any]:
-    """Create a new person"""
+    """Create a new person (auto-deduplicates based on name and title)"""
     try:
         with db_cursor() as cur:
+            # Check if person with same name and title already exists
+            cur.execute(
+                """
+                SELECT * FROM sequoia.people
+                WHERE LOWER(full_name) = LOWER(%s)
+                AND COALESCE(LOWER(role_title), '') = COALESCE(LOWER(%s), '')
+                """,
+                (person.full_name, person.role_title)
+            )
+            existing = cur.fetchone()
+            if existing:
+                # Return existing person instead of creating duplicate
+                LOG.info(f"Found existing person: {existing['person_slug']} (deduped)")
+                return dict(existing)
+
             # Auto-generate slug if not provided
             person_slug = person.person_slug
             if not person_slug or person_slug == "auto":
                 person_slug = generate_person_slug(person.full_name)
 
-                # Check for duplicates and append number if needed
+                # Check for slug duplicates and append number if needed
                 base_slug = person_slug
                 counter = 2
                 while True:

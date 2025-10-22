@@ -60,13 +60,13 @@ const VoyageEditor: React.FC = () => {
   const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<File[]>([]);
 
   // Passenger management
-  const [selectedPassengers, setSelectedPassengers] = useState<Array<{person_slug: string, full_name: string, capacity_role: string}>>([]);
+  const [selectedPassengers, setSelectedPassengers] = useState<Array<{person_slug: string, full_name: string, role_title?: string, is_crew: boolean}>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [newPassengerData, setNewPassengerData] = useState({
     full_name: '',
     role_title: '',
-    capacity_role: ''
+    is_crew: false
   });
 
   // Load presidents on mount
@@ -105,7 +105,8 @@ const VoyageEditor: React.FC = () => {
         const passengers = peopleData.map((p: any) => ({
           person_slug: p.person_slug,
           full_name: p.full_name,
-          capacity_role: p.capacity_role || ''
+          role_title: p.role_title || '',
+          is_crew: p.is_crew || false
         }));
         setSelectedPassengers(passengers);
 
@@ -272,12 +273,13 @@ const VoyageEditor: React.FC = () => {
     }
   };
 
-  const addExistingPassenger = (person: any, role: string = '') => {
+  const addExistingPassenger = (person: any) => {
     if (!selectedPassengers.find(p => p.person_slug === person.person_slug)) {
       setSelectedPassengers([...selectedPassengers, {
         person_slug: person.person_slug,
         full_name: person.full_name,
-        capacity_role: role
+        role_title: person.role_title || '',
+        is_crew: false
       }]);
     }
   };
@@ -285,6 +287,12 @@ const VoyageEditor: React.FC = () => {
   const createAndAddPassenger = async () => {
     if (!newPassengerData.full_name.trim()) {
       alert('Please enter a full name');
+      return;
+    }
+
+    // Only require role_title if is_crew is checked
+    if (newPassengerData.is_crew && !newPassengerData.role_title.trim()) {
+      alert('Please enter a role/title for crew members');
       return;
     }
 
@@ -304,8 +312,16 @@ const VoyageEditor: React.FC = () => {
       }
 
       const newPerson = await response.json();
-      addExistingPassenger(newPerson, newPassengerData.capacity_role);
-      setNewPassengerData({ full_name: '', role_title: '', capacity_role: '' });
+
+      // Add to selected passengers with is_crew flag
+      setSelectedPassengers([...selectedPassengers, {
+        person_slug: newPerson.person_slug,
+        full_name: newPerson.full_name,
+        role_title: newPerson.role_title || '',
+        is_crew: newPassengerData.is_crew
+      }]);
+
+      setNewPassengerData({ full_name: '', role_title: '', is_crew: false });
     } catch (error) {
       alert(`Failed to create person: ${error}`);
     }
@@ -345,9 +361,9 @@ const VoyageEditor: React.FC = () => {
     setSelectedPassengers(selectedPassengers.filter((_, i) => i !== index));
   };
 
-  const updatePassengerRole = (index: number, role: string) => {
+  const updatePassengerCrew = (index: number, isCrew: boolean) => {
     const updated = [...selectedPassengers];
-    updated[index].capacity_role = role;
+    updated[index].is_crew = isCrew;
     setSelectedPassengers(updated);
   };
 
@@ -439,8 +455,8 @@ const VoyageEditor: React.FC = () => {
               body: JSON.stringify({
                 person_slug: passenger.person_slug,
                 voyage_slug: voyageSlug,
-                capacity_role: passenger.capacity_role || null,
-                is_crew: false
+                capacity_role: null,
+                is_crew: passenger.is_crew || false
               })
             });
           } catch (err) {
@@ -868,32 +884,37 @@ const VoyageEditor: React.FC = () => {
             {/* Quick Create New Person */}
             <div className="mt-3 pt-3 border-t border-gray-300">
               <label className="block text-xs font-medium text-gray-600 mb-2">Or create new person:</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-2">
                 <input
                   type="text"
                   value={newPassengerData.full_name}
                   onChange={(e) => setNewPassengerData({...newPassengerData, full_name: e.target.value})}
-                  placeholder="Full Name"
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  placeholder="Full Name *"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                 />
-                <input
-                  type="text"
-                  value={newPassengerData.role_title}
-                  onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
-                  placeholder="General Title"
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-                <input
-                  type="text"
-                  value={newPassengerData.capacity_role}
-                  onChange={(e) => setNewPassengerData({...newPassengerData, capacity_role: e.target.value})}
-                  placeholder="Role on Voyage"
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="new-is-crew"
+                    checked={newPassengerData.is_crew}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked, role_title: e.target.checked ? newPassengerData.role_title : ''})}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="new-is-crew" className="text-sm text-gray-700">Is Crew</label>
+                </div>
+                {newPassengerData.is_crew && (
+                  <input
+                    type="text"
+                    value={newPassengerData.role_title}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
+                    placeholder="Role/Title (e.g., Captain, Steward) *"
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                )}
               </div>
               <button
                 onClick={createAndAddPassenger}
-                disabled={!newPassengerData.full_name.trim()}
+                disabled={!newPassengerData.full_name.trim() || (newPassengerData.is_crew && !newPassengerData.role_title.trim())}
                 className="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Create & Add
@@ -908,14 +929,20 @@ const VoyageEditor: React.FC = () => {
             <div className="space-y-2">
               {selectedPassengers.map((passenger, index) => (
                 <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 group hover:bg-gray-100">
-                  <span className="flex-1 text-sm font-medium text-gray-700">{passenger.full_name}</span>
-                  <input
-                    type="text"
-                    value={passenger.capacity_role}
-                    onChange={(e) => updatePassengerRole(index, e.target.value)}
-                    placeholder="Role (e.g., Guest, Admiral)"
-                    className="w-48 border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
+                  <span className="flex-1 text-sm font-medium text-gray-700">
+                    {passenger.full_name}
+                    {passenger.role_title && <span className="text-gray-500 ml-2">({passenger.role_title})</span>}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`crew-${index}`}
+                      checked={passenger.is_crew}
+                      onChange={(e) => updatePassengerCrew(index, e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={`crew-${index}`} className="text-xs text-gray-600">Crew</label>
+                  </div>
                   <button
                     onClick={() => removePassenger(index)}
                     className="text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center text-lg font-bold transition-colors"
