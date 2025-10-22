@@ -385,6 +385,19 @@ async def upload_media_file(
             else:
                 media_type = 'document'
 
+        # Generate unique media_slug if 'auto'
+        if media_slug == 'auto':
+            import uuid
+            import re
+            # Create slug from filename or use UUID
+            base_name = file.filename.rsplit('.', 1)[0] if '.' in file.filename else file.filename
+            # Clean the filename for slug use
+            slug_base = re.sub(r'[^a-z0-9-]', '-', base_name.lower())
+            slug_base = re.sub(r'-+', '-', slug_base).strip('-')[:50]
+            # Add short UUID to ensure uniqueness
+            unique_suffix = str(uuid.uuid4())[:8]
+            media_slug = f"{slug_base}-{unique_suffix}" if slug_base else f"media-{unique_suffix}"
+
         # Generate thumbnail if voyage_slug is provided
         thumbnail_url = None
         if voyage_slug and media_type in ('image', 'pdf'):

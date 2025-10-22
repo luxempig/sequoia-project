@@ -66,6 +66,7 @@ const VoyageEditor: React.FC = () => {
   const [newPassengerData, setNewPassengerData] = useState({
     full_name: '',
     role_title: '',
+    wikipedia_url: '',
     is_crew: false
   });
 
@@ -304,6 +305,7 @@ const VoyageEditor: React.FC = () => {
           person_slug: 'auto',
           full_name: newPassengerData.full_name.trim(),
           role_title: newPassengerData.role_title.trim() || null,
+          wikipedia_url: newPassengerData.wikipedia_url.trim() || null,
         })
       });
 
@@ -321,7 +323,7 @@ const VoyageEditor: React.FC = () => {
         is_crew: newPassengerData.is_crew
       }]);
 
-      setNewPassengerData({ full_name: '', role_title: '', is_crew: false });
+      setNewPassengerData({ full_name: '', role_title: '', wikipedia_url: '', is_crew: false });
     } catch (error) {
       alert(`Failed to create person: ${error}`);
     }
@@ -465,8 +467,8 @@ const VoyageEditor: React.FC = () => {
         }
       }
 
-      // Navigate to the voyage detail page
-      navigate(`/voyages/${voyageSlug}`);
+      // Navigate to the voyage list page
+      navigate('/voyages');
     } catch (error) {
       console.error('Error creating voyage:', error);
       alert(`Failed to create voyage: ${error}`);
@@ -911,6 +913,13 @@ const VoyageEditor: React.FC = () => {
                     className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                 )}
+                <input
+                  type="url"
+                  value={newPassengerData.wikipedia_url}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, wikipedia_url: e.target.value})}
+                  placeholder="Wikipedia/Bio URL (optional)"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                />
               </div>
               <button
                 onClick={createAndAddPassenger}
