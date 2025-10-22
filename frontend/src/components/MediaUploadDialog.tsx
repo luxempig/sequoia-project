@@ -27,6 +27,8 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
+  const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -59,10 +61,74 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
     }
   };
 
-  const handleUpload = async () => {
+  const checkForDuplicates = async (): Promise<any[]> => {
+    // Only check if we have credit and date (key duplicate indicators)
+    if (!credit || !date) {
+      return [];
+    }
+
+    try {
+      // Get president/owner from voyage if provided
+      let presidentOwner = "unattached";
+      if (voyageSlug) {
+        const voyageResponse = await fetch(`/api/voyages/${voyageSlug}`);
+        if (voyageResponse.ok) {
+          const voyageData = await voyageResponse.json();
+          presidentOwner = voyageData.president_name || voyageData.president_slug_from_voyage || "unattached";
+        }
+      }
+
+      // Search for media with same credit and date
+      const searchParams = new URLSearchParams();
+      searchParams.append("limit", "1000");
+      const response = await fetch(`/api/curator/media/search?${searchParams}`);
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const allMedia = await response.json();
+
+      // Filter for potential duplicates
+      const duplicates = allMedia.filter((media: any) => {
+        // Match on credit and date
+        const sameCredit = media.credit && credit &&
+          media.credit.toLowerCase().trim() === credit.toLowerCase().trim();
+        const sameDate = media.date === date;
+
+        // For each media, check if it belongs to the same president/owner
+        // We'll check the S3 URL path to see if it's under the same president
+        let samePresident = false;
+        if (media.s3_url) {
+          const urlPath = media.s3_url.split('.amazonaws.com/')[1] || '';
+          const pathPresident = urlPath.split('/')[0] || '';
+          samePresident = pathPresident.toLowerCase().includes(presidentOwner.toLowerCase().replace(/\s+/g, '-'));
+        }
+
+        return sameCredit && sameDate && samePresident;
+      });
+
+      return duplicates;
+    } catch (err) {
+      console.error("Error checking for duplicates:", err);
+      return [];
+    }
+  };
+
+  const handleUpload = async (skipDuplicateCheck: boolean = false) => {
     if (!file || !title) {
       setError("Please select a file and provide a title");
       return;
+    }
+
+    // Check for duplicates first (unless we're bypassing the check)
+    if (!skipDuplicateCheck) {
+      const duplicates = await checkForDuplicates();
+      if (duplicates.length > 0) {
+        setPotentialDuplicates(duplicates);
+        setShowDuplicateConfirm(true);
+        return; // Stop here and show confirmation dialog
+      }
     }
 
     setUploading(true);
@@ -138,6 +204,8 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
     setTags("");
     setPreviewUrl("");
     setError("");
+    setShowDuplicateConfirm(false);
+    setPotentialDuplicates([]);
   };
 
   const handleClose = () => {
@@ -286,7 +354,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
             <button
               type="button"
               disabled={!file || !title || uploading}
-              onClick={handleUpload}
+              onClick={() => handleUpload(false)}
               className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm ${
                 !file || !title || uploading
                   ? "bg-gray-300 cursor-not-allowed"
@@ -305,6 +373,66 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Duplicate Confirmation Dialog */}
+        {showDuplicateConfirm && (
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full ml-4">
+            <div className="bg-white px-6 pt-5 pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Possible Duplicate Detected
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Found {potentialDuplicates.length} existing media item{potentialDuplicates.length > 1 ? 's' : ''} with the same credit, date, and president/owner:
+                    </p>
+                    <div className="mt-3 max-h-40 overflow-y-auto bg-gray-50 rounded p-2">
+                      {potentialDuplicates.map((dup, idx) => (
+                        <div key={idx} className="text-xs mb-2 pb-2 border-b border-gray-200 last:border-0">
+                          <div className="font-medium">{dup.title || dup.media_slug}</div>
+                          <div className="text-gray-600">
+                            Credit: {dup.credit} | Date: {dup.date}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-3">
+                      This might be a duplicate for version control purposes. Are you sure you want to upload this new version?
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDuplicateConfirm(false);
+                  handleUpload(true); // Skip duplicate check this time
+                }}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-600 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:w-auto sm:text-sm"
+              >
+                Yes, Upload Anyway
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDuplicateConfirm(false);
+                  setPotentialDuplicates([]);
+                }}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
