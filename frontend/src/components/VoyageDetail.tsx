@@ -232,14 +232,6 @@ export default function VoyageDetail() {
 
       </div>
 
-      {/* Media Gallery - General Media */}
-      {generalMedia.length > 0 && (
-        <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
-          <h3 className="text-lg font-semibold mb-3">Media</h3>
-          <MediaGallery voyageSlug={voyageSlug} />
-        </section>
-      )}
-
       {/* Sources - Text URLs and Media files */}
       {(sourceMedia.length > 0 || (voyage.source_urls && voyage.source_urls.length > 0)) && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">

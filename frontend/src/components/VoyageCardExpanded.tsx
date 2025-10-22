@@ -1063,47 +1063,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         )}
       </div>
 
-      {/* Media Gallery - General Media */}
-      {(() => {
-        const generalMedia = media.filter(m => {
-          const category = m.media_category || 'general';
-          return category === 'general' || !m.media_category;
-        });
-        return (isEditing || generalMedia.length > 0) && (
-          <div className="pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Media ({generalMedia.length})</h4>
-
-            {/* Media Management Buttons (Edit Mode Only) */}
-            {isEditing && (
-              <div className="mb-4 flex gap-2">
-                <button
-                  onClick={() => setShowMediaSearch(true)}
-                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm font-medium"
-                >
-                  🔍 Link Existing Media
-                </button>
-                <button
-                  onClick={() => setShowMediaUpload(true)}
-                  className="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-medium"
-                >
-                  ⬆️ Upload New Media
-                </button>
-              </div>
-            )}
-
-            {loadingMedia ? (
-              <p className="text-sm text-gray-500">Loading...</p>
-            ) : (
-              <MediaGallery
-                voyageSlug={currentVoyage.voyage_slug}
-                editMode={isEditing}
-                onMediaChange={loadMedia}
-              />
-            )}
-          </div>
-        );
-      })()}
-
       {/* Sources - Media Files */}
       {(() => {
         const sourceMedia = media.filter(m => m.media_category === 'source');
@@ -1277,24 +1236,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           </div>
         );
       })()}
-
-      {/* Media Search Modal */}
-      <MediaSearchModal
-        isOpen={showMediaSearch}
-        onClose={() => setShowMediaSearch(false)}
-        onSelect={handleMediaLinkFromSearch}
-        excludeMediaSlugs={media.map(m => m.media_slug)}
-      />
-
-      {/* Media Upload Dialog - General */}
-      <MediaUploadDialog
-        isOpen={showMediaUpload}
-        onClose={() => setShowMediaUpload(false)}
-        onSuccess={handleMediaUploadSuccess}
-        voyageSlug={voyage.voyage_slug}
-        autoLinkToVoyage={true}
-        mediaCategory="general"
-      />
 
       {/* Media Upload Dialog - Sources */}
       <MediaUploadDialog
