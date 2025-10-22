@@ -335,14 +335,22 @@ async def upload_media_file(
         # Generate unique ID for filename
         unique_id = str(uuid.uuid4())[:8]
 
-        # Fetch president/owner from voyage if provided, otherwise use "unattached"
+        # Fetch president/owner name from voyage if provided, otherwise use "unattached"
         president_owner = "unattached"
         if voyage_slug:
             with db_cursor(read_only=True) as cur:
-                cur.execute("SELECT president_slug_from_voyage FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
+                cur.execute("""
+                    SELECT p.full_name
+                    FROM sequoia.voyages v
+                    LEFT JOIN sequoia.people p ON p.person_slug = v.president_slug_from_voyage
+                    WHERE v.voyage_slug = %s
+                """, (voyage_slug,))
                 voyage_row = cur.fetchone()
-                if voyage_row and voyage_row['president_slug_from_voyage']:
-                    president_owner = voyage_row['president_slug_from_voyage']
+                if voyage_row and voyage_row['full_name']:
+                    # Slugify the president's full name for use in path
+                    president_name = voyage_row['full_name']
+                    president_owner = re.sub(r'[^a-z0-9-]', '-', president_name.lower())
+                    president_owner = re.sub(r'-+', '-', president_owner).strip('-')
 
         # Build directory path: president/media-type/
         directory_parts = [president_owner, media_type or 'document']
@@ -592,7 +600,8 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, director
             Key=thumb_key,
             Body=thumb_bytes,
             ContentType='image/jpeg',
-            CacheControl='public, max-age=31536000'  # Cache for 1 year
+            CacheControl='public, max-age=31536000',  # Cache for 1 year
+            ACL='public-read'  # Make thumbnails publicly accessible
         )
 
         thumbnail_url = f"https://{public_bucket}.s3.amazonaws.com/{thumb_key}"
@@ -613,7 +622,8 @@ def upload_to_s3(file_content: bytes, bucket: str, key: str, content_type: str) 
             Bucket=bucket,
             Key=key,
             Body=file_content,
-            ContentType=content_type
+            ContentType=content_type,
+            ACL='public-read'  # Make files publicly accessible
         )
 
         s3_url = f"https://{bucket}.s3.amazonaws.com/{key}"
