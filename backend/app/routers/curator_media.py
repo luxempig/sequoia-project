@@ -64,6 +64,44 @@ class VoyageMediaLink(BaseModel):
     media_category: Optional[str] = Field('general', description="Category: general, source, or additional_source")
 
 
+def update_voyage_media_flags(voyage_slug: str):
+    """Update has_photos and has_videos flags for a voyage based on attached media"""
+    try:
+        with db_cursor() as cur:
+            # Check if voyage has any images
+            cur.execute("""
+                SELECT EXISTS(
+                    SELECT 1 FROM sequoia.voyage_media vm
+                    JOIN sequoia.media m ON m.media_slug = vm.media_slug
+                    WHERE vm.voyage_slug = %s AND m.media_type = 'image'
+                ) as has_images
+            """, (voyage_slug,))
+            has_photos = cur.fetchone()['has_images']
+
+            # Check if voyage has any videos
+            cur.execute("""
+                SELECT EXISTS(
+                    SELECT 1 FROM sequoia.voyage_media vm
+                    JOIN sequoia.media m ON m.media_slug = vm.media_slug
+                    WHERE vm.voyage_slug = %s AND m.media_type = 'video'
+                ) as has_videos
+            """, (voyage_slug,))
+            has_videos = cur.fetchone()['has_videos']
+
+            # Update the voyage flags
+            cur.execute("""
+                UPDATE sequoia.voyages
+                SET has_photos = %s, has_videos = %s
+                WHERE voyage_slug = %s
+            """, (has_photos, has_videos, voyage_slug))
+
+            LOG.info(f"Updated voyage {voyage_slug}: has_photos={has_photos}, has_videos={has_videos}")
+
+    except Exception as e:
+        LOG.warning(f"Failed to update media flags for voyage {voyage_slug}: {e}")
+        # Don't raise - this is a non-critical operation
+
+
 @router.post("/", response_model=Dict[str, Any])
 def create_media(media: MediaCreate) -> Dict[str, Any]:
     """Create a new media item"""
@@ -198,11 +236,14 @@ def link_media_to_voyage(link: VoyageMediaLink) -> Dict[str, str]:
 
             LOG.info(f"Linked media {link.media_slug} to voyage {link.voyage_slug}")
 
-            return {
-                "message": "Media linked to voyage successfully",
-                "media_slug": link.media_slug,
-                "voyage_slug": link.voyage_slug
-            }
+        # Update has_photos and has_videos flags for the voyage
+        update_voyage_media_flags(link.voyage_slug)
+
+        return {
+            "message": "Media linked to voyage successfully",
+            "media_slug": link.media_slug,
+            "voyage_slug": link.voyage_slug
+        }
 
     except HTTPException:
         raise
@@ -229,11 +270,14 @@ def unlink_media_from_voyage(media_slug: str, voyage_slug: str) -> Dict[str, str
 
             LOG.info(f"Unlinked media {media_slug} from voyage {voyage_slug}")
 
-            return {
-                "message": "Media unlinked from voyage successfully",
-                "media_slug": media_slug,
-                "voyage_slug": voyage_slug
-            }
+        # Update has_photos and has_videos flags for the voyage
+        update_voyage_media_flags(voyage_slug)
+
+        return {
+            "message": "Media unlinked from voyage successfully",
+            "media_slug": media_slug,
+            "voyage_slug": voyage_slug
+        }
 
     except HTTPException:
         raise
@@ -259,6 +303,10 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any
             s3_url = media_row['s3_url']
             derivative_url = media_row['public_derivative_url']
 
+            # Get list of voyages that will be affected (before deleting associations)
+            cur.execute("SELECT voyage_slug FROM sequoia.voyage_media WHERE media_slug = %s", (media_slug,))
+            affected_voyages = [row['voyage_slug'] for row in cur.fetchall()]
+
             # Delete voyage associations first
             cur.execute("DELETE FROM sequoia.voyage_media WHERE media_slug = %s", (media_slug,))
             voyages_deleted = cur.rowcount
@@ -266,31 +314,35 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any
             # Delete the media record
             cur.execute("DELETE FROM sequoia.media WHERE media_slug = %s", (media_slug,))
 
-            # Optionally delete from S3
-            s3_deleted = False
-            derivative_deleted = False
-            if delete_from_s3:
-                if s3_url:
-                    try:
-                        s3_deleted = delete_from_s3_bucket(s3_url)
-                    except Exception as s3_error:
-                        LOG.warning(f"Failed to delete from S3: {s3_error}")
+        # Update has_photos and has_videos flags for affected voyages
+        for voyage_slug in affected_voyages:
+            update_voyage_media_flags(voyage_slug)
 
-                if derivative_url:
-                    try:
-                        derivative_deleted = delete_from_s3_bucket(derivative_url)
-                    except Exception as s3_error:
-                        LOG.warning(f"Failed to delete derivative from S3: {s3_error}")
+        # Optionally delete from S3
+        s3_deleted = False
+        derivative_deleted = False
+        if delete_from_s3:
+            if s3_url:
+                try:
+                    s3_deleted = delete_from_s3_bucket(s3_url)
+                except Exception as s3_error:
+                    LOG.warning(f"Failed to delete from S3: {s3_error}")
 
-            LOG.info(f"Deleted media: {media_slug} (removed from {voyages_deleted} voyages, S3 deleted: {s3_deleted})")
+            if derivative_url:
+                try:
+                    derivative_deleted = delete_from_s3_bucket(derivative_url)
+                except Exception as s3_error:
+                    LOG.warning(f"Failed to delete derivative from S3: {s3_error}")
 
-            return {
-                "message": f"Media '{media_slug}' deleted successfully",
-                "media_slug": media_slug,
-                "voyages_removed_from": voyages_deleted,
-                "s3_deleted": s3_deleted,
-                "derivative_deleted": derivative_deleted
-            }
+        LOG.info(f"Deleted media: {media_slug} (removed from {voyages_deleted} voyages, S3 deleted: {s3_deleted})")
+
+        return {
+            "message": f"Media '{media_slug}' deleted successfully",
+            "media_slug": media_slug,
+            "voyages_removed_from": voyages_deleted,
+            "s3_deleted": s3_deleted,
+            "derivative_deleted": derivative_deleted
+        }
 
     except HTTPException:
         raise
@@ -475,6 +527,10 @@ async def upload_media_file(
                     VALUES (%s, %s, 999, %s)
                     ON CONFLICT (voyage_slug, media_slug) DO NOTHING
                 """, (voyage_slug, media_slug, media_category))
+
+        # Update has_photos and has_videos flags if linked to voyage
+        if voyage_slug:
+            update_voyage_media_flags(voyage_slug)
 
         LOG.info(f"Uploaded media: {media_slug} ({file_size} bytes) to {s3_url}")
 
