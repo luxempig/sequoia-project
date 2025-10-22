@@ -39,8 +39,9 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       const type = selectedFile.type;
       if (type.startsWith("image/")) setMediaType("image");
       else if (type.startsWith("video/")) setMediaType("video");
+      else if (type.startsWith("audio/")) setMediaType("audio");
       else if (type === "application/pdf") setMediaType("pdf");
-      else setMediaType("document");
+      else setMediaType("other");
 
       // Create preview for images
       if (type.startsWith("image/")) {
@@ -291,8 +292,9 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                 >
                   <option value="image">Image</option>
                   <option value="video">Video</option>
+                  <option value="audio">Audio</option>
                   <option value="pdf">PDF</option>
-                  <option value="document">Document</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
 
