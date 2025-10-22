@@ -230,59 +230,6 @@ export default function VoyageDetail() {
           </div>
         )}
 
-        {/* Source URLs */}
-        {voyage.source_urls && voyage.source_urls.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Sources</h4>
-            <ul className="space-y-1">
-              {voyage.source_urls.map((source, index) => (
-                <li key={index} className="text-sm text-gray-700">
-                  {source.startsWith('http') ? (
-                    <a
-                      href={source}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline break-all"
-                    >
-                      {source}
-                    </a>
-                  ) : (
-                    <span>• {source}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Additional Sources */}
-        {voyage.additional_sources && voyage.additional_sources.trim() && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Additional Sources</h4>
-            <div className="text-sm text-gray-700 whitespace-pre-wrap">
-              {voyage.additional_sources.split('\n').map((line, index) => {
-                const trimmed = line.trim();
-                if (!trimmed) return null;
-                return (
-                  <div key={index} className="mb-1">
-                    {trimmed.startsWith('http') ? (
-                      <a
-                        href={trimmed}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-800 hover:underline break-all"
-                      >
-                        {trimmed}
-                      </a>
-                    ) : (
-                      <span>• {trimmed}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Media Gallery - General Media */}
@@ -293,13 +240,35 @@ export default function VoyageDetail() {
         </section>
       )}
 
-      {/* Sources - Media files */}
-      {sourceMedia.length > 0 && (
+      {/* Sources - Text URLs and Media files */}
+      {(sourceMedia.length > 0 || (voyage.source_urls && voyage.source_urls.length > 0)) && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Sources</h3>
           <div className="space-y-3">
+            {/* Text/URL Sources */}
+            {voyage.source_urls && voyage.source_urls.length > 0 && (
+              <div className="space-y-2">
+                {voyage.source_urls.map((source, index) => (
+                  <div key={`url-${index}`} className="text-sm text-gray-700">
+                    {source.startsWith('http') ? (
+                      <a
+                        href={source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline break-all"
+                      >
+                        🔗 {source}
+                      </a>
+                    ) : (
+                      <span>• {source}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Media Files */}
             {sourceMedia.map((source) => {
-              // Build caption from date, credit, and description
               const captionParts: string[] = [];
               if (source.date) captionParts.push(source.date);
               if (source.credit) captionParts.push(source.credit);
@@ -307,10 +276,10 @@ export default function VoyageDetail() {
               const caption = captionParts.join(' — ') || 'Source Document';
 
               return (
-                <div key={source.media_slug} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div key={source.media_slug} className="border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors bg-blue-50">
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-700 mb-2">{caption}</p>
+                      <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
                       <a
                         href={source.url || source.s3_url || '#'}
                         target="_blank"
@@ -328,13 +297,39 @@ export default function VoyageDetail() {
         </section>
       )}
 
-      {/* Additional Sources - Media files */}
-      {additionalSourceMedia.length > 0 && (
+      {/* Additional Sources - Text URLs and Media files */}
+      {(additionalSourceMedia.length > 0 || (voyage.additional_sources && voyage.additional_sources.trim())) && (
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Additional Sources</h3>
           <div className="space-y-3">
+            {/* Text/URL Additional Sources */}
+            {voyage.additional_sources && voyage.additional_sources.trim() && (
+              <div className="space-y-2">
+                {voyage.additional_sources.split('\n').map((line, index) => {
+                  const trimmed = line.trim();
+                  if (!trimmed) return null;
+                  return (
+                    <div key={`url-${index}`} className="text-sm text-gray-700">
+                      {trimmed.startsWith('http') ? (
+                        <a
+                          href={trimmed}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-600 hover:text-purple-800 hover:underline break-all"
+                        >
+                          🔗 {trimmed}
+                        </a>
+                      ) : (
+                        <span>• {trimmed}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Media Files */}
             {additionalSourceMedia.map((source) => {
-              // Build caption from date, credit, and description
               const captionParts: string[] = [];
               if (source.date) captionParts.push(source.date);
               if (source.credit) captionParts.push(source.credit);
@@ -342,10 +337,10 @@ export default function VoyageDetail() {
               const caption = captionParts.join(' — ') || 'Additional Source Document';
 
               return (
-                <div key={source.media_slug} className="border border-purple-200 rounded-lg p-4 hover:bg-purple-50 transition-colors">
+                <div key={source.media_slug} className="border border-purple-200 rounded-lg p-4 hover:bg-purple-50 transition-colors bg-purple-50">
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-700 mb-2">{caption}</p>
+                      <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
                       <a
                         href={source.url || source.s3_url || '#'}
                         target="_blank"
