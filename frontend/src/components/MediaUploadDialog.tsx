@@ -260,7 +260,6 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                 <input
                   type="file"
                   onChange={handleFileChange}
-                  accept="image/*,video/*,application/pdf,.doc,.docx"
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {previewUrl && (
@@ -292,10 +291,11 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                   onChange={(e) => setMediaType(e.target.value)}
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 >
+                  <option value="article">Article</option>
                   <option value="image">Image</option>
                   <option value="video">Video</option>
                   <option value="audio">Audio</option>
-                  <option value="pdf">PDF</option>
+                  <option value="book">Book</option>
                   <option value="other">Other</option>
                 </select>
               </div>

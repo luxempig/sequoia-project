@@ -54,6 +54,19 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [loadingPeople, setLoadingPeople] = useState(false);
   const [loadingMedia, setLoadingMedia] = useState(false);
 
+  // Helper function to get media type icon
+  const getMediaIcon = (type: string | null | undefined) => {
+    switch (type) {
+      case 'article': return '📄';
+      case 'image': return '🖼️';
+      case 'video': return '🎥';
+      case 'audio': return '🎵';
+      case 'book': return '📚';
+      case 'pdf': return '📄'; // Legacy support
+      default: return '📎';
+    }
+  };
+
   // Source URLs state
   const [sourceUrls, setSourceUrls] = useState<string[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
@@ -840,7 +853,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           ) : (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                               <div className="text-2xl">
-                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                                {getMediaIcon(media.media_type)}
                               </div>
                             </div>
                           )}
@@ -937,7 +950,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                             <div className="text-center p-2">
                               <div className="text-3xl mb-1">
-                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                                {getMediaIcon(media.media_type)}
                               </div>
                               <div className="text-xs text-gray-600 line-clamp-2">{media.title}</div>
                             </div>
@@ -1020,7 +1033,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           ) : (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                               <div className="text-2xl">
-                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                                {getMediaIcon(media.media_type)}
                               </div>
                             </div>
                           )}
@@ -1117,7 +1130,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                             <div className="text-center p-2">
                               <div className="text-3xl mb-1">
-                                {media.media_type === 'pdf' ? '📄' : media.media_type === 'video' ? '🎥' : '📎'}
+                                {getMediaIcon(media.media_type)}
                               </div>
                               <div className="text-xs text-gray-600 line-clamp-2">{media.title}</div>
                             </div>

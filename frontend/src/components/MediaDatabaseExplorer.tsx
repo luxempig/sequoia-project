@@ -178,11 +178,17 @@ const MediaDatabaseExplorer: React.FC = () => {
 
   const getMediaIcon = (type: string) => {
     switch (type) {
+      case "article":
+        return "📄";
       case "image":
         return "🖼️";
       case "video":
         return "🎬";
-      case "pdf":
+      case "audio":
+        return "🎵";
+      case "book":
+        return "📚";
+      case "pdf": // Legacy support
         return "📄";
       default:
         return "📋";
@@ -239,10 +245,12 @@ const MediaDatabaseExplorer: React.FC = () => {
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Types</option>
+                  <option value="article">Articles</option>
                   <option value="image">Images</option>
                   <option value="video">Videos</option>
-                  <option value="pdf">PDFs</option>
-                  <option value="document">Documents</option>
+                  <option value="audio">Audio</option>
+                  <option value="book">Books</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
             </div>
