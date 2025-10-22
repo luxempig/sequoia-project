@@ -331,12 +331,24 @@ async def upload_media_file(
         # Get file extension
         file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
 
-        # Build filename: voyage-slug_date_first-5-words-of-description.ext
+        # Fetch voyage title if voyage_slug is provided
+        voyage_title_slug = None
+        if voyage_slug:
+            with db_cursor(read_only=True) as cur:
+                cur.execute("SELECT title FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
+                voyage_row = cur.fetchone()
+                if voyage_row and voyage_row['title']:
+                    # Slugify the voyage title
+                    voyage_title = voyage_row['title']
+                    voyage_title_slug = re.sub(r'[^a-z0-9-]', '-', voyage_title.lower())
+                    voyage_title_slug = re.sub(r'-+', '-', voyage_title_slug).strip('-')
+
+        # Build filename: voyage-title_date_first-5-words-of-description.ext
         filename_parts = []
 
-        # Add voyage slug to filename
-        if voyage_slug:
-            filename_parts.append(voyage_slug)
+        # Add voyage title slug to filename
+        if voyage_title_slug:
+            filename_parts.append(voyage_title_slug)
 
         # Add date to filename
         if date:
@@ -355,10 +367,10 @@ async def upload_media_file(
         # Build filename
         formatted_filename = '_'.join(filename_parts) + f'.{file_ext}' if filename_parts else f'media.{file_ext}'
 
-        # Build directory path: voyage-slug/date/
+        # Build directory path: voyage-title/date/
         directory_parts = []
-        if voyage_slug:
-            directory_parts.append(voyage_slug)
+        if voyage_title_slug:
+            directory_parts.append(voyage_title_slug)
         if date:
             directory_parts.append(date)
 
