@@ -45,15 +45,13 @@ const toTile = (m: MediaItem): Tile | null => {
   const s3Url = m.s3_url || "";
   if (!s3Url || !s3Url.includes('sequoia-canonical')) return null;
 
+  // Build caption from date, credit, and description
   const parts: string[] = [];
-  if (m.title) parts.push(m.title);
-  else if (m.media_type) parts.push(m.media_type);
-  else parts.push("Media");
-
   if (m.date) parts.push(m.date);
+  if (m.credit) parts.push(m.credit);
   if (m.description_markdown) parts.push(m.description_markdown);
 
-  const caption = parts.join(" — ");
+  const caption = parts.join(" — ") || "Media";
 
   // Use thumbnail for display, original for full-size viewing
   if (looksLikeImage(s3Url) || m.media_type === 'image') {

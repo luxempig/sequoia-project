@@ -330,31 +330,32 @@ export default function VoyageDetail() {
         <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-3">Sources</h3>
           <div className="space-y-3">
-            {sourceLinks.map((source) => (
-              <div key={source.media_slug} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 mb-1">
-                      {source.title || source.credit || 'Source Document'}
-                    </h4>
-                    {source.description_markdown && (
-                      <p className="text-xs text-gray-600 mb-2">{source.description_markdown}</p>
-                    )}
-                    {source.date && (
-                      <p className="text-xs text-gray-500 mb-2">Date: {source.date}</p>
-                    )}
-                    <a
-                      href={source.url || source.s3_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      View Source →
-                    </a>
+            {sourceLinks.map((source) => {
+              // Build caption from date, credit, and description
+              const captionParts: string[] = [];
+              if (source.date) captionParts.push(source.date);
+              if (source.credit) captionParts.push(source.credit);
+              if (source.description_markdown) captionParts.push(source.description_markdown);
+              const caption = captionParts.join(' — ') || 'Source Document';
+
+              return (
+                <div key={source.media_slug} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 mb-2">{caption}</p>
+                      <a
+                        href={source.url || source.s3_url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        View Source →
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
