@@ -800,38 +800,69 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               </div>
             </div>
           ) : (
-            <ul className="space-y-1">
-              {currentVoyage.source_urls?.map((source, index) => {
-                const isUrl = source.startsWith('http://') || source.startsWith('https://');
-                if (isUrl) {
-                  // Extract readable name from URL (domain or path)
-                  let displayName = source;
-                  try {
-                    const url = new URL(source);
-                    displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
-                  } catch {}
+            <div className="space-y-2">
+              {/* Text URLs */}
+              {currentVoyage.source_urls && currentVoyage.source_urls.length > 0 && (
+                <ul className="space-y-1">
+                  {currentVoyage.source_urls.map((source, index) => {
+                    const isUrl = source.startsWith('http://') || source.startsWith('https://');
+                    if (isUrl) {
+                      // Extract readable name from URL (domain or path)
+                      let displayName = source;
+                      try {
+                        const url = new URL(source);
+                        displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
+                      } catch {}
 
-                  return (
-                    <li key={index} className="text-sm">
-                      <a
-                        href={source}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
-                      >
-                        🔗 {displayName}
-                      </a>
-                    </li>
-                  );
-                } else {
-                  return (
-                    <li key={index} className="text-sm text-gray-700">
-                      • {source}
-                    </li>
-                  );
-                }
-              })}
-            </ul>
+                      return (
+                        <li key={index} className="text-sm">
+                          <a
+                            href={source}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                          >
+                            🔗 {displayName}
+                          </a>
+                        </li>
+                      );
+                    } else {
+                      return (
+                        <li key={index} className="text-sm text-gray-700">
+                          • {source}
+                        </li>
+                      );
+                    }
+                  })}
+                </ul>
+              )}
+
+              {/* Media Files */}
+              {sourceMedia.length > 0 && (
+                <div className="space-y-2">
+                  {sourceMedia.map((media) => {
+                    const captionParts: string[] = [];
+                    if (media.date) captionParts.push(media.date);
+                    if (media.credit) captionParts.push(media.credit);
+                    if (media.description_markdown) captionParts.push(media.description_markdown);
+                    const caption = captionParts.join(' — ') || media.title || 'Source Document';
+
+                    return (
+                      <div key={media.media_slug} className="text-sm">
+                        <a
+                          href={media.s3_url || media.url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-700 hover:text-green-900 hover:underline inline-flex items-center gap-1"
+                        >
+                          📎 {caption}
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </div>
       ) : null}
@@ -898,37 +929,68 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               </div>
             </div>
           ) : (
-            <div className="space-y-1">
-              {currentVoyage.additional_sources?.split('\n').filter(s => s.trim()).map((source, index) => {
-                const trimmed = source.trim();
-                const isUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://');
-                if (isUrl) {
-                  let displayName = trimmed;
-                  try {
-                    const url = new URL(trimmed);
-                    displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
-                  } catch {}
+            <div className="space-y-2">
+              {/* Text URLs */}
+              {currentVoyage.additional_sources && currentVoyage.additional_sources.trim() && (
+                <div className="space-y-1">
+                  {currentVoyage.additional_sources.split('\n').filter(s => s.trim()).map((source, index) => {
+                    const trimmed = source.trim();
+                    const isUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://');
+                    if (isUrl) {
+                      let displayName = trimmed;
+                      try {
+                        const url = new URL(trimmed);
+                        displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
+                      } catch {}
 
-                  return (
-                    <div key={index} className="text-sm">
-                      <a
-                        href={trimmed}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-800 hover:underline inline-flex items-center gap-1"
-                      >
-                        🔗 {displayName}
-                      </a>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div key={index} className="text-sm text-gray-700">
-                      • {trimmed}
-                    </div>
-                  );
-                }
-              })}
+                      return (
+                        <div key={index} className="text-sm">
+                          <a
+                            href={trimmed}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-800 hover:underline inline-flex items-center gap-1"
+                          >
+                            🔗 {displayName}
+                          </a>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div key={index} className="text-sm text-gray-700">
+                          • {trimmed}
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              )}
+
+              {/* Media Files */}
+              {additionalSourceMedia.length > 0 && (
+                <div className="space-y-2">
+                  {additionalSourceMedia.map((media) => {
+                    const captionParts: string[] = [];
+                    if (media.date) captionParts.push(media.date);
+                    if (media.credit) captionParts.push(media.credit);
+                    if (media.description_markdown) captionParts.push(media.description_markdown);
+                    const caption = captionParts.join(' — ') || media.title || 'Additional Source Document';
+
+                    return (
+                      <div key={media.media_slug} className="text-sm">
+                        <a
+                          href={media.s3_url || media.url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-700 hover:text-purple-900 hover:underline inline-flex items-center gap-1"
+                        >
+                          📎 {caption}
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1130,178 +1192,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           </div>
         )}
       </div>
-
-      {/* Sources - Media Files */}
-      {(() => {
-        return sourceMedia.length > 0 && (
-          <div className="pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Source Media ({sourceMedia.length})</h4>
-            <div className="space-y-3">
-              {sourceMedia.map((source) => {
-                const captionParts: string[] = [];
-                if (source.date) captionParts.push(source.date);
-                if (source.credit) captionParts.push(source.credit);
-                if (source.description_markdown) captionParts.push(source.description_markdown);
-                const caption = captionParts.join(' — ') || source.title || 'Source Document';
-
-                return (
-                  <div key={source.media_slug} className="border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors bg-blue-50">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
-                        <div className="flex gap-2 items-center">
-                          <a
-                            href={source.url || source.s3_url || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            View Source →
-                          </a>
-                          {isEditing && (
-                            <>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    await fetch('/api/curator/media/link-to-voyage', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                        media_slug: source.media_slug,
-                                        voyage_slug: voyage.voyage_slug,
-                                        media_category: 'additional_source',
-                                        sort_order: null,
-                                        notes: ''
-                                      })
-                                    });
-                                    loadMedia();
-                                  } catch (error) {
-                                    console.error('Move failed:', error);
-                                    alert('Failed to move media');
-                                  }
-                                }}
-                                className="text-xs text-purple-600 hover:text-purple-800 hover:underline"
-                                title="Move to Additional Sources"
-                              >
-                                → Additional
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (!confirm('Remove this media from voyage?')) return;
-                                  try {
-                                    await fetch(
-                                      `/api/curator/media/unlink-from-voyage?media_slug=${encodeURIComponent(source.media_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
-                                      { method: 'DELETE' }
-                                    );
-                                    loadMedia();
-                                  } catch (error) {
-                                    console.error('Detach failed:', error);
-                                    alert('Failed to detach media');
-                                  }
-                                }}
-                                className="text-red-600 hover:text-red-800 text-sm"
-                                title="Remove from voyage"
-                              >
-                                ✕
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Additional Sources - Media Files */}
-      {(() => {
-        return additionalSourceMedia.length > 0 && (
-          <div className="pt-4 border-t border-gray-200">
-            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Additional Source Media ({additionalSourceMedia.length})</h4>
-            <div className="space-y-3">
-              {additionalSourceMedia.map((source) => {
-                const captionParts: string[] = [];
-                if (source.date) captionParts.push(source.date);
-                if (source.credit) captionParts.push(source.credit);
-                if (source.description_markdown) captionParts.push(source.description_markdown);
-                const caption = captionParts.join(' — ') || source.title || 'Additional Source Document';
-
-                return (
-                  <div key={source.media_slug} className="border border-purple-200 rounded-lg p-4 hover:bg-purple-50 transition-colors bg-purple-50">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 mb-2">📎 {caption}</p>
-                        <div className="flex gap-2 items-center">
-                          <a
-                            href={source.url || source.s3_url || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 hover:underline"
-                          >
-                            View Source →
-                          </a>
-                          {isEditing && (
-                            <>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    await fetch('/api/curator/media/link-to-voyage', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({
-                                        media_slug: source.media_slug,
-                                        voyage_slug: voyage.voyage_slug,
-                                        media_category: 'source',
-                                        sort_order: null,
-                                        notes: ''
-                                      })
-                                    });
-                                    loadMedia();
-                                  } catch (error) {
-                                    console.error('Move failed:', error);
-                                    alert('Failed to move media');
-                                  }
-                                }}
-                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                                title="Move to Sources"
-                              >
-                                ← Sources
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (!confirm('Remove this media from voyage?')) return;
-                                  try {
-                                    await fetch(
-                                      `/api/curator/media/unlink-from-voyage?media_slug=${encodeURIComponent(source.media_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
-                                      { method: 'DELETE' }
-                                    );
-                                    loadMedia();
-                                  } catch (error) {
-                                    console.error('Detach failed:', error);
-                                    alert('Failed to detach media');
-                                  }
-                                }}
-                                className="text-red-600 hover:text-red-800 text-sm"
-                                title="Remove from voyage"
-                              >
-                                ✕
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
 
       {/* Media Upload Dialog - Sources */}
       <MediaUploadDialog
