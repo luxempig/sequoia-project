@@ -100,6 +100,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     is_crew: false
   });
 
+  // Compute media by category
+  const sourceMedia = media.filter(m => m.media_category === 'source');
+  const additionalSourceMedia = media.filter(m => m.media_category === 'additional_source');
+
   // Load people and media when component mounts
   useEffect(() => {
     setLoadingPeople(true);
@@ -1129,7 +1133,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       {/* Sources - Media Files */}
       {(() => {
-        const sourceMedia = media.filter(m => m.media_category === 'source');
         return sourceMedia.length > 0 && (
           <div className="pt-4 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Source Media ({sourceMedia.length})</h4>
@@ -1216,7 +1219,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       {/* Additional Sources - Media Files */}
       {(() => {
-        const additionalSourceMedia = media.filter(m => m.media_category === 'additional_source');
         return additionalSourceMedia.length > 0 && (
           <div className="pt-4 border-t border-gray-200">
             <h4 className="text-xs font-semibold text-gray-600 uppercase mb-3">Additional Source Media ({additionalSourceMedia.length})</h4>
