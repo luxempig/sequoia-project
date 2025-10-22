@@ -24,6 +24,8 @@ const VoyageEditor: React.FC = () => {
     title: '',
     start_date: new Date().toISOString().split('T')[0], // Default to today
     end_date: new Date().toISOString().split('T')[0],
+    start_time: null,
+    end_time: null,
     start_location: '',
     end_location: '',
     voyage_type: 'official',
@@ -210,18 +212,28 @@ const VoyageEditor: React.FC = () => {
 
   // Passenger handlers
   const searchPeople = async (query: string) => {
-    if (query.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
     try {
-      const response = await fetch(`/api/people/search/autocomplete?q=${encodeURIComponent(query)}`);
+      // If query is empty, fetch all people; otherwise search
+      const url = query.trim()
+        ? `/api/people/search/autocomplete?q=${encodeURIComponent(query)}`
+        : '/api/people';
+      const response = await fetch(url);
       const results = await response.json();
       setSearchResults(results);
     } catch (error) {
       console.error('Error searching people:', error);
     }
   };
+
+  // Load all people when the add passenger modal opens
+  useEffect(() => {
+    if (showAddPassengerModal) {
+      searchPeople(''); // Load all people
+    } else {
+      setSearchResults([]);
+      setSearchQuery('');
+    }
+  }, [showAddPassengerModal]);
 
   const addExistingPassenger = (person: any, role: string = '') => {
     if (!selectedPassengers.find(p => p.person_slug === person.person_slug)) {
@@ -496,6 +508,14 @@ const VoyageEditor: React.FC = () => {
               onChange={(e) => updateField('start_date', e.target.value || null)}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             />
+            <label className="block text-sm font-medium text-gray-700 mt-2">Start Time</label>
+            <input
+              type="time"
+              value={voyage.start_time || ''}
+              onChange={(e) => updateField('start_time', e.target.value || null)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              placeholder="HH:MM"
+            />
             <label className="block text-sm font-medium text-gray-700 mt-2">Start Location</label>
             <input
               type="text"
@@ -513,6 +533,14 @@ const VoyageEditor: React.FC = () => {
               value={voyage.end_date || ''}
               onChange={(e) => updateField('end_date', e.target.value || null)}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
+            />
+            <label className="block text-sm font-medium text-gray-700 mt-2">End Time</label>
+            <input
+              type="time"
+              value={voyage.end_time || ''}
+              onChange={(e) => updateField('end_time', e.target.value || null)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2"
+              placeholder="HH:MM"
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">End Location</label>
             <input
@@ -944,7 +972,7 @@ const VoyageEditor: React.FC = () => {
                     setSearchQuery(e.target.value);
                     searchPeople(e.target.value);
                   }}
-                  placeholder="Type name to search..."
+                  placeholder="Type to filter, or select from all people below..."
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                 />
                 {searchResults.length > 0 && (
