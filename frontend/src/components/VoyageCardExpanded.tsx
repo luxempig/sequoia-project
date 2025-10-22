@@ -72,6 +72,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [showSourceMediaUpload, setShowSourceMediaUpload] = useState(false);
   const [showAdditionalSourceMediaUpload, setShowAdditionalSourceMediaUpload] = useState(false);
+  const [showSourceMediaSearch, setShowSourceMediaSearch] = useState(false);
+  const [showAdditionalSourceMediaSearch, setShowAdditionalSourceMediaSearch] = useState(false);
 
   // Media loading function
   const loadMedia = () => {
@@ -385,6 +387,56 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const handleMediaUploadSuccess = (mediaSlug: string) => {
     // Reload media after successful upload
     loadMedia();
+  };
+
+  const handleAttachSourceMedia = async (media: any) => {
+    try {
+      const response = await fetch('/api/curator/media/link-to-voyage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_slug: media.media_slug,
+          voyage_slug: voyage.voyage_slug,
+          media_category: 'source',
+          sort_order: null,
+          notes: ''
+        })
+      });
+
+      if (response.ok) {
+        loadMedia();
+      } else {
+        alert('Failed to attach media');
+      }
+    } catch (error) {
+      console.error('Error attaching media:', error);
+      alert('Failed to attach media');
+    }
+  };
+
+  const handleAttachAdditionalSourceMedia = async (media: any) => {
+    try {
+      const response = await fetch('/api/curator/media/link-to-voyage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_slug: media.media_slug,
+          voyage_slug: voyage.voyage_slug,
+          media_category: 'additional_source',
+          sort_order: null,
+          notes: ''
+        })
+      });
+
+      if (response.ok) {
+        loadMedia();
+      } else {
+        alert('Failed to attach media');
+      }
+    } catch (error) {
+      console.error('Error attaching media:', error);
+      alert('Failed to attach media');
+    }
   };
 
   // Delete voyage
@@ -728,12 +780,18 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               </div>
 
               {/* Upload Source Media */}
-              <div>
+              <div className="space-y-2">
                 <button
                   onClick={() => setShowSourceMediaUpload(true)}
                   className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-xs font-medium"
                 >
-                  📎 Upload Source Media (PDF, images, documents)
+                  📎 Upload New Source Media
+                </button>
+                <button
+                  onClick={() => setShowSourceMediaSearch(true)}
+                  className="w-full bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-xs font-medium"
+                >
+                  🔍 Attach Existing Media as Source
                 </button>
               </div>
             </div>
@@ -820,12 +878,18 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               </div>
 
               {/* Upload Additional Source Media */}
-              <div>
+              <div className="space-y-2">
                 <button
                   onClick={() => setShowAdditionalSourceMediaUpload(true)}
                   className="w-full bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 text-xs font-medium"
                 >
-                  📎 Upload Additional Source Media (PDF, images, documents)
+                  📎 Upload New Additional Source Media
+                </button>
+                <button
+                  onClick={() => setShowAdditionalSourceMediaSearch(true)}
+                  className="w-full bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 text-xs font-medium"
+                >
+                  🔍 Attach Existing Media as Additional Source
                 </button>
               </div>
             </div>
@@ -1255,6 +1319,22 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         voyageSlug={voyage.voyage_slug}
         autoLinkToVoyage={true}
         mediaCategory="additional_source"
+      />
+
+      {/* Media Search Modal - Sources */}
+      <MediaSearchModal
+        isOpen={showSourceMediaSearch}
+        onClose={() => setShowSourceMediaSearch(false)}
+        onSelect={handleAttachSourceMedia}
+        excludeMediaSlugs={sourceMedia.map(m => m.media_slug)}
+      />
+
+      {/* Media Search Modal - Additional Sources */}
+      <MediaSearchModal
+        isOpen={showAdditionalSourceMediaSearch}
+        onClose={() => setShowAdditionalSourceMediaSearch(false)}
+        onSelect={handleAttachAdditionalSourceMedia}
+        excludeMediaSlugs={additionalSourceMedia.map(m => m.media_slug)}
       />
 
       {/* Person Edit Modal */}
