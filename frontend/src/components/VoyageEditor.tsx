@@ -48,6 +48,11 @@ const VoyageEditor: React.FC = () => {
   const [sourceMediaFiles, setSourceMediaFiles] = useState<File[]>([]);
   const [uploadingSourceMedia, setUploadingSourceMedia] = useState(false);
 
+  // Additional sources (separate from primary sources)
+  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<string[]>([]);
+  const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
+  const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<File[]>([]);
+
   // Passenger management
   const [selectedPassengers, setSelectedPassengers] = useState<Array<{person_slug: string, full_name: string, capacity_role: string}>>([]);
   const [showAddPassengerModal, setShowAddPassengerModal] = useState(false);
@@ -178,6 +183,29 @@ const VoyageEditor: React.FC = () => {
     setSourceMediaFiles(sourceMediaFiles.filter((_, i) => i !== index));
   };
 
+  // Additional source handlers
+  const addAdditionalSourceUrl = () => {
+    if (newAdditionalSourceUrl.trim()) {
+      setAdditionalSourceUrls([...additionalSourceUrls, newAdditionalSourceUrl.trim()]);
+      setNewAdditionalSourceUrl("");
+    }
+  };
+
+  const removeAdditionalSourceUrl = (index: number) => {
+    setAdditionalSourceUrls(additionalSourceUrls.filter((_, i) => i !== index));
+  };
+
+  const handleAdditionalSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setAdditionalSourceMediaFiles([...additionalSourceMediaFiles, ...Array.from(e.target.files)]);
+      e.target.value = '';
+    }
+  };
+
+  const removeAdditionalSourceMediaFile = (index: number) => {
+    setAdditionalSourceMediaFiles(additionalSourceMediaFiles.filter((_, i) => i !== index));
+  };
+
   // Passenger handlers
   const searchPeople = async (query: string) => {
     if (query.trim().length < 2) {
@@ -263,6 +291,7 @@ const VoyageEditor: React.FC = () => {
         body: JSON.stringify({
           ...voyage,
           source_urls: sourceUrls.length > 0 ? sourceUrls : null,
+          additional_sources: additionalSourceUrls.length > 0 ? additionalSourceUrls.join('\n') : null,
         })
       });
 
@@ -294,6 +323,27 @@ const VoyageEditor: React.FC = () => {
           }
         }
         setUploadingSourceMedia(false);
+      }
+
+      // Upload additional source media files if any
+      if (additionalSourceMediaFiles.length > 0) {
+        for (const file of additionalSourceMediaFiles) {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('media_slug', 'auto');
+            formData.append('voyage_slug', createdVoyage.voyage_slug);
+            formData.append('media_category', 'additional_source');
+            formData.append('title', file.name);
+
+            await fetch('/api/curator/media/upload', {
+              method: 'POST',
+              body: formData
+            });
+          } catch (err) {
+            console.error(`Failed to upload additional source media ${file.name}:`, err);
+          }
+        }
       }
 
       // Link passengers if any
@@ -492,18 +542,6 @@ const VoyageEditor: React.FC = () => {
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
-          <textarea
-            value={voyage.summary_markdown || ''}
-            onChange={(e) => updateField('summary_markdown', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-            rows={4}
-            placeholder="Brief summary of the voyage..."
-          />
-        </div>
-
         {/* Additional Information */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Additional Information</label>
@@ -511,8 +549,8 @@ const VoyageEditor: React.FC = () => {
             value={voyage.additional_information || ''}
             onChange={(e) => updateField('additional_information', e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2"
-            rows={3}
-            placeholder="Additional context or details..."
+            rows={4}
+            placeholder="Additional notes and information about the voyage..."
           />
         </div>
 
@@ -596,6 +634,78 @@ const VoyageEditor: React.FC = () => {
                 />
               </label>
               <p className="text-xs text-gray-500 mt-1">Upload PDFs, images, or documents as source materials</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Sources */}
+        <div className="pt-4 border-t border-gray-200">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Additional Sources</h4>
+
+          {/* Text/URL Additional Sources */}
+          <div className="space-y-2 mb-4">
+            <label className="text-xs font-medium text-gray-600">Text/URL Additional Sources:</label>
+            {additionalSourceUrls.map((url, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={url}
+                  readOnly
+                  className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm"
+                />
+                <button
+                  onClick={() => removeAdditionalSourceUrl(index)}
+                  className="text-red-600 hover:text-red-800 px-3 py-2 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newAdditionalSourceUrl}
+                onChange={(e) => setNewAdditionalSourceUrl(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addAdditionalSourceUrl()}
+                placeholder="Additional reference or URL..."
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+              />
+              <button
+                onClick={addAdditionalSourceUrl}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+              >
+                Add Text
+              </button>
+            </div>
+          </div>
+
+          {/* Media Additional Sources */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-600">Media Additional Sources (PDFs, images, documents):</label>
+            {additionalSourceMediaFiles.map((file, index) => (
+              <div key={index} className="flex items-center gap-2 bg-purple-50 p-2 rounded">
+                <span className="flex-1 text-sm text-gray-700">📎 {file.name}</span>
+                <span className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</span>
+                <button
+                  onClick={() => removeAdditionalSourceMediaFile(index)}
+                  className="text-red-600 hover:text-red-800 px-2 py-1 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <div>
+              <label className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 cursor-pointer text-sm">
+                <span>+ Attach Additional Source Media</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx"
+                  onChange={handleAdditionalSourceMediaFileChange}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-gray-500 mt-1">Upload PDFs, images, or documents as additional source materials</p>
             </div>
           </div>
         </div>
