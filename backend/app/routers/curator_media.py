@@ -326,44 +326,46 @@ async def upload_media_file(
         file_content = await file.read()
         file_size = len(file_content)
 
+        import re
+
         # Get file extension
         file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
 
-        # Format filename as: date_credit_president.ext
+        # Build filename: voyage-slug_date_first-5-words-of-description.ext
         filename_parts = []
-        if date:
-            filename_parts.append(date.replace('-', ''))  # YYYYMMDD format
-        if credit:
-            import re
-            credit_slug = re.sub(r'[^a-z0-9-]', '', credit.lower().replace(' ', '-'))[:30]
-            filename_parts.append(credit_slug)
 
-        # Determine president/owner
-        owner = None
+        # Add voyage slug to filename
         if voyage_slug:
-            # Extract owner from voyage_slug
-            parts = voyage_slug.split('-')
-            if len(parts) >= 2:
-                owner = f"{parts[0]}-{parts[1]}"
-            else:
-                owner = parts[0]
-        elif president_slug:
-            owner = president_slug
+            filename_parts.append(voyage_slug)
 
-        if owner:
-            filename_parts.append(owner)
-        else:
-            filename_parts.append('unattached')
+        # Add date to filename
+        if date:
+            filename_parts.append(date)
 
-        formatted_filename = '_'.join(filename_parts) + f'.{file_ext}'
+        # Add first 5 words of description to filename
+        if description:
+            # Extract first 5 words, clean and slugify
+            words = description.strip().split()[:5]
+            desc_slug = '-'.join(words)
+            desc_slug = re.sub(r'[^a-z0-9-]', '', desc_slug.lower().replace(' ', '-'))
+            desc_slug = re.sub(r'-+', '-', desc_slug).strip('-')
+            if desc_slug:
+                filename_parts.append(desc_slug)
+
+        # Build filename
+        formatted_filename = '_'.join(filename_parts) + f'.{file_ext}' if filename_parts else f'media.{file_ext}'
+
+        # Build directory path: voyage-slug/date/
+        directory_parts = []
+        if voyage_slug:
+            directory_parts.append(voyage_slug)
+        if date:
+            directory_parts.append(date)
+
+        directory_path = '/'.join(directory_parts) if directory_parts else 'unattached'
 
         # Determine S3 key with proper hierarchy
-        if voyage_slug:
-            s3_key = f"media/{owner}/{voyage_slug}/{formatted_filename}"
-        elif owner and owner != 'unattached':
-            s3_key = f"media/{owner}/{formatted_filename}"
-        else:
-            s3_key = f"media/unattached/{formatted_filename}"
+        s3_key = f"{directory_path}/{formatted_filename}"
 
         # Upload to S3
         s3_url = upload_to_s3(
@@ -401,11 +403,13 @@ async def upload_media_file(
         # Generate thumbnail if voyage_slug is provided
         thumbnail_url = None
         if voyage_slug and media_type in ('image', 'pdf'):
+            # Generate thumbnail filename (add -thumb before extension)
+            thumb_filename = formatted_filename.rsplit('.', 1)[0] + '-thumb.jpg'
             thumbnail_url = generate_and_upload_thumbnail(
                 file_content=file_content,
                 media_type=media_type,
-                voyage_slug=voyage_slug,
-                media_slug=media_slug
+                directory_path=directory_path,
+                thumb_filename=thumb_filename
             )
 
         # Create media record
@@ -553,8 +557,8 @@ def make_pdf_thumbnail(pdf_bytes: bytes, thumb_size=320) -> Optional[bytes]:
         return None
 
 
-def generate_and_upload_thumbnail(file_content: bytes, media_type: str, voyage_slug: str, media_slug: str) -> Optional[str]:
-    """Generate thumbnail and upload to sequoia-public bucket."""
+def generate_and_upload_thumbnail(file_content: bytes, media_type: str, directory_path: str, thumb_filename: str) -> Optional[str]:
+    """Generate thumbnail and upload to sequoia-public bucket with matching directory structure."""
     try:
         # Generate thumbnail based on media type
         thumb_bytes = None
@@ -568,12 +572,12 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, voyage_s
             return None
 
         if not thumb_bytes:
-            LOG.warning(f"Failed to generate thumbnail for {media_slug}")
+            LOG.warning(f"Failed to generate thumbnail")
             return None
 
-        # Upload thumbnail to public bucket
+        # Upload thumbnail to public bucket using same directory structure
         public_bucket = os.environ.get("S3_PUBLIC_BUCKET", "sequoia-public")
-        thumb_key = f"thumbnails/{voyage_slug}/{media_slug}.jpg"
+        thumb_key = f"{directory_path}/{thumb_filename}"
 
         s3_client = boto3.client('s3')
         s3_client.put_object(
