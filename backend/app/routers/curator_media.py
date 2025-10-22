@@ -357,26 +357,30 @@ async def upload_media_file(
         directory_path = '/'.join(directory_parts)
 
         # Build filename: date_description-slug_unique-id.ext
+        # Build filename: credit_date_title (spaces replaced with dashes, fields separated by underscores)
         filename_parts = []
 
-        # Add date to filename
+        # Add credit (spaces replaced with dashes)
+        if credit:
+            credit_slug = re.sub(r'[^a-z0-9\s-]', '', credit.lower())
+            credit_slug = re.sub(r'\s+', '-', credit_slug.strip())
+            credit_slug = re.sub(r'-+', '-', credit_slug).strip('-')
+            if credit_slug:
+                filename_parts.append(credit_slug)
+
+        # Add date
         if date:
             filename_parts.append(date.replace('/', '-'))
 
-        # Add first 5 words of description to filename (if available)
-        if description:
-            # Extract first 5 words, clean and slugify
-            words = description.strip().split()[:5]
-            desc_slug = '-'.join(words)
-            desc_slug = re.sub(r'[^a-z0-9-]', '', desc_slug.lower().replace(' ', '-'))
-            desc_slug = re.sub(r'-+', '-', desc_slug).strip('-')
-            if desc_slug:
-                filename_parts.append(desc_slug)
+        # Add title (spaces replaced with dashes)
+        if title:
+            title_slug = re.sub(r'[^a-z0-9\s-]', '', title.lower())
+            title_slug = re.sub(r'\s+', '-', title_slug.strip())
+            title_slug = re.sub(r'-+', '-', title_slug).strip('-')
+            if title_slug:
+                filename_parts.append(title_slug)
 
-        # Add unique ID
-        filename_parts.append(unique_id)
-
-        # Build filename
+        # Build filename (fields separated by underscores)
         formatted_filename = '_'.join(filename_parts) + f'.{file_ext}'
 
         # Determine S3 key with proper hierarchy
