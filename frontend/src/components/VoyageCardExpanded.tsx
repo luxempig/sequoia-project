@@ -574,11 +574,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-700">Start Date (YYYY-MM-DD)</label>
             <input
-              type="date"
+              type="text"
               value={currentVoyage.start_date || ''}
               onChange={(e) => updateField('start_date', e.target.value || null)}
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="YYYY-MM-DD"
+              pattern="\d{4}-\d{2}-\d{2}"
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">Start Location</label>
             <input
@@ -593,11 +594,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-700">End Date (YYYY-MM-DD)</label>
             <input
-              type="date"
+              type="text"
               value={currentVoyage.end_date || ''}
               onChange={(e) => updateField('end_date', e.target.value || null)}
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="YYYY-MM-DD"
+              pattern="\d{4}-\d{2}-\d{2}"
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">End Location</label>
             <input
