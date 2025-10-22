@@ -48,6 +48,7 @@ export default function VoyageDetail() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [adjacentVoyages, setAdjacentVoyages] = useState<{ previous: Voyage | null; next: Voyage | null }>({ previous: null, next: null });
   const [loading, setLoading] = useState(true);
+  const [removingPerson, setRemovingPerson] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -73,6 +74,37 @@ export default function VoyageDetail() {
       alive = false;
     };
   }, [voyageSlug]);
+
+  const handleRemovePerson = async (personSlug: string) => {
+    if (!confirm('Remove this person from the voyage? If they are not attached to any other voyages, they will be deleted.')) {
+      return;
+    }
+
+    setRemovingPerson(personSlug);
+    try {
+      const response = await fetch(
+        `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(personSlug)}&voyage_slug=${encodeURIComponent(voyageSlug)}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to remove person from voyage');
+      }
+
+      // Remove person from local state
+      setPeople(people.filter(p => p.person_slug !== personSlug));
+
+      const result = await response.json();
+      if (result.person_deleted) {
+        alert('Person removed from voyage and deleted (no other voyage associations)');
+      }
+    } catch (error) {
+      console.error('Error removing person:', error);
+      alert('Failed to remove person from voyage');
+    } finally {
+      setRemovingPerson(null);
+    }
+  };
 
   if (loading) return <p className="p-4">Loading…</p>;
   if (!voyage) return <p className="p-4">Voyage not found</p>;
@@ -246,6 +278,35 @@ export default function VoyageDetail() {
             </ul>
           </div>
         )}
+
+        {/* Additional Sources */}
+        {voyage.additional_sources && voyage.additional_sources.trim() && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Additional Sources</h4>
+            <div className="text-sm text-gray-700 whitespace-pre-wrap">
+              {voyage.additional_sources.split('\n').map((line, index) => {
+                const trimmed = line.trim();
+                if (!trimmed) return null;
+                return (
+                  <div key={index} className="mb-1">
+                    {trimmed.startsWith('http') ? (
+                      <a
+                        href={trimmed}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:text-purple-800 hover:underline break-all"
+                      >
+                        {trimmed}
+                      </a>
+                    ) : (
+                      <span>• {trimmed}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Media Gallery - Only S3 */}
@@ -311,9 +372,9 @@ export default function VoyageDetail() {
                       const bioLink = p.bio || p.wikipedia_url;
                       const roleToDisplay = p.capacity_role || p.role_title || p.title;
                       return (
-                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded group">
                           <span className="mt-1">•</span>
-                          <div className="text-sm">
+                          <div className="text-sm flex-1">
                             <div className="font-medium">
                               {bioLink ? (
                                 <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -326,6 +387,14 @@ export default function VoyageDetail() {
                             {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
+                          <button
+                            onClick={() => handleRemovePerson(p.person_slug)}
+                            disabled={removingPerson === p.person_slug}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-800 px-2 py-1 text-xs font-medium disabled:opacity-50"
+                            title="Remove from voyage"
+                          >
+                            ✕
+                          </button>
                         </li>
                       );
                     })}
@@ -348,9 +417,9 @@ export default function VoyageDetail() {
                       const bioLink = p.bio || p.wikipedia_url;
                       const roleToDisplay = p.capacity_role || p.role_title || p.title;
                       return (
-                        <li key={p.person_slug} className="flex items-start gap-2">
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-gray-50 p-2 rounded group">
                           <span className="mt-1">•</span>
-                          <div className="text-sm">
+                          <div className="text-sm flex-1">
                             <div className="font-medium">
                               {bioLink ? (
                                 <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -363,6 +432,14 @@ export default function VoyageDetail() {
                             {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
                             {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
                           </div>
+                          <button
+                            onClick={() => handleRemovePerson(p.person_slug)}
+                            disabled={removingPerson === p.person_slug}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-800 px-2 py-1 text-xs font-medium disabled:opacity-50"
+                            title="Remove from voyage"
+                          >
+                            ✕
+                          </button>
                         </li>
                       );
                     })}

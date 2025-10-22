@@ -237,7 +237,7 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
 
 @router.delete("/unlink-from-voyage")
 def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, str]:
-    """Remove a person from a voyage"""
+    """Remove a person from a voyage and delete person if they have no other voyage associations"""
     try:
         with db_cursor() as cur:
             cur.execute(
@@ -253,10 +253,26 @@ def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, s
 
             LOG.info(f"Unlinked person {person_slug} from voyage {voyage_slug}")
 
+            # Check if this person is still linked to any other voyages
+            cur.execute(
+                "SELECT COUNT(*) as count FROM sequoia.voyage_passengers WHERE person_slug = %s",
+                (person_slug,)
+            )
+            result = cur.fetchone()
+            remaining_links = result['count'] if result else 0
+
+            # If no remaining links, delete the person
+            person_deleted = False
+            if remaining_links == 0:
+                cur.execute("DELETE FROM sequoia.people WHERE person_slug = %s", (person_slug,))
+                person_deleted = True
+                LOG.info(f"Deleted orphaned person {person_slug} (no remaining voyage links)")
+
             return {
-                "message": "Person unlinked from voyage successfully",
+                "message": "Person unlinked from voyage successfully" + (" and deleted (no remaining voyage links)" if person_deleted else ""),
                 "person_slug": person_slug,
-                "voyage_slug": voyage_slug
+                "voyage_slug": voyage_slug,
+                "person_deleted": person_deleted
             }
 
     except HTTPException:

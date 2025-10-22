@@ -58,7 +58,6 @@ const VoyageEditor: React.FC = () => {
 
   // Passenger management
   const [selectedPassengers, setSelectedPassengers] = useState<Array<{person_slug: string, full_name: string, capacity_role: string}>>([]);
-  const [showAddPassengerModal, setShowAddPassengerModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [newPassengerData, setNewPassengerData] = useState({
@@ -225,16 +224,6 @@ const VoyageEditor: React.FC = () => {
     }
   };
 
-  // Load all people when the add passenger modal opens
-  useEffect(() => {
-    if (showAddPassengerModal) {
-      searchPeople(''); // Load all people
-    } else {
-      setSearchResults([]);
-      setSearchQuery('');
-    }
-  }, [showAddPassengerModal]);
-
   const addExistingPassenger = (person: any, role: string = '') => {
     if (!selectedPassengers.find(p => p.person_slug === person.person_slug)) {
       setSelectedPassengers([...selectedPassengers, {
@@ -243,9 +232,6 @@ const VoyageEditor: React.FC = () => {
         capacity_role: role
       }]);
     }
-    setShowAddPassengerModal(false);
-    setSearchQuery('');
-    setSearchResults([]);
   };
 
   const createAndAddPassenger = async () => {
@@ -742,16 +728,81 @@ const VoyageEditor: React.FC = () => {
 
         {/* Passengers */}
         <div className="pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-700">Passengers</h4>
-            <button
-              onClick={() => setShowAddPassengerModal(true)}
-              className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-            >
-              + Add Passenger
-            </button>
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Passengers</h4>
+
+          {/* Search/Add Interface */}
+          <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+            <label className="block text-xs font-medium text-gray-600 mb-2">Search and add passengers:</label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                searchPeople(e.target.value);
+              }}
+              placeholder="Type to search existing people or leave blank to see all..."
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
+            />
+
+            {/* Search Results Dropdown */}
+            {searchResults.length > 0 && (
+              <div className="mt-2 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white">
+                {searchResults.map((person) => (
+                  <div
+                    key={person.person_slug}
+                    onClick={() => {
+                      addExistingPassenger(person);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
+                  >
+                    <div className="font-medium text-sm">{person.full_name}</div>
+                    {person.role_title && (
+                      <div className="text-xs text-gray-500">{person.role_title}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Create New Person */}
+            <div className="mt-3 pt-3 border-t border-gray-300">
+              <label className="block text-xs font-medium text-gray-600 mb-2">Or create new person:</label>
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  value={newPassengerData.full_name}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, full_name: e.target.value})}
+                  placeholder="Full Name"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="text"
+                  value={newPassengerData.role_title}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
+                  placeholder="General Title"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="text"
+                  value={newPassengerData.capacity_role}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, capacity_role: e.target.value})}
+                  placeholder="Role on Voyage"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+              </div>
+              <button
+                onClick={createAndAddPassenger}
+                disabled={!newPassengerData.full_name.trim()}
+                className="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Create & Add
+              </button>
+            </div>
           </div>
 
+          {/* Selected Passengers List */}
           {selectedPassengers.length === 0 ? (
             <p className="text-sm text-gray-500 italic">No passengers added yet</p>
           ) : (
@@ -768,9 +819,9 @@ const VoyageEditor: React.FC = () => {
                   />
                   <button
                     onClick={() => removePassenger(index)}
-                    className="text-red-600 hover:text-red-800 px-2 text-sm"
+                    className="text-red-600 hover:text-red-800 px-2 text-sm font-bold"
                   >
-                    Remove
+                    ✕
                   </button>
                 </div>
               ))}
@@ -942,110 +993,6 @@ const VoyageEditor: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPresidentModal(false)}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Add Passenger Modal */}
-    {showAddPassengerModal && (
-      <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Passenger</h3>
-
-              {/* Search existing people */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search Existing People</label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    searchPeople(e.target.value);
-                  }}
-                  placeholder="Type to filter, or select from all people below..."
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                />
-                {searchResults.length > 0 && (
-                  <div className="mt-2 border border-gray-200 rounded-md max-h-48 overflow-y-auto">
-                    {searchResults.map((person) => (
-                      <div
-                        key={person.person_slug}
-                        onClick={() => addExistingPassenger(person)}
-                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0"
-                      >
-                        <div className="font-medium text-sm">{person.full_name}</div>
-                        {person.role_title && (
-                          <div className="text-xs text-gray-500">{person.role_title}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">Or Create New Person</p>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Full Name *</label>
-                    <input
-                      type="text"
-                      value={newPassengerData.full_name}
-                      onChange={(e) => setNewPassengerData({...newPassengerData, full_name: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">General Role/Title</label>
-                    <input
-                      type="text"
-                      value={newPassengerData.role_title}
-                      onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                      placeholder="e.g., Senator, General, Diplomat"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Role on This Voyage</label>
-                    <input
-                      type="text"
-                      value={newPassengerData.capacity_role}
-                      onChange={(e) => setNewPassengerData({...newPassengerData, capacity_role: e.target.value})}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                      placeholder="e.g., Guest, Advisor, Crew"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="button"
-                onClick={createAndAddPassenger}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Create & Add
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddPassengerModal(false);
-                  setSearchQuery('');
-                  setSearchResults([]);
-                  setNewPassengerData({ full_name: '', role_title: '', capacity_role: '' });
-                }}
                 className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
               >
                 Cancel
