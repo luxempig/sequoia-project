@@ -327,34 +327,38 @@ async def upload_media_file(
         file_size = len(file_content)
 
         import re
+        import uuid
 
         # Get file extension
         file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
 
-        # Fetch voyage title if voyage_slug is provided
-        voyage_title_slug = None
-        if voyage_slug:
-            with db_cursor(read_only=True) as cur:
-                cur.execute("SELECT title FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
-                voyage_row = cur.fetchone()
-                if voyage_row and voyage_row['title']:
-                    # Slugify the voyage title
-                    voyage_title = voyage_row['title']
-                    voyage_title_slug = re.sub(r'[^a-z0-9-]', '-', voyage_title.lower())
-                    voyage_title_slug = re.sub(r'-+', '-', voyage_title_slug).strip('-')
+        # Generate unique ID for filename
+        unique_id = str(uuid.uuid4())[:8]
 
-        # Build filename: voyage-title_date_first-5-words-of-description.ext
+        # Build directory path based on media's date: YYYY/MM/DD/
+        if date:
+            # Parse date to extract year, month, day
+            # Expecting date in format YYYY-MM-DD or YYYY/MM/DD
+            date_normalized = date.replace('/', '-')
+            date_parts = date_normalized.split('-')
+            if len(date_parts) == 3:
+                year, month, day = date_parts
+                directory_path = f"{year}/{month}/{day}"
+            else:
+                # Invalid date format, use undated
+                directory_path = "undated"
+        else:
+            # No date provided, use undated
+            directory_path = "undated"
+
+        # Build filename: YYYY-MM-DD_description-slug_unique-id.ext
         filename_parts = []
-
-        # Add voyage title slug to filename
-        if voyage_title_slug:
-            filename_parts.append(voyage_title_slug)
 
         # Add date to filename
         if date:
-            filename_parts.append(date)
+            filename_parts.append(date.replace('/', '-'))
 
-        # Add first 5 words of description to filename
+        # Add first 5 words of description to filename (if available)
         if description:
             # Extract first 5 words, clean and slugify
             words = description.strip().split()[:5]
@@ -364,17 +368,11 @@ async def upload_media_file(
             if desc_slug:
                 filename_parts.append(desc_slug)
 
+        # Add unique ID
+        filename_parts.append(unique_id)
+
         # Build filename
-        formatted_filename = '_'.join(filename_parts) + f'.{file_ext}' if filename_parts else f'media.{file_ext}'
-
-        # Build directory path: voyage-title/date/
-        directory_parts = []
-        if voyage_title_slug:
-            directory_parts.append(voyage_title_slug)
-        if date:
-            directory_parts.append(date)
-
-        directory_path = '/'.join(directory_parts) if directory_parts else 'unattached'
+        formatted_filename = '_'.join(filename_parts) + f'.{file_ext}'
 
         # Determine S3 key with proper hierarchy
         s3_key = f"{directory_path}/{formatted_filename}"
@@ -412,9 +410,9 @@ async def upload_media_file(
             unique_suffix = str(uuid.uuid4())[:8]
             media_slug = f"{slug_base}-{unique_suffix}" if slug_base else f"media-{unique_suffix}"
 
-        # Generate thumbnail if voyage_slug is provided
+        # Generate thumbnail for images and PDFs (both attached and unattached media)
         thumbnail_url = None
-        if voyage_slug and media_type in ('image', 'pdf'):
+        if media_type in ('image', 'pdf'):
             # Generate thumbnail filename (add -thumb before extension)
             thumb_filename = formatted_filename.rsplit('.', 1)[0] + '-thumb.jpg'
             thumbnail_url = generate_and_upload_thumbnail(
