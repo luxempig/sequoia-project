@@ -126,12 +126,20 @@ export default function VoyageDetail() {
   return (
     <div className="p-4 max-w-5xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-blue-600 hover:underline"
-        >
-          ← Back to timeline
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-blue-600 hover:underline"
+          >
+            ← Back to timeline
+          </button>
+          <button
+            onClick={() => navigate(`/voyages/${voyageSlug}/edit`)}
+            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            ✏️ Edit Voyage
+          </button>
+        </div>
 
         {/* Voyage Navigation */}
         <div className="flex gap-2">

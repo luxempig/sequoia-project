@@ -36,6 +36,7 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/voyages" element={<VoyageList />} />
         <Route path="/voyages/new" element={<VoyageEditor />} />
+        <Route path="/voyages/:slug/edit" element={<VoyageEditor />} />
         <Route path="/voyages/:slug" element={<VoyageDetail />} />
 
         <Route path="/people" element={<PeopleDirectory />} />
