@@ -2,11 +2,12 @@
 CRUD endpoints for curator interface - Presidents/Owners
 """
 from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from app.db import db_cursor
 import logging
 import re
+from datetime import date
 
 LOG = logging.getLogger("app.routers.curator_presidents")
 
@@ -23,10 +24,13 @@ def slugify(text: str) -> str:
 
 class PresidentCreate(BaseModel):
     """Schema for creating a new president/owner"""
-    president_slug: str
-    person_slug: str
-    start_year: int
-    end_year: Optional[int] = None
+    president_slug: str = Field(..., description="Unique slug for president")
+    full_name: str = Field(..., description="Full name of president/owner")
+    party: Optional[str] = Field(None, description="Political party")
+    term_start: Optional[str] = Field(None, description="Start of term (YYYY-MM-DD)")
+    term_end: Optional[str] = Field(None, description="End of term (YYYY-MM-DD)")
+    wikipedia_url: Optional[str] = Field(None, description="Wikipedia URL")
+    tags: Optional[str] = Field(None, description="Comma-separated tags")
 
 
 @router.post("/", response_model=Dict[str, Any])
@@ -48,11 +52,11 @@ def create_president(president: PresidentCreate) -> Dict[str, Any]:
             # Insert the president
             cur.execute("""
                 INSERT INTO sequoia.presidents (
-                    president_slug, person_slug, start_year, end_year,
-                    created_at, updated_at
+                    president_slug, full_name, party, term_start, term_end,
+                    wikipedia_url, tags, created_at, updated_at
                 ) VALUES (
-                    %(president_slug)s, %(person_slug)s, %(start_year)s, %(end_year)s,
-                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                    %(president_slug)s, %(full_name)s, %(party)s, %(term_start)s, %(term_end)s,
+                    %(wikipedia_url)s, %(tags)s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                 )
                 RETURNING *
             """, president.model_dump())
