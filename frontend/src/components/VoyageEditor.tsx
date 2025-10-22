@@ -808,7 +808,7 @@ const VoyageEditor: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {selectedPassengers.map((passenger, index) => (
-                <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200">
+                <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 group hover:bg-gray-100">
                   <span className="flex-1 text-sm font-medium text-gray-700">{passenger.full_name}</span>
                   <input
                     type="text"
@@ -819,7 +819,8 @@ const VoyageEditor: React.FC = () => {
                   />
                   <button
                     onClick={() => removePassenger(index)}
-                    className="text-red-600 hover:text-red-800 px-2 text-sm font-bold"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center text-lg font-bold transition-colors"
+                    title="Remove passenger"
                   >
                     ✕
                   </button>
