@@ -216,7 +216,7 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
 
 
 @router.delete("/unlink-from-voyage")
-def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, str]:
+def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, Any]:
     """Remove a person from a voyage and delete person if they have no other voyage associations"""
     try:
         with db_cursor() as cur:
@@ -263,7 +263,7 @@ def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, s
 
 
 @router.delete("/{person_slug}")
-def delete_person(person_slug: str) -> Dict[str, str]:
+def delete_person(person_slug: str) -> Dict[str, Any]:
     """Delete a person and all voyage associations"""
     try:
         with db_cursor() as cur:
