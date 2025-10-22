@@ -30,7 +30,7 @@ class MediaCreate(BaseModel):
     """Schema for creating a new media item"""
     media_slug: str = Field(..., description="Unique identifier (e.g., 'truman-1945-01-photo-001')")
     title: Optional[str] = None
-    media_type: Optional[str] = Field(None, description="image, video, pdf, document, etc.")
+    media_type: Optional[str] = Field(None, description="article, image, video, audio, book, other")
     url: Optional[str] = Field(None, description="External URL or presigned URL")
     s3_url: Optional[str] = Field(None, description="S3 canonical URL")
     public_derivative_url: Optional[str] = Field(None, description="Public thumbnail/derivative URL")
@@ -397,14 +397,18 @@ async def upload_media_file(
         # Infer media_type from file extension if not provided
         if not media_type:
             ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
-            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']:
                 media_type = 'image'
-            elif ext in ['mp4', 'mov', 'avi', 'webm']:
+            elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv']:
                 media_type = 'video'
-            elif ext == 'pdf':
-                media_type = 'pdf'
+            elif ext in ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac']:
+                media_type = 'audio'
+            elif ext in ['pdf', 'doc', 'docx', 'txt', 'rtf']:
+                media_type = 'article'
+            elif ext in ['epub', 'mobi', 'azw', 'azw3']:
+                media_type = 'book'
             else:
-                media_type = 'document'
+                media_type = 'other'
 
         # Generate unique media_slug if 'auto'
         if media_slug == 'auto':
@@ -419,9 +423,9 @@ async def upload_media_file(
             unique_suffix = str(uuid.uuid4())[:8]
             media_slug = f"{slug_base}-{unique_suffix}" if slug_base else f"media-{unique_suffix}"
 
-        # Generate thumbnail for images and PDFs (both attached and unattached media)
+        # Generate thumbnail for images and articles (both attached and unattached media)
         thumbnail_url = None
-        if media_type in ('image', 'pdf'):
+        if media_type in ('image', 'article', 'book'):
             # Generate thumbnail filename (add -thumb before extension)
             thumb_filename = formatted_filename.rsplit('.', 1)[0] + '-thumb.jpg'
             thumbnail_url = generate_and_upload_thumbnail(
@@ -584,7 +588,8 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, director
 
         if media_type == 'image':
             thumb_bytes = make_image_thumbnail(file_content)
-        elif media_type == 'pdf':
+        elif media_type in ('article', 'book', 'pdf'):  # pdf for legacy support
+            # Try PDF thumbnail generation (articles/books are often PDFs)
             thumb_bytes = make_pdf_thumbnail(file_content)
         else:
             LOG.info(f"Thumbnail generation not supported for media_type: {media_type}")
