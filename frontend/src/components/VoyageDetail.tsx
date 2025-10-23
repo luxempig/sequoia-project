@@ -46,6 +46,8 @@ export default function VoyageDetail() {
   const [voyage, setVoyage] = useState<Voyage | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [albums, setAlbums] = useState<any[]>([]);
+  const [expandedAlbum, setExpandedAlbum] = useState<string | null>(null);
   const [adjacentVoyages, setAdjacentVoyages] = useState<{ previous: Voyage | null; next: Voyage | null }>({ previous: null, next: null });
   const [loading, setLoading] = useState(true);
 
@@ -54,17 +56,19 @@ export default function VoyageDetail() {
     (async () => {
       setLoading(true);
       try {
-        const [v, p, m, adj] = await Promise.all([
+        const [v, p, m, adj, alb] = await Promise.all([
           api.getVoyage(voyageSlug).catch(() => null),
           api.getVoyagePeople(voyageSlug).catch(() => []),
           api.getVoyageMedia(voyageSlug).catch(() => []),
           api.getAdjacentVoyages(voyageSlug).catch(() => ({ previous: null, next: null })),
+          fetch(`/api/curator/albums/by-voyage/${voyageSlug}`).then(r => r.ok ? r.json() : []).catch(() => []),
         ]);
         if (!alive) return;
         setVoyage(v);
         setPeople(p);
         setMedia(m);
         setAdjacentVoyages(adj);
+        setAlbums(alb);
       } finally {
         if (alive) setLoading(false);
       }
@@ -73,6 +77,43 @@ export default function VoyageDetail() {
       alive = false;
     };
   }, [voyageSlug]);
+
+  // Load album details when expanded
+  const loadAlbumDetails = async (albumSlug: string) => {
+    try {
+      const response = await fetch(`/api/curator/albums/${albumSlug}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAlbums(prev => prev.map(a => a.album_slug === albumSlug ? { ...a, media: data.media } : a));
+      }
+    } catch (error) {
+      console.error('Failed to load album details:', error);
+    }
+  };
+
+  const toggleAlbum = (albumSlug: string) => {
+    if (expandedAlbum === albumSlug) {
+      setExpandedAlbum(null);
+    } else {
+      setExpandedAlbum(albumSlug);
+      const album = albums.find(a => a.album_slug === albumSlug);
+      if (album && !album.media) {
+        loadAlbumDetails(albumSlug);
+      }
+    }
+  };
+
+  const getMediaIcon = (type: string | null | undefined) => {
+    switch (type) {
+      case 'article': return '📄';
+      case 'image': return '🖼️';
+      case 'video': return '🎥';
+      case 'audio': return '🎵';
+      case 'book': return '📚';
+      case 'pdf': return '📄';
+      default: return '📎';
+    }
+  };
 
   if (loading) return <p className="p-4">Loading…</p>;
   if (!voyage) return <p className="p-4">Voyage not found</p>;
@@ -343,6 +384,89 @@ export default function VoyageDetail() {
                       </a>
                     </div>
                   </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Albums */}
+      {albums.length > 0 && (
+        <section className="bg-white rounded-2xl p-5 ring-1 ring-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold mb-3">📚 Albums ({albums.length})</h3>
+          <div className="space-y-3">
+            {albums.map(album => {
+              const isExpanded = expandedAlbum === album.album_slug;
+              return (
+                <div key={album.album_slug} className="border border-indigo-200 rounded-lg overflow-hidden bg-gradient-to-r from-indigo-50 to-purple-50">
+                  {/* Album Header */}
+                  <div
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-indigo-100/50 transition-colors"
+                    onClick={() => toggleAlbum(album.album_slug)}
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-lg">{album.title}</h4>
+                      {album.description && (
+                        <p className="text-sm text-gray-600 mt-1">{album.description}</p>
+                      )}
+                      <p className="text-sm text-indigo-600 font-medium mt-2">
+                        {album.media_count} {album.media_count === 1 ? 'item' : 'items'}
+                      </p>
+                    </div>
+                    <div className="ml-4 text-indigo-600 text-xl">
+                      {isExpanded ? '▼' : '▶'}
+                    </div>
+                  </div>
+
+                  {/* Album Content (when expanded) */}
+                  {isExpanded && (
+                    <div className="p-4 border-t border-indigo-200 bg-white">
+                      {!album.media ? (
+                        <p className="text-gray-600">Loading...</p>
+                      ) : album.media.length === 0 ? (
+                        <p className="text-gray-600">No media in this album</p>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                          {album.media.map((mediaItem: any) => (
+                            <div key={mediaItem.media_slug} className="group relative">
+                              <a
+                                href={mediaItem.s3_url || mediaItem.url || '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-500 transition-colors shadow-md hover:shadow-xl"
+                              >
+                                {mediaItem.media_type === 'image' ? (
+                                  <img
+                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || ''}
+                                    alt={mediaItem.title || ''}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <div className="text-center p-3">
+                                      <div className="text-4xl mb-2">{getMediaIcon(mediaItem.media_type)}</div>
+                                      <div className="text-xs text-gray-700 font-medium line-clamp-3">{mediaItem.title}</div>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                                    <div className="text-white text-sm font-medium line-clamp-2">
+                                      {mediaItem.title || mediaItem.credit || 'View'}
+                                    </div>
+                                    {mediaItem.date && (
+                                      <div className="text-white/80 text-xs mt-1">{mediaItem.date}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
