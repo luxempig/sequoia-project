@@ -8,11 +8,13 @@ const MediaDetail: React.FC = () => {
   const [media, setMedia] = useState<any>(null);
   const [relatedVoyages, setRelatedVoyages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<'db' | 's3' | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!slug) return;
-      
+
       try {
         setLoading(true);
         const [mediaData, voyagesData] = await Promise.all([
@@ -30,6 +32,31 @@ const MediaDetail: React.FC = () => {
 
     fetchData();
   }, [slug]);
+
+  const handleDelete = async (deleteFromS3: boolean) => {
+    if (!slug) return;
+
+    setDeleting(true);
+    try {
+      const url = deleteFromS3
+        ? `/api/curator/media/${slug}?delete_from_s3=true`
+        : `/api/curator/media/${slug}`;
+
+      const response = await fetch(url, { method: 'DELETE' });
+
+      if (response.ok) {
+        // Redirect to media gallery
+        window.location.href = '/media-explorer';
+      } else {
+        console.error('Delete failed');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(null);
+    }
+  };
 
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
@@ -253,6 +280,24 @@ const MediaDetail: React.FC = () => {
                   )}
                 </dl>
               </div>
+
+              {/* Delete Actions */}
+              <div className="px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm('db')}
+                    className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-orange-300 shadow-sm text-sm font-medium rounded-md text-orange-700 bg-white hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  >
+                    🗃️ Delete from Database
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm('s3')}
+                    className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    🗑️ Delete from Media Library & Database
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Related Voyages */}
@@ -314,6 +359,55 @@ const MediaDetail: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed z-50 inset-0 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowDeleteConfirm(null)}></div>
+
+              <div className="relative bg-white rounded-lg px-4 pt-5 pb-4 shadow-xl max-w-lg w-full">
+                <div className="sm:flex sm:items-start">
+                  <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${showDeleteConfirm === 's3' ? 'bg-red-100' : 'bg-orange-100'}`}>
+                    <span className="text-2xl">{showDeleteConfirm === 's3' ? '⚠️' : 'ℹ️'}</span>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      {showDeleteConfirm === 's3' ? 'Delete from Media Library & Database?' : 'Delete from Database?'}
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        {showDeleteConfirm === 's3'
+                          ? 'This will permanently delete the file from S3 storage and remove all database records. This action cannot be undone.'
+                          : 'This will detach from all voyages but file will still be found in media explorer.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                  <button
+                    onClick={() => handleDelete(showDeleteConfirm === 's3')}
+                    disabled={deleting}
+                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm ${
+                      showDeleteConfirm === 's3'
+                        ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                        : 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
+                    } ${deleting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {deleting ? 'Deleting...' : 'Confirm Delete'}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(null)}
+                    disabled={deleting}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
