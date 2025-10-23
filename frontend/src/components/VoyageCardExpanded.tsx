@@ -5,6 +5,7 @@ import { api } from "../api";
 import MediaGallery from "./MediaGallery";
 import MediaSearchModal from "./MediaSearchModal";
 import MediaUploadDialog from "./MediaUploadDialog";
+import AlbumManager from "./AlbumManager";
 
 interface VoyageCardExpandedProps {
   voyage: Voyage;
@@ -1150,6 +1151,11 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           )}
         </div>
       ) : null}
+
+      {/* Albums */}
+      <div className="pt-4 border-t border-gray-200">
+        <AlbumManager voyageSlug={voyage.voyage_slug} media={media} editMode={isEditing} />
+      </div>
 
       {/* People */}
       <div className="pt-4 border-t border-gray-200">
