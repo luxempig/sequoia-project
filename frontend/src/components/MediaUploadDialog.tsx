@@ -30,6 +30,25 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
   const [showDuplicateConfirm, setShowDuplicateConfirm] = useState(false);
   const [potentialDuplicates, setPotentialDuplicates] = useState<any[]>([]);
   const [mediaCategory, setMediaCategory] = useState<'source' | 'additional_source'>(initialMediaCategory);
+  const [presidentSlug, setPresidentSlug] = useState("");
+  const [presidents, setPresidents] = useState<any[]>([]);
+
+  // Load presidents if not uploading via voyage
+  React.useEffect(() => {
+    if (!voyageSlug && isOpen) {
+      fetch('/api/people?limit=500')
+        .then(res => res.json())
+        .then(data => {
+          // Filter to only presidents (people with role containing "President")
+          const pres = data.filter((p: any) =>
+            p.role_title?.toLowerCase().includes('president') ||
+            p.person_slug?.includes('president')
+          );
+          setPresidents(pres);
+        })
+        .catch(err => console.error('Failed to load presidents:', err));
+    }
+  }, [voyageSlug, isOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -123,6 +142,12 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       return;
     }
 
+    // Require president for standalone uploads
+    if (!voyageSlug && !presidentSlug) {
+      setError("Please select a president");
+      return;
+    }
+
     // Check for duplicates first (unless we're bypassing the check)
     if (!skipDuplicateCheck) {
       const duplicates = await checkForDuplicates();
@@ -154,7 +179,7 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
       if (description) formData.append("description_markdown", description);
       if (tags) formData.append("tags", tags);
       if (voyageSlug) formData.append("voyage_slug", voyageSlug);
-      // Note: president_slug can be added here if needed for standalone uploads
+      if (presidentSlug) formData.append("president_slug", presidentSlug);
 
       // Upload media
       const uploadResponse = await fetch("/api/curator/media/upload", {
@@ -299,6 +324,31 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                   <option value="other">Other</option>
                 </select>
               </div>
+
+              {/* President Selection (only show when NOT linked to voyage) */}
+              {!voyageSlug && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    President <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={presidentSlug}
+                    onChange={(e) => setPresidentSlug(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select a president...</option>
+                    {presidents.map((pres) => (
+                      <option key={pres.person_slug} value={pres.person_slug}>
+                        {pres.full_name} {pres.role_title && `(${pres.role_title})`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Required for organizing media in S3 storage
+                  </p>
+                </div>
+              )}
 
               {/* Media Category (only show when linked to voyage) */}
               {voyageSlug && (

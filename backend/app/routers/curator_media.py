@@ -387,9 +387,21 @@ async def upload_media_file(
         # Generate unique ID for filename
         unique_id = str(uuid.uuid4())[:8]
 
-        # Fetch president/owner name from voyage if provided, otherwise use "unattached"
-        president_owner = "unattached"
-        if voyage_slug:
+        # Get president name for S3 path - REQUIRED
+        president_owner = None
+
+        # Option 1: president_slug provided directly
+        if president_slug:
+            with db_cursor(read_only=True) as cur:
+                cur.execute("SELECT full_name FROM sequoia.people WHERE person_slug = %s", (president_slug,))
+                pres_row = cur.fetchone()
+                if pres_row and pres_row['full_name']:
+                    president_name = pres_row['full_name']
+                    president_owner = re.sub(r'[^a-z0-9-]', '-', president_name.lower())
+                    president_owner = re.sub(r'-+', '-', president_owner).strip('-')
+
+        # Option 2: Get from voyage if provided
+        elif voyage_slug:
             with db_cursor(read_only=True) as cur:
                 cur.execute("""
                     SELECT p.full_name
@@ -399,13 +411,19 @@ async def upload_media_file(
                 """, (voyage_slug,))
                 voyage_row = cur.fetchone()
                 if voyage_row and voyage_row['full_name']:
-                    # Slugify the president's full name for use in path
                     president_name = voyage_row['full_name']
                     president_owner = re.sub(r'[^a-z0-9-]', '-', president_name.lower())
                     president_owner = re.sub(r'-+', '-', president_owner).strip('-')
 
+        # Require president for S3 path
+        if not president_owner:
+            raise HTTPException(
+                status_code=400,
+                detail="President is required. Provide either president_slug or voyage_slug with a valid president."
+            )
+
         # Build directory path: president/media-type/
-        directory_parts = [president_owner, media_type or 'document']
+        directory_parts = [president_owner, media_type or 'other']
         directory_path = '/'.join(directory_parts)
 
         # Build filename: date_description-slug_unique-id.ext
