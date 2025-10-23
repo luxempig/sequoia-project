@@ -980,7 +980,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         )}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                           <div className="text-white text-xs line-clamp-2">
-                            {media.title || media.credit || 'Source'}
+                            {[media.title, media.credit, media.date].filter(Boolean).join(' • ') || 'Source'}
                           </div>
                         </div>
                       </a>
@@ -1160,7 +1160,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         )}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                           <div className="text-white text-xs line-clamp-2">
-                            {media.title || media.credit || 'Additional Source'}
+                            {[media.title, media.credit, media.date].filter(Boolean).join(' • ') || 'Additional Source'}
                           </div>
                         </div>
                       </a>

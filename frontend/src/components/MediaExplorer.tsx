@@ -32,6 +32,20 @@ interface S3BrowseResponse {
   total_items: number;
 }
 
+// Helper to convert president slug to readable name
+const formatPresidentName = (slug: string): string => {
+  if (!slug) return slug;
+
+  // Remove numbers and suffixes
+  const cleanSlug = slug.replace(/-\d+$/, '');
+
+  // Convert to title case
+  return cleanSlug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const MediaExplorer: React.FC = () => {
   const [currentPrefix, setCurrentPrefix] = useState("");
   const [data, setData] = useState<S3BrowseResponse | null>(null);
@@ -371,7 +385,7 @@ const MediaExplorer: React.FC = () => {
                         className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
                       >
                         <span className="text-4xl">📁</span>
-                        <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{folder.name}</p>
+                        <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{formatPresidentName(folder.name)}</p>
                       </div>
                     ))}
                   </div>
