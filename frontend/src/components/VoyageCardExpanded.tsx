@@ -14,6 +14,18 @@ interface VoyageCardExpandedProps {
   onDelete?: (voyageSlug: string) => void;
 }
 
+// Helper function to format date input with auto-separators
+const formatDateInput = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length <= 4) {
+    return numbers;
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  } else {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)}`;
+  }
+};
+
 const formatDate = (iso: string | null | undefined) => {
   if (!iso) return "—";
   try {
@@ -26,9 +38,12 @@ const formatDate = (iso: string | null | undefined) => {
 const formatDateTime = (timestamp: string | null | undefined) => {
   if (!timestamp) return null;
   try {
-    return new Date(timestamp).toLocaleString(undefined, {
+    const date = new Date(timestamp);
+    return date.toLocaleString(undefined, {
       dateStyle: "medium",
-      timeStyle: "short"
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
   } catch {
     return timestamp;
@@ -580,10 +595,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             <input
               type="text"
               value={currentVoyage.start_date || ''}
-              onChange={(e) => updateField('start_date', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatDateInput(e.target.value);
+                updateField('start_date', formatted || null);
+              }}
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="YYYY-MM-DD"
-              pattern="\d{4}-\d{2}-\d{2}"
+              maxLength={10}
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">Start Location</label>
             <input
@@ -600,10 +618,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             <input
               type="text"
               value={currentVoyage.end_date || ''}
-              onChange={(e) => updateField('end_date', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatDateInput(e.target.value);
+                updateField('end_date', formatted || null);
+              }}
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="YYYY-MM-DD"
-              pattern="\d{4}-\d{2}-\d{2}"
+              maxLength={10}
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">End Location</label>
             <input

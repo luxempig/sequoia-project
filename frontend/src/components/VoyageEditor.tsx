@@ -4,6 +4,21 @@ import { Voyage, President } from "../types";
 import { api } from "../api";
 import Layout from "./Layout";
 
+// Helper function to format date input with auto-separators
+const formatDateInput = (value: string): string => {
+  // Remove all non-numeric characters
+  const numbers = value.replace(/\D/g, '');
+
+  // Format as YYYY-MM-DD
+  if (numbers.length <= 4) {
+    return numbers;
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  } else {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)}`;
+  }
+};
+
 const VoyageEditor: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug?: string }>();
@@ -296,14 +311,18 @@ const VoyageEditor: React.FC = () => {
 
   // Passenger handlers
   const searchPeople = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
     try {
-      // If query is empty, fetch all people; otherwise search
-      const url = query.trim()
-        ? `/api/people/search/autocomplete?q=${encodeURIComponent(query)}`
-        : '/api/people';
+      const url = `/api/curator/people/search?q=${encodeURIComponent(query)}`;
       const response = await fetch(url);
-      const results = await response.json();
-      setSearchResults(results);
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      }
     } catch (error) {
       console.error('Error searching people:', error);
     }
@@ -322,13 +341,6 @@ const VoyageEditor: React.FC = () => {
 
   const createAndAddPassenger = async () => {
     if (!newPassengerData.full_name.trim()) {
-      alert('Please enter a full name');
-      return;
-    }
-
-    // Only require role_title if is_crew is checked
-    if (newPassengerData.is_crew && !newPassengerData.role_title.trim()) {
-      alert('Please enter a role/title for crew members');
       return;
     }
 
@@ -647,9 +659,14 @@ const VoyageEditor: React.FC = () => {
               Start Date <span className="text-red-500">*</span>
             </label>
             <input
-              type="date"
+              type="text"
               value={voyage.start_date || ''}
-              onChange={(e) => updateField('start_date', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatDateInput(e.target.value);
+                updateField('start_date', formatted || null);
+              }}
+              placeholder="YYYY-MM-DD"
+              maxLength={10}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">Start Time</label>
@@ -673,9 +690,14 @@ const VoyageEditor: React.FC = () => {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">End Date</label>
             <input
-              type="date"
+              type="text"
               value={voyage.end_date || ''}
-              onChange={(e) => updateField('end_date', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatDateInput(e.target.value);
+                updateField('end_date', formatted || null);
+              }}
+              placeholder="YYYY-MM-DD"
+              maxLength={10}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">End Time</label>
@@ -1041,25 +1063,23 @@ const VoyageEditor: React.FC = () => {
                   placeholder="Full Name *"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                 />
+                <input
+                  type="text"
+                  value={newPassengerData.role_title}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
+                  placeholder="Role/Title (e.g., Secretary of State, Senator, Captain)"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                />
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="new-is-crew"
                     checked={newPassengerData.is_crew}
-                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked, role_title: e.target.checked ? newPassengerData.role_title : ''})}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked})}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <label htmlFor="new-is-crew" className="text-sm text-gray-700">Is Crew</label>
                 </div>
-                {newPassengerData.is_crew && (
-                  <input
-                    type="text"
-                    value={newPassengerData.role_title}
-                    onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
-                    placeholder="Role/Title (e.g., Captain, Steward) *"
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                )}
                 <input
                   type="url"
                   value={newPassengerData.wikipedia_url}
@@ -1070,7 +1090,7 @@ const VoyageEditor: React.FC = () => {
               </div>
               <button
                 onClick={createAndAddPassenger}
-                disabled={!newPassengerData.full_name.trim() || (newPassengerData.is_crew && !newPassengerData.role_title.trim())}
+                disabled={!newPassengerData.full_name.trim()}
                 className="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Create & Add
