@@ -19,6 +19,20 @@ const formatDateInput = (value: string): string => {
   }
 };
 
+// Helper function to format time input with auto-separator (HH:MM)
+const formatTimeInput = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length === 0) return '';
+  if (numbers.length <= 2) {
+    const hours = Math.min(23, parseInt(numbers) || 0);
+    return hours.toString().padStart(numbers.length, '0');
+  } else {
+    const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
+    const mins = Math.min(59, parseInt(numbers.slice(2, 4)) || 0);
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+};
+
 const VoyageEditor: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug?: string }>();
@@ -677,11 +691,15 @@ const VoyageEditor: React.FC = () => {
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">Start Time</label>
             <input
-              type="time"
+              type="text"
               value={voyage.start_time || ''}
-              onChange={(e) => updateField('start_time', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatTimeInput(e.target.value);
+                updateField('start_time', formatted || null);
+              }}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
-              placeholder="HH:MM"
+              placeholder="HH:MM (24-hour)"
+              maxLength={5}
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">Start Location</label>
             <input
@@ -708,11 +726,15 @@ const VoyageEditor: React.FC = () => {
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">End Time</label>
             <input
-              type="time"
+              type="text"
               value={voyage.end_time || ''}
-              onChange={(e) => updateField('end_time', e.target.value || null)}
+              onChange={(e) => {
+                const formatted = formatTimeInput(e.target.value);
+                updateField('end_time', formatted || null);
+              }}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
-              placeholder="HH:MM"
+              placeholder="HH:MM (24-hour)"
+              maxLength={5}
             />
             <label className="block text-sm font-medium text-gray-700 mt-2">End Location</label>
             <input

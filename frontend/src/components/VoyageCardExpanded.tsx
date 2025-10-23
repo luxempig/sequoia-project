@@ -26,6 +26,20 @@ const formatDateInput = (value: string): string => {
   }
 };
 
+// Helper function to format time input with auto-separator (HH:MM)
+const formatTimeInput = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length === 0) return '';
+  if (numbers.length <= 2) {
+    const hours = Math.min(23, parseInt(numbers) || 0);
+    return hours.toString().padStart(numbers.length, '0');
+  } else {
+    const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
+    const mins = Math.min(59, parseInt(numbers.slice(2, 4)) || 0);
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+};
+
 const formatDate = (iso: string | null | undefined) => {
   if (!iso) return "—";
   try {
@@ -603,6 +617,18 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               placeholder="YYYY-MM-DD"
               maxLength={10}
             />
+            <label className="block text-xs font-medium text-gray-700 mt-2">Start Time (HH:MM)</label>
+            <input
+              type="text"
+              value={currentVoyage.start_time || ''}
+              onChange={(e) => {
+                const formatted = formatTimeInput(e.target.value);
+                updateField('start_time', formatted || null);
+              }}
+              className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="HH:MM (24-hour)"
+              maxLength={5}
+            />
             <label className="block text-xs font-medium text-gray-700 mt-2">Start Location</label>
             <input
               type="text"
@@ -625,6 +651,18 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               className="w-full border rounded px-2 py-1 text-sm"
               placeholder="YYYY-MM-DD"
               maxLength={10}
+            />
+            <label className="block text-xs font-medium text-gray-700 mt-2">End Time (HH:MM)</label>
+            <input
+              type="text"
+              value={currentVoyage.end_time || ''}
+              onChange={(e) => {
+                const formatted = formatTimeInput(e.target.value);
+                updateField('end_time', formatted || null);
+              }}
+              className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="HH:MM (24-hour)"
+              maxLength={5}
             />
             <label className="block text-xs font-medium text-gray-700 mt-2">End Location</label>
             <input
@@ -1495,13 +1533,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       {/* Capacity Role on This Voyage */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Role on This Voyage <span className="text-gray-500 text-xs">(specific to this voyage only)</span>
+                          Voyage-Specific Role <span className="text-gray-500 text-xs">(for this voyage only, e.g., Captain, Steward for crew)</span>
                         </label>
                         <input
                           type="text"
                           value={personFormData.capacity_role}
                           onChange={(e) => setPersonFormData({ ...personFormData, capacity_role: e.target.value })}
-                          placeholder="e.g., Guest, Passenger, etc."
+                          placeholder="e.g., Captain, Steward, Guest, Passenger"
                           className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                         />
                       </div>
