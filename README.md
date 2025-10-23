@@ -240,6 +240,426 @@ sequoia-project/
 - NOT NULL constraints on critical fields (dates, term_end)
 - Cascading deletes for orphaned join table records
 
+## New Developer Onboarding
+
+Welcome! This guide assumes you have:
+- ✓ Access to the GitHub repository (via organization)
+- ✓ AWS account with admin access to the project
+- ✓ SSH key for EC2 server access
+
+### Prerequisites
+
+**Local Machine:**
+- Node.js 18+ and npm
+- Python 3.9+
+- Git
+- AWS CLI configured
+
+**Access Checklist:**
+- [ ] GitHub organization member with admin access to repository
+- [ ] AWS IAM user credentials configured locally (`aws configure`)
+- [ ] SSH private key file (`sequoia-key.pem`) saved locally
+- [ ] Added to GitHub Secrets with permission to update them
+
+### Secrets and Credentials Management
+
+This project uses a **two-tier secrets approach**:
+
+#### 1. GitHub Secrets (For Automated Deployments)
+
+**Location:** Repository Settings → Secrets and variables → Actions
+
+**Required Secrets:**
+```
+EC2_HOST=3.14.31.211
+EC2_USER=ec2-user
+EC2_SSH_KEY=<full private key from sequoia-key.pem>
+AWS_ACCESS_KEY_ID=<AWS access key for S3>
+AWS_SECRET_ACCESS_KEY=<AWS secret key>
+DB_PASSWORD=<PostgreSQL RDS password>
+GOOGLE_CREDENTIALS=<Google Drive service account JSON>
+DROPBOX_ACCESS_TOKEN=<Dropbox API token>
+```
+
+These are injected into the deployment environment by GitHub Actions.
+
+#### 2. AWS Resources (For Developers)
+
+**S3 Buckets:**
+- `sequoia-canonical` - Original media files (private)
+- `sequoia-public` - Thumbnails and derivatives (public read)
+
+**RDS PostgreSQL:**
+- Host: `sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com`
+- Port: `5432`
+- Database: `sequoia_db`
+- Schema: `sequoia`
+- User: `sequoia`
+- Password: Retrieve from GitHub Secrets or AWS Secrets Manager
+
+**EC2 Instance:**
+- IP: `3.14.31.211`
+- OS: Amazon Linux 2
+- Services: Nginx (port 80), FastAPI (port 8000 via PM2)
+- SSH: `ssh -i sequoia-key.pem ec2-user@3.14.31.211`
+
+**IAM Roles/Policies Needed:**
+- S3: `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` on both buckets
+- RDS: Network access (security group)
+- EC2: SSH access (security group port 22)
+
+### Initial Setup Steps
+
+**1. Clone Repository:**
+```bash
+git clone git@github.com:YOUR-ORG/sequoia-project.git
+cd sequoia-project
+```
+
+**2. Configure AWS CLI:**
+```bash
+aws configure
+# Enter your IAM user access key ID
+# Enter your secret access key
+# Region: us-east-2
+# Output format: json
+
+# Test access
+aws s3 ls s3://sequoia-canonical/
+aws rds describe-db-instances --db-instance-identifier sequoia-prod
+```
+
+**3. Set Up SSH Access:**
+```bash
+# Save the SSH key (get from team or AWS)
+chmod 400 sequoia-key.pem
+
+# Test SSH connection
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+exit
+```
+
+**4. Create Local Environment File:**
+```bash
+# Create backend/.env file
+cat > backend/.env << 'EOF'
+# Database
+DB_HOST=sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com
+DB_PORT=5432
+DB_NAME=sequoia_db
+DB_USER=sequoia
+DB_PASSWORD=<get from GitHub Secrets: DB_PASSWORD>
+
+# AWS S3 (uses ~/.aws/credentials by default, or specify here)
+AWS_ACCESS_KEY_ID=<your IAM user key>
+AWS_SECRET_ACCESS_KEY=<your IAM user secret>
+AWS_DEFAULT_REGION=us-east-2
+
+# Google Drive API (optional for local dev)
+GOOGLE_CREDENTIALS=<get from GitHub Secrets if needed>
+
+# Dropbox API (optional for local dev)
+DROPBOX_ACCESS_TOKEN=<get from GitHub Secrets if needed>
+EOF
+
+# IMPORTANT: Never commit this file!
+```
+
+**5. Install Dependencies:**
+```bash
+# Frontend
+cd frontend
+npm install
+
+# Backend
+cd ../backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**6. Test Local Development:**
+```bash
+# Terminal 1: Start backend
+cd backend
+source venv/bin/activate
+cd app
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2: Start frontend
+cd frontend
+npm start
+
+# Visit http://localhost:3000
+```
+
+### Understanding the Architecture
+
+**Data Flow:**
+```
+canonical_voyages.json (source of truth)
+         ↓
+  [Nightly Ingest @ 3 AM]
+         ↓
+  Voyage Ingest Pipeline:
+    1. Validate JSON
+    2. Download media from Google Drive/Dropbox
+    3. Generate thumbnails
+    4. Upload to S3
+    5. Upsert to PostgreSQL
+         ↓
+  [FastAPI Backend] ← [React Frontend]
+         ↓
+  Public Website: https://uss-sequoia.com
+```
+
+**Deployment Flow:**
+```
+Developer pushes to main branch
+         ↓
+  GitHub Actions triggered
+         ↓
+  SSH into EC2 server
+         ↓
+  Pull latest code
+         ↓
+  Build frontend on server
+         ↓
+  Run deploy-unified.sh:
+    - Install dependencies
+    - Extract frontend build
+    - Restart PM2 backend
+    - Reload Nginx
+         ↓
+  Site updated in ~2 minutes
+```
+
+### Key Concepts
+
+**1. Slugs**
+Every entity has a URL-friendly slug:
+- Voyages: `roosevelt-franklin-1938-01-01`
+- People: `roosevelt-franklin-d-president`
+- Media: `fdr-1938-photo-deck`
+
+**2. Canonical JSON**
+`backend/canonical_voyages.json` is the single source of truth. All edits via curator interface update this file.
+
+**3. Two-Bucket S3 Architecture**
+- `sequoia-canonical/president-name/media-type/credit_date_title.ext` (originals)
+- `sequoia-public/president-name/media-type/credit_date_title-thumb.jpg` (thumbnails)
+
+**4. Media Types**
+- `article` - Articles, PDFs (📄)
+- `image` - Photos, scans (🖼️)
+- `video` - Video files (🎥)
+- `audio` - Audio recordings (🎵)
+- `book` - Books, manuscripts (📚)
+- `other` - Other files (📎)
+
+**5. Automatic Flags**
+Voyages have `has_photos` and `has_videos` flags that auto-update when media is linked/unlinked.
+
+### Common Development Tasks
+
+**Add a New Feature:**
+```bash
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# Make changes in frontend/ or backend/
+# Test locally with npm start and uvicorn
+
+# Commit and push
+git add .
+git commit -m "Add feature: description"
+git push origin feature/your-feature-name
+
+# Create pull request on GitHub
+# Merge to main → auto-deploys to production
+```
+
+**Update Database Schema:**
+```bash
+# SSH into production
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+
+# Connect to database
+PGPASSWORD='<get from GitHub Secrets>' psql \
+  -h sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com \
+  -U sequoia -d sequoia_db
+
+# Run migration
+ALTER TABLE sequoia.voyages ADD COLUMN new_field TEXT;
+\q
+
+# Update backend models in backend/app/routers/
+# Commit and push changes
+```
+
+**Clear All Media Records:**
+```bash
+# On server
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project/backend
+source venv/bin/activate
+python3 clear_media_database.py
+# Type: DELETE ALL MEDIA
+```
+
+**Manually Trigger Ingest:**
+```bash
+# On server
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project/backend
+source venv/bin/activate
+python3 -m voyage_ingest.main --source json --file canonical_voyages.json
+```
+
+**View Logs:**
+```bash
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+
+# Backend logs
+pm2 logs sequoia-backend --lines 100
+
+# Deployment logs
+tail -f ~/sequoia-project/logs/deploy-unified.log
+
+# Nightly ingest logs
+ls -lth ~/sequoia-project/logs/nightly-ingest-*.log
+tail -100 ~/sequoia-project/logs/nightly-ingest-$(date +%Y-%m-%d).log
+
+# Nginx logs
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+**Restart Services:**
+```bash
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+
+# Restart backend
+pm2 restart sequoia-backend
+
+# Restart Nginx
+sudo systemctl restart nginx
+
+# Check status
+pm2 status
+sudo systemctl status nginx
+```
+
+### Updating GitHub Secrets
+
+When AWS credentials rotate or change:
+
+**1. Via GitHub Web UI:**
+- Go to repository Settings → Secrets and variables → Actions
+- Click on secret name (e.g., `AWS_SECRET_ACCESS_KEY`)
+- Click "Update secret"
+- Paste new value
+- Click "Update secret"
+
+**2. Via GitHub CLI:**
+```bash
+# Install GitHub CLI: https://cli.github.com/
+gh auth login
+
+# Update a secret
+gh secret set AWS_SECRET_ACCESS_KEY < secret_value.txt
+
+# List all secrets
+gh secret list
+```
+
+**3. When to Update:**
+- AWS credentials rotated (update `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+- Database password changed (update `DB_PASSWORD`)
+- SSH key regenerated (update `EC2_SSH_KEY`)
+- API tokens refreshed (update `GOOGLE_CREDENTIALS`, `DROPBOX_ACCESS_TOKEN`)
+
+### Production Access
+
+**SSH into Server:**
+```bash
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+```
+
+**Key Directories:**
+- `/home/ec2-user/sequoia-project/` - Application code
+- `/var/www/html/` - Frontend static files served by Nginx
+- `/home/ec2-user/sequoia-project/logs/` - Application logs
+- `/var/log/nginx/` - Nginx logs
+
+**Important Files:**
+- `ecosystem.config.js` - PM2 configuration
+- `nginx-sequoia.conf` - Nginx configuration
+- `deploy-unified.sh` - Deployment script
+- `run-nightly-ingest.sh` - Cron job script
+- `backend/canonical_voyages.json` - Data source of truth
+
+**Cron Jobs:**
+```bash
+# View crontab
+crontab -l
+
+# Edit crontab
+crontab -e
+
+# Current schedule: 3 AM EST nightly ingest
+0 8 * * * /home/ec2-user/sequoia-project/run-nightly-ingest.sh
+```
+
+### Emergency Procedures
+
+**Site Down:**
+```bash
+# 1. Check services
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+pm2 status
+sudo systemctl status nginx
+
+# 2. Check logs for errors
+pm2 logs sequoia-backend --err --lines 50
+sudo tail -50 /var/log/nginx/error.log
+
+# 3. Restart everything
+pm2 restart sequoia-backend
+sudo systemctl restart nginx
+
+# 4. Test
+curl http://3.14.31.211/api/voyages?limit=1
+curl http://uss-sequoia.com
+```
+
+**Database Connection Issues:**
+```bash
+# Test from EC2
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+PGPASSWORD='<password>' psql \
+  -h sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com \
+  -U sequoia -d sequoia_db -c "SELECT COUNT(*) FROM sequoia.voyages;"
+
+# Check RDS security group allows EC2 instance
+# Check RDS is running in AWS console
+```
+
+**Rollback Deployment:**
+```bash
+ssh -i sequoia-key.pem ec2-user@3.14.31.211
+cd sequoia-project
+
+# Find last working commit
+git log --oneline -10
+
+# Rollback to specific commit
+git checkout <commit-hash>
+
+# Redeploy
+bash deploy-unified.sh
+```
+
 ## Development Workflow
 
 ### Local Setup
