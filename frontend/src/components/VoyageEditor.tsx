@@ -40,8 +40,8 @@ const VoyageEditor: React.FC = () => {
   // Initialize with blank voyage
   const [voyage, setVoyage] = useState<Partial<Voyage>>({
     title: '',
-    start_date: new Date().toISOString().split('T')[0], // Default to today
-    end_date: new Date().toISOString().split('T')[0],
+    start_date: '',
+    end_date: '',
     start_time: null,
     end_time: null,
     start_location: '',
@@ -85,6 +85,7 @@ const VoyageEditor: React.FC = () => {
   const [newPassengerData, setNewPassengerData] = useState({
     full_name: '',
     role_title: '',
+    crew_role: '',
     wikipedia_url: '',
     is_crew: false
   });
@@ -345,13 +346,18 @@ const VoyageEditor: React.FC = () => {
     }
 
     try {
+      // Use crew_role if is_crew is checked, otherwise use role_title
+      const effectiveRole = newPassengerData.is_crew
+        ? newPassengerData.crew_role.trim() || null
+        : newPassengerData.role_title.trim() || null;
+
       const response = await fetch('/api/curator/people', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           person_slug: 'auto',
           full_name: newPassengerData.full_name.trim(),
-          role_title: newPassengerData.role_title.trim() || null,
+          role_title: effectiveRole,
           wikipedia_url: newPassengerData.wikipedia_url.trim() || null,
         })
       });
@@ -366,11 +372,11 @@ const VoyageEditor: React.FC = () => {
       setSelectedPassengers([...selectedPassengers, {
         person_slug: newPerson.person_slug,
         full_name: newPerson.full_name,
-        role_title: newPerson.role_title || '',
+        role_title: effectiveRole || '',
         is_crew: newPassengerData.is_crew
       }]);
 
-      setNewPassengerData({ full_name: '', role_title: '', wikipedia_url: '', is_crew: false });
+      setNewPassengerData({ full_name: '', role_title: '', crew_role: '', wikipedia_url: '', is_crew: false });
     } catch (error) {
       alert(`Failed to create person: ${error}`);
     }
@@ -1067,7 +1073,7 @@ const VoyageEditor: React.FC = () => {
                   type="text"
                   value={newPassengerData.role_title}
                   onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
-                  placeholder="Role/Title (e.g., Secretary of State, Senator, Captain)"
+                  placeholder="Role/Title (e.g., Secretary of State, Senator)"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                 />
                 <div className="flex items-center gap-2">
@@ -1075,11 +1081,20 @@ const VoyageEditor: React.FC = () => {
                     type="checkbox"
                     id="new-is-crew"
                     checked={newPassengerData.is_crew}
-                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked})}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked, crew_role: e.target.checked ? newPassengerData.crew_role : ''})}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <label htmlFor="new-is-crew" className="text-sm text-gray-700">Is Crew</label>
                 </div>
+                {newPassengerData.is_crew && (
+                  <input
+                    type="text"
+                    value={newPassengerData.crew_role}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, crew_role: e.target.value})}
+                    placeholder="Crew Role (e.g., Captain, Steward, Cook)"
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                )}
                 <input
                   type="url"
                   value={newPassengerData.wikipedia_url}
