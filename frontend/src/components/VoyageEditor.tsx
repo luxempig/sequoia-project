@@ -876,10 +876,14 @@ const VoyageEditor: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <input
-                    type="date"
+                    type="text"
                     value={fileWithMetadata.date}
-                    onChange={(e) => updateSourceMediaMetadata(index, 'date', e.target.value)}
-                    placeholder="Date"
+                    onChange={(e) => {
+                      const formatted = formatDateInput(e.target.value);
+                      updateSourceMediaMetadata(index, 'date', formatted);
+                    }}
+                    placeholder="YYYY-MM-DD"
+                    maxLength={10}
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   />
                   <input
@@ -1001,10 +1005,14 @@ const VoyageEditor: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <input
-                    type="date"
+                    type="text"
                     value={fileWithMetadata.date}
-                    onChange={(e) => updateAdditionalSourceMediaMetadata(index, 'date', e.target.value)}
-                    placeholder="Date"
+                    onChange={(e) => {
+                      const formatted = formatDateInput(e.target.value);
+                      updateAdditionalSourceMediaMetadata(index, 'date', formatted);
+                    }}
+                    placeholder="YYYY-MM-DD"
+                    maxLength={10}
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   />
                   <input

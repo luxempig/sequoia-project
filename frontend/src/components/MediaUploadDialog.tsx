@@ -1,5 +1,17 @@
 import React, { useState } from "react";
 
+// Helper function to format date input with auto-separators
+const formatDateInput = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length <= 4) {
+    return numbers;
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4)}`;
+  } else {
+    return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)}`;
+  }
+};
+
 interface MediaUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -192,11 +204,11 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
         throw new Error(errorData.detail || "Upload failed");
       }
 
-      await uploadResponse.json(); // Just validate response
+      const uploadData = await uploadResponse.json();
 
-      // If should link to voyage, do it
-      if (autoLinkToVoyage && voyageSlug) {
-        await fetch("/api/curator/media/link-to-voyage", {
+      // If uploading to a voyage, always link it (unless it was already linked during upload)
+      if (voyageSlug && !uploadData.linked_to_voyage) {
+        const linkResponse = await fetch("/api/curator/media/link-to-voyage", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -204,10 +216,15 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
           body: JSON.stringify({
             media_slug: mediaSlug,
             voyage_slug: voyageSlug,
+            media_category: mediaCategory,
             sort_order: null,
             notes: "",
           }),
         });
+
+        if (!linkResponse.ok) {
+          console.error('Failed to link media to voyage');
+        }
       }
 
       // Success!
@@ -389,9 +406,12 @@ const MediaUploadDialog: React.FC<MediaUploadDialogProps> = ({
                 <input
                   type="text"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e) => {
+                    const formatted = formatDateInput(e.target.value);
+                    setDate(formatted);
+                  }}
                   placeholder="YYYY-MM-DD"
-                  pattern="\d{4}-\d{2}-\d{2}"
+                  maxLength={10}
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
