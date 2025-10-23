@@ -28,6 +28,7 @@ from app.routers.curator_voyages import router as curator_voyages_router
 from app.routers.curator_people  import router as curator_people_router
 from app.routers.curator_media   import router as curator_media_router
 from app.routers.curator_presidents import router as curator_presidents_router
+from app.routers.curator_albums  import router as curator_albums_router
 from app.routers.s3_browser  import router as s3_browser_router
 # from app.routers.async_media import router as async_media_router  # Temporarily disabled due to celery dependency
 
@@ -61,6 +62,7 @@ app.include_router(curator_voyages_router)
 app.include_router(curator_people_router)
 app.include_router(curator_media_router)
 app.include_router(curator_presidents_router)
+app.include_router(curator_albums_router)
 app.include_router(s3_browser_router)
 # app.include_router(async_media_router, prefix="/api/async", tags=["async-media"])  # Temporarily disabled
 
