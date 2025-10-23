@@ -404,22 +404,24 @@ async def upload_media_file(
         elif voyage_slug:
             with db_cursor(read_only=True) as cur:
                 cur.execute("""
-                    SELECT p.full_name
-                    FROM sequoia.voyages v
-                    LEFT JOIN sequoia.people p ON p.person_slug = v.president_slug_from_voyage
-                    WHERE v.voyage_slug = %s
+                    SELECT president_slug_from_voyage
+                    FROM sequoia.voyages
+                    WHERE voyage_slug = %s
                 """, (voyage_slug,))
                 voyage_row = cur.fetchone()
-                if voyage_row and voyage_row['full_name']:
-                    president_name = voyage_row['full_name']
-                    president_owner = re.sub(r'[^a-z0-9-]', '-', president_name.lower())
-                    president_owner = re.sub(r'-+', '-', president_owner).strip('-')
+                if voyage_row and voyage_row['president_slug_from_voyage']:
+                    president_owner = voyage_row['president_slug_from_voyage']
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Voyage '{voyage_slug}' does not have a president assigned"
+                    )
 
         # Require president for S3 path
         if not president_owner:
             raise HTTPException(
                 status_code=400,
-                detail="President is required. Provide either president_slug or voyage_slug with a valid president."
+                detail="President is required. Provide either president_slug or voyage_slug."
             )
 
         # Build directory path: president/media-type/
