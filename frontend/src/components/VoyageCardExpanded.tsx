@@ -83,6 +83,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [searchResults, setSearchResults] = useState<Person[]>([]);
   const [searching, setSearching] = useState(false);
 
+  // Create new person form state
+  const [showCreatePersonForm, setShowCreatePersonForm] = useState(false);
+  const [newPersonData, setNewPersonData] = useState({
+    full_name: '',
+    role_title: '',
+    bio_url: '',
+    is_crew: false
+  });
+
   // Media modal state
   const [showMediaSearch, setShowMediaSearch] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
@@ -219,32 +228,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   };
 
   const createAndLinkNewPerson = async () => {
-    const fullName = prompt("Enter person's full name:");
-    if (!fullName || !fullName.trim()) return;
-
-    // Check for similar people with same first name
-    try {
-      const similarResponse = await fetch(`/api/curator/people/check-similar?full_name=${encodeURIComponent(fullName.trim())}`);
-      if (similarResponse.ok) {
-        const similarPeople = await similarResponse.json();
-        if (similarPeople.length > 0) {
-          const names = similarPeople.map((p: Person) => `  • ${p.full_name}${p.role_title ? ` (${p.role_title})` : ''}`).join('\n');
-          const proceed = confirm(
-            `⚠️ Found existing people with similar names:\n\n${names}\n\nAre you sure you want to create a new person named "${fullName}"?\n\nClick OK to create new person, or Cancel to go back and select an existing person.`
-          );
-          if (!proceed) {
-            return; // User chose to cancel
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to check for similar people:', error);
-      // Continue anyway if the check fails
-    }
-
-    const role = prompt(`Enter role/title for ${fullName}:`, "");
-    const bioUrl = prompt(`Enter bio/Wikipedia URL for ${fullName} (optional):`, "");
-    const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
+    if (!newPersonData.full_name.trim()) return;
 
     try {
       // Create the person
@@ -252,13 +236,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          person_slug: 'auto', // Auto-generate from name
-          full_name: fullName.trim(),
-          role_title: role || null,
+          person_slug: 'auto',
+          full_name: newPersonData.full_name.trim(),
+          role_title: newPersonData.role_title || null,
           organization: null,
           birth_year: null,
           death_year: null,
-          wikipedia_url: bioUrl?.trim() || null,
+          wikipedia_url: newPersonData.bio_url?.trim() || null,
           notes_internal: null,
           tags: null
         })
@@ -266,12 +250,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       if (!createResponse.ok) {
         const error = await createResponse.json();
-        throw new Error(error.detail || 'Failed to create person');
+        console.error('Failed to create person:', error.detail);
+        return;
       }
 
       const newPerson = await createResponse.json();
 
-      // Link to voyage (no capacity_role needed)
+      // Link to voyage
       const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -279,29 +264,24 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           person_slug: newPerson.person_slug,
           voyage_slug: voyage.voyage_slug,
           capacity_role: null,
-          is_crew: isCrew,
+          is_crew: newPersonData.is_crew,
           notes: null
         })
       });
 
       if (linkResponse.ok) {
-        alert(`✓ ${fullName} created and linked successfully!`);
+        setShowCreatePersonForm(false);
+        setNewPersonData({ full_name: '', role_title: '', bio_url: '', is_crew: false });
         setPersonSearch("");
         setSearchResults([]);
-        // Reload people
         api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-      } else {
-        alert(`Person created but failed to link to voyage`);
       }
     } catch (error) {
       console.error('Create/link failed:', error);
-      alert(`Failed to create person: ${error}`);
     }
   };
 
-  const linkPerson = async (personSlug: string, fullName: string) => {
-    const isCrew = confirm(`Is ${fullName} crew? (Click OK for crew, Cancel for passenger/guest)`);
-
+  const linkPerson = async (personSlug: string, isCrew: boolean) => {
     try {
       const response = await fetch('/api/curator/people/link-to-voyage', {
         method: 'POST',
@@ -316,15 +296,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       });
 
       if (response.ok) {
-        alert(`✓ ${fullName} linked successfully!`);
         setPersonSearch("");
         setSearchResults([]);
-        // Reload people
         api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
       }
     } catch (error) {
       console.error('Link failed:', error);
-      alert('Failed to link person');
     }
   };
 
@@ -380,16 +357,11 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       });
 
       if (linkResponse.ok) {
-        alert('Person updated successfully!');
         setEditingPerson(null);
-        // Reload people to show updated info
         api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-      } else {
-        alert('Person updated but failed to update voyage link');
       }
     } catch (error) {
       console.error('Update failed:', error);
-      alert(`Failed to update person: ${error}`);
     }
   };
 
@@ -408,14 +380,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       });
 
       if (response.ok) {
-        // Reload media
         loadMedia();
-      } else {
-        alert('Failed to link media to voyage');
       }
     } catch (error) {
       console.error('Link failed:', error);
-      alert('Failed to link media');
     }
   };
 
@@ -440,12 +408,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       if (response.ok) {
         loadMedia();
-      } else {
-        alert('Failed to attach media');
       }
     } catch (error) {
       console.error('Error attaching media:', error);
-      alert('Failed to attach media');
     }
   };
 
@@ -465,41 +430,28 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
 
       if (response.ok) {
         loadMedia();
-      } else {
-        alert('Failed to attach media');
       }
     } catch (error) {
       console.error('Error attaching media:', error);
-      alert('Failed to attach media');
     }
   };
 
   const handleDetachMedia = async (mediaSlug: string, category: string) => {
-    if (!confirm('Remove this media from the voyage?')) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/curator/media/unlink-from-voyage?media_slug=${mediaSlug}&voyage_slug=${voyage.voyage_slug}`, {
         method: 'DELETE'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to detach media');
+      if (response.ok) {
+        loadMedia();
       }
-
-      alert('✓ Media removed from voyage');
-      loadMedia(); // Reload media list
     } catch (error) {
-      alert(`Failed to remove media: ${error}`);
+      console.error('Failed to remove media:', error);
     }
   };
 
   // Delete voyage
   const handleDelete = () => {
-    if (!confirm(`Are you sure you want to delete voyage "${voyage.title || voyage.voyage_slug}"? This cannot be undone.`)) {
-      return;
-    }
     if (onDelete) {
       onDelete(voyage.voyage_slug);
     }
@@ -1175,37 +1127,112 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         {isEditing && (
           <div className="mb-4 bg-blue-50 p-3 rounded">
             <label className="block text-xs font-medium text-gray-700 mb-1">Add People to Voyage</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={personSearch}
-                onChange={(e) => {
-                  setPersonSearch(e.target.value);
-                  searchPeople(e.target.value);
-                }}
-                placeholder="Search by name..."
-                className="flex-1 border rounded px-2 py-1 text-sm"
-              />
-              <button
-                onClick={createAndLinkNewPerson}
-                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap"
-              >
-                + Create New
-              </button>
-            </div>
-            {searching && <p className="text-xs text-gray-500 mt-1">Searching...</p>}
-            {searchResults.length > 0 && (
-              <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                {searchResults.map(person => (
-                  <div
-                    key={person.person_slug}
-                    onClick={() => linkPerson(person.person_slug, person.full_name)}
-                    className="p-2 bg-white border rounded hover:bg-gray-50 cursor-pointer text-xs"
+
+            {!showCreatePersonForm ? (
+              <>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={personSearch}
+                    onChange={(e) => {
+                      setPersonSearch(e.target.value);
+                      searchPeople(e.target.value);
+                    }}
+                    placeholder="Search by name..."
+                    className="flex-1 border rounded px-2 py-1 text-sm"
+                  />
+                  <button
+                    onClick={() => setShowCreatePersonForm(true)}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap"
                   >
-                    <div className="font-medium">{person.full_name}</div>
-                    {person.role_title && <div className="text-gray-600">{person.role_title}</div>}
+                    + Create New
+                  </button>
+                </div>
+                {searching && <p className="text-xs text-gray-500 mt-1">Searching...</p>}
+                {searchResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                    {searchResults.map(person => (
+                      <div key={person.person_slug} className="p-2 bg-white border rounded text-xs">
+                        <div className="font-medium">{person.full_name}</div>
+                        {person.role_title && <div className="text-gray-600">{person.role_title}</div>}
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => linkPerson(person.person_slug, true)}
+                            className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
+                          >
+                            Add as Crew
+                          </button>
+                          <button
+                            onClick={() => linkPerson(person.person_slug, false)}
+                            className="bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700 text-xs"
+                          >
+                            Add as Passenger
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </>
+            ) : (
+              <div className="space-y-3 bg-white p-3 rounded border border-gray-300">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={newPersonData.full_name}
+                    onChange={(e) => setNewPersonData({ ...newPersonData, full_name: e.target.value })}
+                    placeholder="e.g., John Smith"
+                    className="w-full border rounded px-2 py-1 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Role/Title</label>
+                  <input
+                    type="text"
+                    value={newPersonData.role_title}
+                    onChange={(e) => setNewPersonData({ ...newPersonData, role_title: e.target.value })}
+                    placeholder="e.g., Secretary of State"
+                    className="w-full border rounded px-2 py-1 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Bio/Wikipedia URL</label>
+                  <input
+                    type="text"
+                    value={newPersonData.bio_url}
+                    onChange={(e) => setNewPersonData({ ...newPersonData, bio_url: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full border rounded px-2 py-1 text-sm"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="new-person-is-crew"
+                    checked={newPersonData.is_crew}
+                    onChange={(e) => setNewPersonData({ ...newPersonData, is_crew: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <label htmlFor="new-person-is-crew" className="text-sm">Is Crew Member</label>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={createAndLinkNewPerson}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
+                  >
+                    Create & Add
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCreatePersonForm(false);
+                      setNewPersonData({ full_name: '', role_title: '', bio_url: '', is_crew: false });
+                    }}
+                    className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1248,37 +1275,33 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             <div className="flex gap-1">
                               <button
                                 onClick={() => openEditPerson(p)}
-                                className="text-lg hover:scale-110 transition-transform"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
                                 title="Edit person"
                               >
-                                ✏️
+                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
                               </button>
                               <button
                                 onClick={async () => {
-                                  if (!confirm(`Remove ${p.full_name} from this voyage?`)) return;
                                   try {
                                     const response = await fetch(
                                       `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
                                       { method: 'DELETE' }
                                     );
                                     if (response.ok) {
-                                      const result = await response.json();
-                                      if (result.person_deleted) {
-                                        alert(`${p.full_name} removed and deleted (no other voyages)`);
-                                      }
                                       api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-                                    } else {
-                                      alert('Failed to remove person');
                                     }
                                   } catch (error) {
                                     console.error('Remove failed:', error);
-                                    alert('Failed to remove person');
                                   }
                                 }}
-                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-transform text-lg"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
                                 title="Remove from voyage"
                               >
-                                ✕
+                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                               </button>
                             </div>
                           )}
@@ -1324,37 +1347,33 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             <div className="flex gap-1">
                               <button
                                 onClick={() => openEditPerson(p)}
-                                className="text-lg hover:scale-110 transition-transform"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
                                 title="Edit person"
                               >
-                                ✏️
+                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
                               </button>
                               <button
                                 onClick={async () => {
-                                  if (!confirm(`Remove ${p.full_name} from this voyage?`)) return;
                                   try {
                                     const response = await fetch(
                                       `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
                                       { method: 'DELETE' }
                                     );
                                     if (response.ok) {
-                                      const result = await response.json();
-                                      if (result.person_deleted) {
-                                        alert(`${p.full_name} removed and deleted (no other voyages)`);
-                                      }
                                       api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-                                    } else {
-                                      alert('Failed to remove person');
                                     }
                                   } catch (error) {
                                     console.error('Remove failed:', error);
-                                    alert('Failed to remove person');
                                   }
                                 }}
-                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-transform text-lg"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
                                 title="Remove from voyage"
                               >
-                                ✕
+                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                               </button>
                             </div>
                           )}
