@@ -33,20 +33,24 @@ const MediaDetail: React.FC = () => {
 
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
+      case 'article': return '📄';
       case 'image': return '📸';
       case 'video': return '🎥';
       case 'audio': return '🎵';
-      case 'pdf': return '📄';
+      case 'book': return '📚';
+      case 'pdf': return '📄'; // Legacy support
       default: return '📎';
     }
   };
 
   const getMediaTypeColor = (type: string) => {
     switch (type) {
+      case 'article': return 'bg-blue-100 text-blue-800';
       case 'image': return 'bg-green-100 text-green-800';
       case 'video': return 'bg-red-100 text-red-800';
       case 'audio': return 'bg-purple-100 text-purple-800';
-      case 'pdf': return 'bg-blue-100 text-blue-800';
+      case 'book': return 'bg-yellow-100 text-yellow-800';
+      case 'pdf': return 'bg-blue-100 text-blue-800'; // Legacy support
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -110,26 +114,26 @@ const MediaDetail: React.FC = () => {
           {/* Media Display */}
           <div>
             <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-              {media.media_type === 'image' && media.url ? (
-                <img 
-                  src={media.url} 
+              {media.media_type === 'image' && (media.s3_url || media.url) ? (
+                <img
+                  src={media.s3_url || media.url}
                   alt={media.title}
                   className="w-full max-h-96 object-contain bg-gray-50"
                 />
-              ) : media.media_type === 'video' && media.url ? (
-                <video 
-                  controls 
+              ) : media.media_type === 'video' && (media.s3_url || media.url) ? (
+                <video
+                  controls
                   className="w-full max-h-96 bg-black"
                   poster={media.public_derivative_url}
                 >
-                  <source src={media.url} />
+                  <source src={media.s3_url || media.url} />
                   Your browser does not support the video tag.
                 </video>
-              ) : media.media_type === 'audio' && media.url ? (
+              ) : media.media_type === 'audio' && (media.s3_url || media.url) ? (
                 <div className="p-8 text-center bg-gray-50">
                   <div className="text-6xl mb-4">🎵</div>
                   <audio controls className="w-full max-w-md mx-auto">
-                    <source src={media.url} />
+                    <source src={media.s3_url || media.url} />
                     Your browser does not support the audio tag.
                   </audio>
                 </div>
@@ -137,9 +141,9 @@ const MediaDetail: React.FC = () => {
                 <div className="p-12 text-center bg-gray-50">
                   <div className="text-6xl mb-4">{getMediaTypeIcon(media.media_type)}</div>
                   <p className="text-gray-600">Preview not available</p>
-                  {media.url && (
-                    <a 
-                      href={media.url}
+                  {(media.s3_url || media.url) && (
+                    <a
+                      href={media.s3_url || media.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
@@ -153,9 +157,9 @@ const MediaDetail: React.FC = () => {
 
             {/* Download/External Links */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {media.url && (
-                <a 
-                  href={media.url}
+              {(media.s3_url || media.url) && (
+                <a
+                  href={media.s3_url || media.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200"
@@ -163,14 +167,14 @@ const MediaDetail: React.FC = () => {
                   View Original
                 </a>
               )}
-              {media.public_derivative_url && media.public_derivative_url !== media.url && (
-                <a 
+              {media.public_derivative_url && media.public_derivative_url !== (media.s3_url || media.url) && (
+                <a
                   href={media.public_derivative_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200"
                 >
-                  Public Version
+                  Thumbnail
                 </a>
               )}
               {media.google_drive_link && (
