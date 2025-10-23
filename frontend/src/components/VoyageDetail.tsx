@@ -144,12 +144,6 @@ export default function VoyageDetail() {
           >
             ← Back to timeline
           </button>
-          <button
-            onClick={() => navigate(`/voyages/${voyageSlug}/edit`)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            ✏️ Edit Voyage
-          </button>
         </div>
 
         {/* Voyage Navigation */}
