@@ -727,11 +727,19 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         ) : (
           activeTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {activeTags.map((tag, idx) => (
-                <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                  {tag}
-                </span>
-              ))}
+              {currentVoyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">(Photo(s))</span>}
+              {currentVoyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">(Video(s))</span>}
+              {currentVoyage.presidential_use && currentVoyage.presidential_initials && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">({currentVoyage.presidential_initials})</span>}
+              {currentVoyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">(Royalty{currentVoyage.royalty_details ? `: ${currentVoyage.royalty_details}` : ''})</span>}
+              {currentVoyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-md">(Foreign Leader{currentVoyage.foreign_leader_country ? ` - ${currentVoyage.foreign_leader_country}` : ''})</span>}
+              {currentVoyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">(CD)</span>}
+              {currentVoyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">(MV)</span>}
+              {currentVoyage.mention_captain && <span className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-md">(Captain)</span>}
+              {currentVoyage.mention_crew && <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">(Crew)</span>}
+              {currentVoyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">(RMD)</span>}
+              {currentVoyage.mention_yacht_spin && <span className="px-2 py-1 bg-lime-100 text-lime-800 text-xs rounded-md">(Yacht Spin)</span>}
+              {currentVoyage.mention_menu && <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">(Menu)</span>}
+              {currentVoyage.mention_drinks_wine && <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-md">(Drinks/Wine)</span>}
             </div>
           )
         )}
@@ -1208,13 +1216,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         ) : people.length === 0 ? (
           <p className="text-sm text-gray-600">No people recorded for this voyage.</p>
         ) : (
-          <div className="space-y-6">
-            {/* Crew Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Crew Column */}
             {(() => {
               const crew = people.filter(p => p.is_crew === true);
-              return crew.length > 0 ? (
+              return (
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Crew ({crew.length})</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase bg-blue-50 p-2 rounded">Crew{crew.length > 0 && ` (${crew.length})`}</h4>
+                  {crew.length > 0 ? (
                   <ul className="space-y-2">
                     {crew.map((p) => {
                       const bioLink = p.bio || p.wikipedia_url;
@@ -1277,22 +1286,26 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       );
                     })}
                   </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No crew members</p>
+                  )}
                 </div>
-              ) : null;
+              );
             })()}
 
-            {/* Passengers & Guests Section */}
+            {/* Passengers & Guests Column */}
             {(() => {
               const passengers = people.filter(p => p.is_crew !== true);
-              return passengers.length > 0 ? (
+              return (
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase">Passengers & Guests ({passengers.length})</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase bg-gray-50 p-2 rounded">Passengers & Guests{passengers.length > 0 && ` (${passengers.length})`}</h4>
+                  {passengers.length > 0 ? (
                   <ul className="space-y-2">
                     {passengers.map((p) => {
                       const bioLink = p.bio || p.wikipedia_url;
                       const roleToDisplay = p.capacity_role || p.role_title || p.title;
                       return (
-                        <li key={p.person_slug} className="flex items-start gap-2">
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-gray-50 p-2 rounded">
                           <span className="mt-1">•</span>
                           <div className="flex-1 text-sm">
                             <div className="font-medium">
@@ -1349,8 +1362,11 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       );
                     })}
                   </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No passengers</p>
+                  )}
                 </div>
-              ) : null;
+              );
             })()}
           </div>
         )}
