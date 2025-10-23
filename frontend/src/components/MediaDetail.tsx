@@ -34,6 +34,8 @@ const MediaDetail: React.FC = () => {
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
       case 'article': return '📄';
+      case 'document': return '📃';
+      case 'logbook': return '📓';
       case 'image': return '📸';
       case 'video': return '🎥';
       case 'audio': return '🎵';
@@ -46,6 +48,8 @@ const MediaDetail: React.FC = () => {
   const getMediaTypeColor = (type: string) => {
     switch (type) {
       case 'article': return 'bg-blue-100 text-blue-800';
+      case 'document': return 'bg-purple-100 text-purple-800';
+      case 'logbook': return 'bg-amber-100 text-amber-800';
       case 'image': return 'bg-green-100 text-green-800';
       case 'video': return 'bg-red-100 text-red-800';
       case 'audio': return 'bg-purple-100 text-purple-800';

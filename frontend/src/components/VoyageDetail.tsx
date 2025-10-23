@@ -106,6 +106,8 @@ export default function VoyageDetail() {
   const getMediaIcon = (type: string | null | undefined) => {
     switch (type) {
       case 'article': return '📄';
+      case 'document': return '📃';
+      case 'logbook': return '📓';
       case 'image': return '🖼️';
       case 'video': return '🎥';
       case 'audio': return '🎵';

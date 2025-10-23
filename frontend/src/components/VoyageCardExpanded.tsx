@@ -59,6 +59,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const getMediaIcon = (type: string | null | undefined) => {
     switch (type) {
       case 'article': return '📄';
+      case 'document': return '📃';
+      case 'logbook': return '📓';
       case 'image': return '🖼️';
       case 'video': return '🎥';
       case 'audio': return '🎵';

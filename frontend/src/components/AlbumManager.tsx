@@ -35,6 +35,8 @@ const AlbumManager: React.FC<AlbumManagerProps> = ({ voyageSlug, media, editMode
   const getMediaIcon = (type: string | null | undefined) => {
     switch (type) {
       case 'article': return '📄';
+      case 'document': return '📃';
+      case 'logbook': return '📓';
       case 'image': return '🖼️';
       case 'video': return '🎥';
       case 'audio': return '🎵';
