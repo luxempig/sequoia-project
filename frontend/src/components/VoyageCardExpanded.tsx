@@ -1530,20 +1530,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         />
                       </div>
 
-                      {/* Capacity Role on This Voyage */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Voyage-Specific Role <span className="text-gray-500 text-xs">(for this voyage only, e.g., Captain, Steward for crew)</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={personFormData.capacity_role}
-                          onChange={(e) => setPersonFormData({ ...personFormData, capacity_role: e.target.value })}
-                          placeholder="e.g., Captain, Steward, Guest, Passenger"
-                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                        />
-                      </div>
-
                       {/* Bio/Wikipedia URL */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bio/Wikipedia URL</label>
@@ -1562,13 +1548,29 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           type="checkbox"
                           id="is_crew"
                           checked={personFormData.is_crew}
-                          onChange={(e) => setPersonFormData({ ...personFormData, is_crew: e.target.checked })}
+                          onChange={(e) => setPersonFormData({ ...personFormData, is_crew: e.target.checked, capacity_role: e.target.checked ? personFormData.capacity_role : '' })}
                           className="mr-2 h-4 w-4"
                         />
                         <label htmlFor="is_crew" className="text-sm font-medium text-gray-700">
                           Is Crew Member <span className="text-gray-500 text-xs">(on this voyage)</span>
                         </label>
                       </div>
+
+                      {/* Crew Role - only show if is_crew is checked */}
+                      {personFormData.is_crew && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Crew Role <span className="text-gray-500 text-xs">(for this voyage only)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={personFormData.capacity_role}
+                            onChange={(e) => setPersonFormData({ ...personFormData, capacity_role: e.target.value })}
+                            placeholder="e.g., Captain, Steward, Cook"
+                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
