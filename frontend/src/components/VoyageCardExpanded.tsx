@@ -96,6 +96,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   // Helper function to get media type icon
   const getMediaIcon = (type: string | null | undefined) => {
     switch (type) {
+      case 'unchecked': return '❓';
       case 'article': return '📄';
       case 'document': return '📃';
       case 'logbook': return '📓';
@@ -112,12 +113,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   type SourceUrl = { url: string; media_type: string };
   const [sourceUrls, setSourceUrls] = useState<SourceUrl[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
-  const [newSourceMediaType, setNewSourceMediaType] = useState("document");
+  const [newSourceMediaType, setNewSourceMediaType] = useState("unchecked");
 
   // Additional Source URLs state (with media type tracking)
   const [additionalSourceUrls, setAdditionalSourceUrls] = useState<SourceUrl[]>([]);
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
-  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("document");
+  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("unchecked");
 
   // Person search state
   const [personSearch, setPersonSearch] = useState("");
@@ -196,15 +197,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     if (Array.isArray(voyage.source_urls)) {
       const normalized = voyage.source_urls.map((item: any) => {
         if (typeof item === 'string') {
-          return { url: item, media_type: 'document' };
+          return { url: item, media_type: 'unchecked' };
         } else if (item && typeof item === 'object' && item.url) {
           return item;
         }
-        return { url: String(item), media_type: 'document' };
+        return { url: String(item), media_type: 'unchecked' };
       });
       setSourceUrls(normalized);
     } else if (typeof voyage.source_urls === 'string') {
-      setSourceUrls([{ url: voyage.source_urls, media_type: 'document' }]);
+      setSourceUrls([{ url: voyage.source_urls, media_type: 'unchecked' }]);
     }
 
     // Initialize additional source URLs (handle both old string format and new object format)
@@ -215,7 +216,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           const parsed = JSON.parse(item);
           if (parsed.url) return parsed;
         } catch {}
-        return { url: item, media_type: 'document' };
+        return { url: item, media_type: 'unchecked' };
       });
       setAdditionalSourceUrls(normalized);
     }
@@ -244,7 +245,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       setSourceUrls(updated);
       updateField('source_urls', updated as any);
       setNewSourceUrl("");
-      setNewSourceMediaType("document");
+      setNewSourceMediaType("unchecked");
     }
   };
 
@@ -269,7 +270,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       setAdditionalSourceUrls(updated);
       updateField('additional_sources', updated.map(s => JSON.stringify(s)).join('\n'));
       setNewAdditionalSourceUrl("");
-      setNewAdditionalSourceMediaType("document");
+      setNewAdditionalSourceMediaType("unchecked");
     }
   };
 
@@ -1165,6 +1166,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         onChange={(e) => updateSourceMediaType(index, e.target.value)}
                         className="border rounded px-2 py-1 text-xs"
                       >
+                        <option value="unchecked">Unchecked</option>
                         <option value="article">Article</option>
                         <option value="document">Document</option>
                         <option value="logbook">Logbook</option>
@@ -1197,6 +1199,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         onChange={(e) => setNewSourceMediaType(e.target.value)}
                         className="border rounded px-2 py-1 text-xs"
                       >
+                        <option value="unchecked">Unchecked</option>
                         <option value="article">Article</option>
                         <option value="document">Document</option>
                         <option value="logbook">Logbook</option>
@@ -1277,7 +1280,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   {currentVoyage.source_urls.map((item: any, index: number) => {
                     // Handle both old string format and new object format
                     const source = typeof item === 'string' ? item : item.url;
-                    const mediaType = typeof item === 'object' && item.media_type ? item.media_type : 'document';
+                    const mediaType = typeof item === 'object' && item.media_type ? item.media_type : 'unchecked';
                     const mediaIcon = getMediaIcon(mediaType);
 
                     const isUrl = source.startsWith('http://') || source.startsWith('https://');
@@ -1379,6 +1382,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         onChange={(e) => updateAdditionalSourceMediaType(index, e.target.value)}
                         className="border rounded px-2 py-1 text-xs"
                       >
+                        <option value="unchecked">Unchecked</option>
                         <option value="article">Article</option>
                         <option value="document">Document</option>
                         <option value="logbook">Logbook</option>
@@ -1411,6 +1415,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         onChange={(e) => setNewAdditionalSourceMediaType(e.target.value)}
                         className="border rounded px-2 py-1 text-xs"
                       >
+                        <option value="unchecked">Unchecked</option>
                         <option value="article">Article</option>
                         <option value="document">Document</option>
                         <option value="logbook">Logbook</option>
@@ -1494,10 +1499,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                     try {
                       const parsed = JSON.parse(line);
                       source = parsed.url;
-                      mediaType = parsed.media_type || 'document';
+                      mediaType = parsed.media_type || 'unchecked';
                     } catch {
                       source = line.trim();
-                      mediaType = 'document';
+                      mediaType = 'unchecked';
                     }
 
                     const mediaIcon = getMediaIcon(mediaType);

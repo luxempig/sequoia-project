@@ -86,14 +86,14 @@ const VoyageEditor: React.FC = () => {
   type SourceUrl = { url: string; media_type: string };
   const [sourceUrls, setSourceUrls] = useState<SourceUrl[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
-  const [newSourceMediaType, setNewSourceMediaType] = useState("document");
+  const [newSourceMediaType, setNewSourceMediaType] = useState("unchecked");
   const [sourceMediaFiles, setSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
   const [uploadingSourceMedia, setUploadingSourceMedia] = useState(false);
 
   // Additional sources (separate from primary sources)
   const [additionalSourceUrls, setAdditionalSourceUrls] = useState<SourceUrl[]>([]);
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
-  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("document");
+  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("unchecked");
   const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
 
   // Existing media (loaded in edit mode)
@@ -138,11 +138,11 @@ const VoyageEditor: React.FC = () => {
         if (voyageData.source_urls && Array.isArray(voyageData.source_urls)) {
           const normalized = voyageData.source_urls.map((item: any) => {
             if (typeof item === 'string') {
-              return { url: item, media_type: 'document' };
+              return { url: item, media_type: 'unchecked' };
             } else if (item && typeof item === 'object' && item.url) {
               return item;
             }
-            return { url: String(item), media_type: 'document' };
+            return { url: String(item), media_type: 'unchecked' };
           });
           setSourceUrls(normalized);
         }
@@ -155,7 +155,7 @@ const VoyageEditor: React.FC = () => {
               const parsed = JSON.parse(item);
               if (parsed.url) return parsed;
             } catch {}
-            return { url: item, media_type: 'document' };
+            return { url: item, media_type: 'unchecked' };
           });
           setAdditionalSourceUrls(normalized);
         }
@@ -280,7 +280,7 @@ const VoyageEditor: React.FC = () => {
       setSourceUrls(updated);
       updateField('source_urls', updated as any);
       setNewSourceUrl("");
-      setNewSourceMediaType("document");
+      setNewSourceMediaType("unchecked");
     }
   };
 
@@ -326,7 +326,7 @@ const VoyageEditor: React.FC = () => {
     if (newAdditionalSourceUrl.trim()) {
       setAdditionalSourceUrls([...additionalSourceUrls, { url: newAdditionalSourceUrl.trim(), media_type: newAdditionalSourceMediaType }]);
       setNewAdditionalSourceUrl("");
-      setNewAdditionalSourceMediaType("document");
+      setNewAdditionalSourceMediaType("unchecked");
     }
   };
 
@@ -1006,6 +1006,7 @@ const VoyageEditor: React.FC = () => {
                   onChange={(e) => updateSourceMediaType(index, e.target.value)}
                   className="border border-gray-300 rounded px-2 py-2 text-sm"
                 >
+                  <option value="unchecked">Unchecked</option>
                   <option value="article">Article</option>
                   <option value="document">Document</option>
                   <option value="logbook">Logbook</option>
@@ -1164,6 +1165,7 @@ const VoyageEditor: React.FC = () => {
                   onChange={(e) => updateAdditionalSourceMediaType(index, e.target.value)}
                   className="border border-gray-300 rounded px-2 py-2 text-sm"
                 >
+                  <option value="unchecked">Unchecked</option>
                   <option value="article">Article</option>
                   <option value="document">Document</option>
                   <option value="logbook">Logbook</option>
