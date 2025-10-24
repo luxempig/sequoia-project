@@ -10,6 +10,10 @@ router = APIRouter(prefix="/api/people", tags=["people"])
 def simple_test():
     return {"simple": "test", "number": 999}
 
+@router.get("/presidentgroups")
+def test_no_hyphen():
+    return {"test": "no hyphen", "number": 888}
+
 @router.get("/", response_model=List[Dict[str, Any]])
 def list_people(
     q: Optional[str] = Query(None, description="Search people by full_name ILIKE"),
