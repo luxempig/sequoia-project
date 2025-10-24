@@ -708,7 +708,7 @@ const MediaExplorer: React.FC = () => {
                       onClick={() => handleDeleteCompletely(selectedFile)}
                       className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      🗑️ Delete from S3 & Database
+                      🗑️ Detach and Delete from Media Library
                     </button>
                   </div>
                 </div>
