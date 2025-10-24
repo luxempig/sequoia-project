@@ -377,7 +377,7 @@ export default function VoyageList() {
               {pres.length === 0
                 ? 'None selected'
                 : pres.length === presidents.length
-                ? 'All Owners/Presidents'
+                ? 'Owners/Presidents'
                 : `${pres.length} selected`}
             </span>
             <span>▾</span>

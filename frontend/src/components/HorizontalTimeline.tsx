@@ -507,7 +507,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                 {pendingPresidents.length === 0
                   ? 'None selected'
                   : pendingPresidents.length === presidents.length
-                  ? 'All Presidents/Owners'
+                  ? 'Presidents/Owners'
                   : `${pendingPresidents.length} selected`}
               </span>
               <span>▾</span>
