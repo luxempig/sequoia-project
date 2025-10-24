@@ -83,14 +83,17 @@ const VoyageEditor: React.FC = () => {
     president_slug_from_voyage: '',
   });
 
-  const [sourceUrls, setSourceUrls] = useState<string[]>([]);
+  type SourceUrl = { url: string; media_type: string };
+  const [sourceUrls, setSourceUrls] = useState<SourceUrl[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [newSourceMediaType, setNewSourceMediaType] = useState("document");
   const [sourceMediaFiles, setSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
   const [uploadingSourceMedia, setUploadingSourceMedia] = useState(false);
 
   // Additional sources (separate from primary sources)
-  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<string[]>([]);
+  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<SourceUrl[]>([]);
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
+  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("document");
   const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
 
   // Existing media (loaded in edit mode)
@@ -131,15 +134,30 @@ const VoyageEditor: React.FC = () => {
         // Set voyage data
         setVoyage(voyageData);
 
-        // Set source URLs if they exist
+        // Set source URLs if they exist (handle both old string format and new object format)
         if (voyageData.source_urls && Array.isArray(voyageData.source_urls)) {
-          setSourceUrls(voyageData.source_urls);
+          const normalized = voyageData.source_urls.map((item: any) => {
+            if (typeof item === 'string') {
+              return { url: item, media_type: 'document' };
+            } else if (item && typeof item === 'object' && item.url) {
+              return item;
+            }
+            return { url: String(item), media_type: 'document' };
+          });
+          setSourceUrls(normalized);
         }
 
-        // Set additional sources if they exist
+        // Set additional sources if they exist (handle both old string format and new object format)
         if (voyageData.additional_sources) {
-          const additionalUrls = voyageData.additional_sources.split('\n').filter((s: string) => s.trim());
-          setAdditionalSourceUrls(additionalUrls);
+          const lines = voyageData.additional_sources.split('\n').filter((s: string) => s.trim());
+          const normalized = lines.map((item: string) => {
+            try {
+              const parsed = JSON.parse(item);
+              if (parsed.url) return parsed;
+            } catch {}
+            return { url: item, media_type: 'document' };
+          });
+          setAdditionalSourceUrls(normalized);
         }
 
         // Set passengers
@@ -258,15 +276,24 @@ const VoyageEditor: React.FC = () => {
 
   const addSourceUrl = () => {
     if (newSourceUrl.trim()) {
-      const updated = [...sourceUrls, newSourceUrl.trim()];
+      const updated = [...sourceUrls, { url: newSourceUrl.trim(), media_type: newSourceMediaType }];
       setSourceUrls(updated);
       updateField('source_urls', updated as any);
       setNewSourceUrl("");
+      setNewSourceMediaType("document");
     }
   };
 
   const removeSourceUrl = (index: number) => {
     const updated = sourceUrls.filter((_, i) => i !== index);
+    setSourceUrls(updated);
+    updateField('source_urls', updated as any);
+  };
+
+  const updateSourceMediaType = (index: number, media_type: string) => {
+    const updated = sourceUrls.map((item, i) =>
+      i === index ? { ...item, media_type } : item
+    );
     setSourceUrls(updated);
     updateField('source_urls', updated as any);
   };
@@ -297,13 +324,21 @@ const VoyageEditor: React.FC = () => {
   // Additional source handlers
   const addAdditionalSourceUrl = () => {
     if (newAdditionalSourceUrl.trim()) {
-      setAdditionalSourceUrls([...additionalSourceUrls, newAdditionalSourceUrl.trim()]);
+      setAdditionalSourceUrls([...additionalSourceUrls, { url: newAdditionalSourceUrl.trim(), media_type: newAdditionalSourceMediaType }]);
       setNewAdditionalSourceUrl("");
+      setNewAdditionalSourceMediaType("document");
     }
   };
 
   const removeAdditionalSourceUrl = (index: number) => {
     setAdditionalSourceUrls(additionalSourceUrls.filter((_, i) => i !== index));
+  };
+
+  const updateAdditionalSourceMediaType = (index: number, media_type: string) => {
+    const updated = additionalSourceUrls.map((item, i) =>
+      i === index ? { ...item, media_type } : item
+    );
+    setAdditionalSourceUrls(updated);
   };
 
   const handleAdditionalSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -462,7 +497,7 @@ const VoyageEditor: React.FC = () => {
         body: JSON.stringify({
           ...voyage,
           source_urls: sourceUrls.length > 0 ? sourceUrls : null,
-          additional_sources: additionalSourceUrls.length > 0 ? additionalSourceUrls.join('\n') : null,
+          additional_sources: additionalSourceUrls.length > 0 ? additionalSourceUrls.map(s => JSON.stringify(s)).join('\n') : null,
         })
       });
 
@@ -958,14 +993,28 @@ const VoyageEditor: React.FC = () => {
           {/* Text/URL Sources */}
           <div className="space-y-2 mb-4">
             <label className="text-xs font-medium text-gray-600">Text/URL Sources:</label>
-            {sourceUrls.map((url, index) => (
+            {sourceUrls.map((source, index) => (
               <div key={index} className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={url}
+                  value={source.url}
                   readOnly
                   className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm"
                 />
+                <select
+                  value={source.media_type}
+                  onChange={(e) => updateSourceMediaType(index, e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-2 text-sm"
+                >
+                  <option value="article">Article</option>
+                  <option value="document">Document</option>
+                  <option value="logbook">Logbook</option>
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                  <option value="audio">Audio</option>
+                  <option value="book">Book</option>
+                  <option value="other">Other</option>
+                </select>
                 <button
                   onClick={() => removeSourceUrl(index)}
                   className="text-red-600 hover:text-red-800 px-3 py-2 text-sm"
@@ -979,15 +1028,30 @@ const VoyageEditor: React.FC = () => {
                 type="text"
                 value={newSourceUrl}
                 onChange={(e) => setNewSourceUrl(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
+                onKeyPress={(e) => e.key === 'Enter' && newSourceUrl.trim() && addSourceUrl()}
                 placeholder="URL or source name (e.g., National Archives or https://...)"
                 className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
               />
+              <select
+                value={newSourceMediaType}
+                onChange={(e) => setNewSourceMediaType(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-2 text-sm"
+              >
+                <option value="article">Article</option>
+                <option value="document">Document</option>
+                <option value="logbook">Logbook</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+                <option value="book">Book</option>
+                <option value="other">Other</option>
+              </select>
               <button
                 onClick={addSourceUrl}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                disabled={!newSourceUrl.trim()}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm disabled:bg-gray-300"
               >
-                Add Text
+                Add
               </button>
             </div>
           </div>
@@ -1087,14 +1151,28 @@ const VoyageEditor: React.FC = () => {
           {/* Text/URL Additional Sources */}
           <div className="space-y-2 mb-4">
             <label className="text-xs font-medium text-gray-600">Text/URL Additional Sources:</label>
-            {additionalSourceUrls.map((url, index) => (
+            {additionalSourceUrls.map((source, index) => (
               <div key={index} className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={url}
+                  value={source.url}
                   readOnly
                   className="flex-1 border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-sm"
                 />
+                <select
+                  value={source.media_type}
+                  onChange={(e) => updateAdditionalSourceMediaType(index, e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-2 text-sm"
+                >
+                  <option value="article">Article</option>
+                  <option value="document">Document</option>
+                  <option value="logbook">Logbook</option>
+                  <option value="image">Image</option>
+                  <option value="video">Video</option>
+                  <option value="audio">Audio</option>
+                  <option value="book">Book</option>
+                  <option value="other">Other</option>
+                </select>
                 <button
                   onClick={() => removeAdditionalSourceUrl(index)}
                   className="text-red-600 hover:text-red-800 px-3 py-2 text-sm"
@@ -1108,12 +1186,27 @@ const VoyageEditor: React.FC = () => {
                 type="text"
                 value={newAdditionalSourceUrl}
                 onChange={(e) => setNewAdditionalSourceUrl(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addAdditionalSourceUrl()}
+                onKeyPress={(e) => e.key === 'Enter' && newAdditionalSourceUrl.trim() && addAdditionalSourceUrl()}
                 placeholder="Additional reference or URL..."
                 className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
               />
+              <select
+                value={newAdditionalSourceMediaType}
+                onChange={(e) => setNewAdditionalSourceMediaType(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-2 text-sm"
+              >
+                <option value="article">Article</option>
+                <option value="document">Document</option>
+                <option value="logbook">Logbook</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+                <option value="book">Book</option>
+                <option value="other">Other</option>
+              </select>
               <button
                 onClick={addAdditionalSourceUrl}
+                disabled={!newAdditionalSourceUrl.trim()}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
               >
                 Add Text
