@@ -226,6 +226,128 @@ const MediaExplorer: React.FC = () => {
     }
   };
 
+  const handleDetachFromVoyages = async (file: FileItem) => {
+    try {
+      // Find media record in database
+      const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      if (!mediaItem) {
+        alert("Media not found in database.");
+        return;
+      }
+
+      // Check which voyages use this media
+      const usageResponse = await fetch(`/api/curator/media/${mediaItem.media_slug}/usage`);
+      if (!usageResponse.ok) {
+        throw new Error("Failed to check media usage");
+      }
+
+      const usageData = await usageResponse.json();
+      const voyages = usageData.voyages || [];
+
+      // Build confirmation message
+      let confirmMessage = `Detach "${file.name}" from all voyages?\n\n`;
+      if (voyages.length > 0) {
+        confirmMessage += `This media is currently attached to ${voyages.length} voyage${voyages.length > 1 ? 's' : ''}:\n`;
+        voyages.forEach((v: any) => {
+          confirmMessage += `\n• ${v.title || v.voyage_slug}`;
+        });
+        confirmMessage += "\n\nIt will be removed from all these voyages but will remain in the database and S3.";
+      } else {
+        confirmMessage += "This media is not currently attached to any voyages.";
+        return;
+      }
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      // Detach from all voyages
+      const response = await fetch(`/api/curator/media/${mediaItem.media_slug}/detach-from-all-voyages`, {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to detach media from voyages");
+      }
+
+      const result = await response.json();
+      alert(`✓ Media detached from ${result.voyages_affected} voyage(s) successfully!`);
+
+      // Refresh the view
+      window.location.reload();
+    } catch (error) {
+      console.error("Error detaching media:", error);
+      alert("Failed to detach media from voyages. Check console for details.");
+    }
+  };
+
+  const handleDeleteCompletely = async (file: FileItem) => {
+    try {
+      // Find media record in database
+      const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      if (!mediaItem) {
+        alert("Media not found in database.");
+        return;
+      }
+
+      // Check which voyages use this media
+      const usageResponse = await fetch(`/api/curator/media/${mediaItem.media_slug}/usage`);
+      if (!usageResponse.ok) {
+        throw new Error("Failed to check media usage");
+      }
+
+      const usageData = await usageResponse.json();
+      const voyages = usageData.voyages || [];
+
+      // Build confirmation message
+      let confirmMessage = `⚠️ PERMANENTLY DELETE "${file.name}"?\n\n`;
+      confirmMessage += "This will permanently remove it from:\n";
+      confirmMessage += "• Database\n";
+      confirmMessage += "• S3 storage (original file)\n";
+      confirmMessage += "• S3 storage (thumbnail)\n\n";
+      confirmMessage += "⚠️ THIS ACTION CANNOT BE UNDONE! ⚠️\n\n";
+
+      if (voyages.length > 0) {
+        confirmMessage += `This media is currently used in ${voyages.length} voyage${voyages.length > 1 ? 's' : ''}:\n`;
+        voyages.forEach((v: any) => {
+          confirmMessage += `\n• ${v.title || v.voyage_slug}`;
+        });
+        confirmMessage += "\n\nIt will be removed from all these voyages.";
+      }
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      // Double confirmation for permanent deletion
+      if (!confirm("Are you ABSOLUTELY SURE? This cannot be undone!")) {
+        return;
+      }
+
+      // Delete completely (from S3 and database)
+      const response = await fetch(`/api/curator/media/${mediaItem.media_slug}?delete_from_s3=true`, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete media");
+      }
+
+      alert("✓ Media permanently deleted from S3 and database!");
+      setSelectedFile(null);
+
+      // Refresh the view
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      alert("Failed to delete media. Check console for details.");
+    }
+  };
+
   const handleDelete = async (file: FileItem) => {
     try {
       // Find media record in database
@@ -576,10 +698,16 @@ const MediaExplorer: React.FC = () => {
                       Edit Metadata
                     </button>
                     <button
-                      onClick={() => handleDelete(selectedFile)}
+                      onClick={() => handleDetachFromVoyages(selectedFile)}
+                      className="block w-full bg-orange-500 text-white text-center px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                      🗃️ Detach from All Voyages
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCompletely(selectedFile)}
                       className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      Delete from Database
+                      🗑️ Delete from S3 & Database
                     </button>
                   </div>
                 </div>

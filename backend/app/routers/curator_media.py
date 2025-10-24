@@ -286,6 +286,46 @@ def unlink_media_from_voyage(media_slug: str, voyage_slug: str) -> Dict[str, str
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+@router.post("/{media_slug}/detach-from-all-voyages")
+def detach_media_from_all_voyages(media_slug: str) -> Dict[str, Any]:
+    """Remove media from all voyages but keep in database"""
+    try:
+        with db_cursor() as cur:
+            # Check if media exists
+            cur.execute("SELECT media_slug FROM sequoia.media WHERE media_slug = %s", (media_slug,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail=f"Media '{media_slug}' not found")
+
+            # Get affected voyages before deleting links
+            cur.execute(
+                "SELECT DISTINCT voyage_slug FROM sequoia.voyage_media WHERE media_slug = %s",
+                (media_slug,)
+            )
+            affected_voyages = [row['voyage_slug'] for row in cur.fetchall()]
+
+            # Delete all voyage associations
+            cur.execute("DELETE FROM sequoia.voyage_media WHERE media_slug = %s", (media_slug,))
+            links_deleted = cur.rowcount
+
+        # Update has_photos and has_videos flags for affected voyages
+        for voyage_slug in affected_voyages:
+            update_voyage_media_flags(voyage_slug)
+
+        LOG.info(f"Detached media {media_slug} from {links_deleted} voyage(s)")
+
+        return {
+            "message": "Media detached from all voyages successfully",
+            "media_slug": media_slug,
+            "voyages_affected": len(affected_voyages),
+            "links_deleted": links_deleted
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error detaching media from all voyages: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
 @router.delete("/{media_slug}")
 def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any]:
     """Delete a media item and optionally remove from S3"""
