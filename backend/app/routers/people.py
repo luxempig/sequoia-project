@@ -128,6 +128,10 @@ def people_autocomplete(q: str = Query(..., min_length=2)):
 
         return [dict(row) for row in results]
 
+@router.get("/grouped-by-president-test")
+def test_endpoint():
+    return {"test": "it works", "number": 123}
+
 @router.get("/grouped-by-president")
 def get_people_grouped_by_president(
     limit: int = Query(default=500, ge=1, le=1000),
@@ -138,6 +142,7 @@ def get_people_grouped_by_president(
     Returns appearance counts for each person-president combination.
     """
     LOG.info(f"grouped-by-president called with limit={limit}")
+    return {"test": "endpoint called", "limit": limit}
     with db_cursor(read_only=True) as cur:
         # Get all person-president combinations with appearance counts
         cur.execute("""
