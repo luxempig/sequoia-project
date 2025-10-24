@@ -108,13 +108,16 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     }
   };
 
-  // Source URLs state
-  const [sourceUrls, setSourceUrls] = useState<string[]>([]);
+  // Source URLs state (with media type tracking)
+  type SourceUrl = { url: string; media_type: string };
+  const [sourceUrls, setSourceUrls] = useState<SourceUrl[]>([]);
   const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [newSourceMediaType, setNewSourceMediaType] = useState("document");
 
-  // Additional Source URLs state
-  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<string[]>([]);
+  // Additional Source URLs state (with media type tracking)
+  const [additionalSourceUrls, setAdditionalSourceUrls] = useState<SourceUrl[]>([]);
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
+  const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("document");
 
   // Person search state
   const [personSearch, setPersonSearch] = useState("");
@@ -189,17 +192,32 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       .catch(() => setMedia([]))
       .finally(() => setLoadingMedia(false));
 
-    // Initialize source URLs
+    // Initialize source URLs (handle both old string format and new object format)
     if (Array.isArray(voyage.source_urls)) {
-      setSourceUrls(voyage.source_urls);
+      const normalized = voyage.source_urls.map((item: any) => {
+        if (typeof item === 'string') {
+          return { url: item, media_type: 'document' };
+        } else if (item && typeof item === 'object' && item.url) {
+          return item;
+        }
+        return { url: String(item), media_type: 'document' };
+      });
+      setSourceUrls(normalized);
     } else if (typeof voyage.source_urls === 'string') {
-      setSourceUrls([voyage.source_urls]);
+      setSourceUrls([{ url: voyage.source_urls, media_type: 'document' }]);
     }
 
-    // Initialize additional source URLs
+    // Initialize additional source URLs (handle both old string format and new object format)
     if (voyage.additional_sources) {
-      const additionalUrls = voyage.additional_sources.split('\n').filter((s: string) => s.trim());
-      setAdditionalSourceUrls(additionalUrls);
+      const lines = voyage.additional_sources.split('\n').filter((s: string) => s.trim());
+      const normalized = lines.map((item: string) => {
+        try {
+          const parsed = JSON.parse(item);
+          if (parsed.url) return parsed;
+        } catch {}
+        return { url: item, media_type: 'document' };
+      });
+      setAdditionalSourceUrls(normalized);
     }
   }, [voyage.voyage_slug, voyage.source_urls, voyage.additional_sources]);
 
@@ -222,10 +240,11 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   // Source URLs management
   const addSourceUrl = () => {
     if (newSourceUrl.trim()) {
-      const updated = [...sourceUrls, newSourceUrl.trim()];
+      const updated = [...sourceUrls, { url: newSourceUrl.trim(), media_type: newSourceMediaType }];
       setSourceUrls(updated);
       updateField('source_urls', updated as any);
       setNewSourceUrl("");
+      setNewSourceMediaType("document");
     }
   };
 
@@ -235,20 +254,37 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     updateField('source_urls', updated as any);
   };
 
+  const updateSourceMediaType = (index: number, media_type: string) => {
+    const updated = sourceUrls.map((item, i) =>
+      i === index ? { ...item, media_type } : item
+    );
+    setSourceUrls(updated);
+    updateField('source_urls', updated as any);
+  };
+
   // Additional source URLs management
   const addAdditionalSourceUrl = () => {
     if (newAdditionalSourceUrl.trim()) {
-      const updated = [...additionalSourceUrls, newAdditionalSourceUrl.trim()];
+      const updated = [...additionalSourceUrls, { url: newAdditionalSourceUrl.trim(), media_type: newAdditionalSourceMediaType }];
       setAdditionalSourceUrls(updated);
-      updateField('additional_sources', updated.join('\n'));
+      updateField('additional_sources', updated.map(s => JSON.stringify(s)).join('\n'));
       setNewAdditionalSourceUrl("");
+      setNewAdditionalSourceMediaType("document");
     }
   };
 
   const removeAdditionalSourceUrl = (index: number) => {
     const updated = additionalSourceUrls.filter((_, i) => i !== index);
     setAdditionalSourceUrls(updated);
-    updateField('additional_sources', updated.join('\n'));
+    updateField('additional_sources', updated.map(s => JSON.stringify(s)).join('\n'));
+  };
+
+  const updateAdditionalSourceMediaType = (index: number, media_type: string) => {
+    const updated = additionalSourceUrls.map((item, i) =>
+      i === index ? { ...item, media_type } : item
+    );
+    setAdditionalSourceUrls(updated);
+    updateField('additional_sources', updated.map(s => JSON.stringify(s)).join('\n'));
   };
 
   // Person search and linking
@@ -1116,14 +1152,28 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Text/URL Sources:</label>
                 <div className="space-y-2">
-                  {sourceUrls.map((url, index) => (
+                  {sourceUrls.map((source, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <input
                         type="text"
-                        value={url}
+                        value={source.url}
                         readOnly
                         className="flex-1 border rounded px-2 py-1 bg-gray-50 text-xs"
                       />
+                      <select
+                        value={source.media_type}
+                        onChange={(e) => updateSourceMediaType(index, e.target.value)}
+                        className="border rounded px-2 py-1 text-xs"
+                      >
+                        <option value="article">Article</option>
+                        <option value="document">Document</option>
+                        <option value="logbook">Logbook</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="book">Book</option>
+                        <option value="other">Other</option>
+                      </select>
                       <button
                         onClick={() => removeSourceUrl(index)}
                         className="text-red-600 hover:text-red-800 text-xs px-2"
@@ -1132,21 +1182,38 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       </button>
                     </div>
                   ))}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newSourceUrl}
-                      onChange={(e) => setNewSourceUrl(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSourceUrl()}
-                      placeholder="URL or source name (e.g., National Archives or https://...)"
-                      className="flex-1 border rounded px-2 py-1 text-xs"
-                    />
-                    <button
-                      onClick={addSourceUrl}
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
-                    >
-                      Add Text
-                    </button>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newSourceUrl}
+                        onChange={(e) => setNewSourceUrl(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && newSourceUrl.trim() && addSourceUrl()}
+                        placeholder="URL or source name (e.g., National Archives or https://...)"
+                        className="flex-1 border rounded px-2 py-1 text-xs"
+                      />
+                      <select
+                        value={newSourceMediaType}
+                        onChange={(e) => setNewSourceMediaType(e.target.value)}
+                        className="border rounded px-2 py-1 text-xs"
+                      >
+                        <option value="article">Article</option>
+                        <option value="document">Document</option>
+                        <option value="logbook">Logbook</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="book">Book</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <button
+                        onClick={addSourceUrl}
+                        disabled={!newSourceUrl.trim()}
+                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs disabled:bg-gray-300"
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1207,7 +1274,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {/* Text URLs */}
               {currentVoyage.source_urls && currentVoyage.source_urls.length > 0 && (
                 <ul className="space-y-1">
-                  {currentVoyage.source_urls.map((source, index) => {
+                  {currentVoyage.source_urls.map((item: any, index: number) => {
+                    // Handle both old string format and new object format
+                    const source = typeof item === 'string' ? item : item.url;
+                    const mediaType = typeof item === 'object' && item.media_type ? item.media_type : 'document';
+                    const mediaIcon = getMediaIcon(mediaType);
+
                     const isUrl = source.startsWith('http://') || source.startsWith('https://');
                     if (isUrl) {
                       // Extract readable name from URL (domain or path)
@@ -1225,14 +1297,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
                           >
-                            🔗 {displayName}
+                            {mediaIcon} {displayName}
                           </a>
                         </li>
                       );
                     } else {
                       return (
-                        <li key={index} className="text-sm text-gray-700">
-                          • {source}
+                        <li key={index} className="text-sm text-gray-700 inline-flex items-center gap-1">
+                          {mediaIcon} {source}
                         </li>
                       );
                     }
@@ -1294,14 +1366,28 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Text/URL Additional Sources:</label>
                 <div className="space-y-2">
-                  {additionalSourceUrls.map((url, index) => (
+                  {additionalSourceUrls.map((source, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <input
                         type="text"
-                        value={url}
+                        value={source.url}
                         readOnly
                         className="flex-1 border rounded px-2 py-1 bg-gray-50 text-xs"
                       />
+                      <select
+                        value={source.media_type}
+                        onChange={(e) => updateAdditionalSourceMediaType(index, e.target.value)}
+                        className="border rounded px-2 py-1 text-xs"
+                      >
+                        <option value="article">Article</option>
+                        <option value="document">Document</option>
+                        <option value="logbook">Logbook</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="book">Book</option>
+                        <option value="other">Other</option>
+                      </select>
                       <button
                         onClick={() => removeAdditionalSourceUrl(index)}
                         className="text-red-600 hover:text-red-800 text-xs px-2"
@@ -1310,21 +1396,38 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       </button>
                     </div>
                   ))}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newAdditionalSourceUrl}
-                      onChange={(e) => setNewAdditionalSourceUrl(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addAdditionalSourceUrl()}
-                      placeholder="Additional reference or URL..."
-                      className="flex-1 border rounded px-2 py-1 text-xs"
-                    />
-                    <button
-                      onClick={addAdditionalSourceUrl}
-                      className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 text-xs"
-                    >
-                      Add Text
-                    </button>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newAdditionalSourceUrl}
+                        onChange={(e) => setNewAdditionalSourceUrl(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && newAdditionalSourceUrl.trim() && addAdditionalSourceUrl()}
+                        placeholder="Additional reference or URL..."
+                        className="flex-1 border rounded px-2 py-1 text-xs"
+                      />
+                      <select
+                        value={newAdditionalSourceMediaType}
+                        onChange={(e) => setNewAdditionalSourceMediaType(e.target.value)}
+                        className="border rounded px-2 py-1 text-xs"
+                      >
+                        <option value="article">Article</option>
+                        <option value="document">Document</option>
+                        <option value="logbook">Logbook</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="book">Book</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <button
+                        onClick={addAdditionalSourceUrl}
+                        disabled={!newAdditionalSourceUrl.trim()}
+                        className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 text-xs disabled:bg-gray-300"
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1385,32 +1488,44 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {/* Text URLs */}
               {currentVoyage.additional_sources && currentVoyage.additional_sources.trim() && (
                 <div className="space-y-1">
-                  {currentVoyage.additional_sources.split('\n').filter(s => s.trim()).map((source, index) => {
-                    const trimmed = source.trim();
-                    const isUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://');
+                  {currentVoyage.additional_sources.split('\n').filter(s => s.trim()).map((line, index) => {
+                    // Parse JSON format or treat as plain string
+                    let source, mediaType;
+                    try {
+                      const parsed = JSON.parse(line);
+                      source = parsed.url;
+                      mediaType = parsed.media_type || 'document';
+                    } catch {
+                      source = line.trim();
+                      mediaType = 'document';
+                    }
+
+                    const mediaIcon = getMediaIcon(mediaType);
+                    const isUrl = source.startsWith('http://') || source.startsWith('https://');
+
                     if (isUrl) {
-                      let displayName = trimmed;
+                      let displayName = source;
                       try {
-                        const url = new URL(trimmed);
+                        const url = new URL(source);
                         displayName = url.hostname.replace('www.', '') + (url.pathname !== '/' ? url.pathname.substring(0, 30) + '...' : '');
                       } catch {}
 
                       return (
                         <div key={index} className="text-sm">
                           <a
-                            href={trimmed}
+                            href={source}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-purple-600 hover:text-purple-800 hover:underline inline-flex items-center gap-1"
                           >
-                            🔗 {displayName}
+                            {mediaIcon} {displayName}
                           </a>
                         </div>
                       );
                     } else {
                       return (
-                        <div key={index} className="text-sm text-gray-700">
-                          • {trimmed}
+                        <div key={index} className="text-sm text-gray-700 inline-flex items-center gap-1">
+                          {mediaIcon} {source}
                         </div>
                       );
                     }
