@@ -81,6 +81,9 @@ const MediaExplorer: React.FC = () => {
   // President options for upload
   const [presidents, setPresidents] = useState<any[]>([]);
 
+  // Lightbox for viewing media
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
   useEffect(() => {
     loadDirectory(currentPrefix);
   }, [currentPrefix]);
@@ -674,14 +677,12 @@ const MediaExplorer: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="space-y-2 pt-4">
-                    <a
-                      href={selectedFile.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setLightboxSrc(selectedFile.url)}
                       className="block w-full bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Open in New Tab
-                    </a>
+                      Open File
+                    </button>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(selectedFile.url);
@@ -984,6 +985,39 @@ const MediaExplorer: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox for viewing media */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxSrc(null)}
+              className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 shadow hover:bg-gray-100 transition-colors z-10"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <a
+              href={lightboxSrc}
+              download
+              className="absolute -top-3 -right-14 bg-blue-600 text-white rounded-md px-3 py-1.5 shadow hover:bg-blue-700 transition-colors text-sm font-medium z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Download
+            </a>
+            <img
+              src={lightboxSrc}
+              alt="Media"
+              className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
+            />
           </div>
         </div>
       )}
