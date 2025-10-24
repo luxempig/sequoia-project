@@ -128,7 +128,7 @@ def people_autocomplete(q: str = Query(..., min_length=2)):
 
 @router.get("/grouped-by-president", response_model=Dict[str, Any])
 def get_people_grouped_by_president(
-    limit: int = Query(500, ge=1, le=1000),
+    limit: int = Query(default=500, ge=1, le=1000),
 ) -> Dict[str, Any]:
     """
     Get people grouped by the presidents/owners they sailed with.
