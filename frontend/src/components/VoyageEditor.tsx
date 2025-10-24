@@ -602,7 +602,7 @@ const VoyageEditor: React.FC = () => {
     { key: 'mention_mount_vernon' as keyof Voyage, label: 'Mount Vernon' },
     { key: 'mention_captain' as keyof Voyage, label: 'Captain' },
     { key: 'mention_crew' as keyof Voyage, label: 'Crew' },
-    { key: 'mention_rmd' as keyof Voyage, label: 'RMD' },
+    { key: 'mention_rmd' as keyof Voyage, label: 'Restoration, Maintenance, or Damage' },
     { key: 'mention_yacht_spin' as keyof Voyage, label: 'Yacht Spin' },
     { key: 'mention_menu' as keyof Voyage, label: 'Menu Info' },
     { key: 'mention_drinks_wine' as keyof Voyage, label: 'Drinks/Wine' },

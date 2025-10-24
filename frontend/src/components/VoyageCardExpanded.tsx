@@ -14,6 +14,25 @@ interface VoyageCardExpandedProps {
   onDelete?: (voyageSlug: string) => void;
 }
 
+// Mapping from presidential initials to full names
+const presidentialInitialsToName: Record<string, string> = {
+  'FDR': 'Franklin D. Roosevelt',
+  'HST': 'Harry S. Truman',
+  'DDE': 'Dwight D. Eisenhower',
+  'JFK': 'John F. Kennedy',
+  'LBJ': 'Lyndon B. Johnson',
+  'RMN': 'Richard M. Nixon',
+  'GRF': 'Gerald R. Ford',
+  'JEC': 'Jimmy Carter',
+  'RWR': 'Ronald Reagan',
+  'GHWB': 'George H. W. Bush',
+  'WJC': 'Bill Clinton',
+  'GWB': 'George W. Bush',
+  'BHO': 'Barack Obama',
+  'DJT': 'Donald J. Trump',
+  'JRB': 'Joe Biden',
+};
+
 // Helper function to format date input with auto-separators
 const formatDateInput = (value: string): string => {
   const numbers = value.replace(/\D/g, '');
@@ -589,7 +608,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     { key: 'mention_mount_vernon' as keyof Voyage, label: 'Mount Vernon' },
     { key: 'mention_captain' as keyof Voyage, label: 'Captain' },
     { key: 'mention_crew' as keyof Voyage, label: 'Crew' },
-    { key: 'mention_rmd' as keyof Voyage, label: 'RMD' },
+    { key: 'mention_rmd' as keyof Voyage, label: 'Restoration, Maintenance, or Damage' },
     { key: 'mention_yacht_spin' as keyof Voyage, label: 'Yacht Spin' },
     { key: 'mention_menu' as keyof Voyage, label: 'Menu Info' },
     { key: 'mention_drinks_wine' as keyof Voyage, label: 'Drinks/Wine' },
@@ -828,14 +847,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             <div className="flex flex-wrap gap-2">
               {currentVoyage.has_photo && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">Photo(s)</span>}
               {currentVoyage.has_video && <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">Video(s)</span>}
-              {currentVoyage.presidential_use && currentVoyage.presidential_initials && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">{currentVoyage.presidential_initials}</span>}
+              {currentVoyage.presidential_use && currentVoyage.presidential_initials && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">{presidentialInitialsToName[currentVoyage.presidential_initials] || currentVoyage.presidential_initials} aboard</span>}
               {currentVoyage.has_royalty && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">Royalty{currentVoyage.royalty_details ? `: ${currentVoyage.royalty_details}` : ''}</span>}
               {currentVoyage.has_foreign_leader && <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-md">Foreign Leader{currentVoyage.foreign_leader_country ? ` - ${currentVoyage.foreign_leader_country}` : ''}</span>}
-              {currentVoyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">CD</span>}
-              {currentVoyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">MV</span>}
+              {currentVoyage.mention_camp_david && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">Camp David</span>}
+              {currentVoyage.mention_mount_vernon && <span className="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-md">Mount Vernon</span>}
               {currentVoyage.mention_captain && <span className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-md">Captain</span>}
               {currentVoyage.mention_crew && <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">Crew</span>}
-              {currentVoyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">RMD</span>}
+              {currentVoyage.mention_rmd && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 text-xs rounded-md">Restoration, Maintenance, or Damage</span>}
               {currentVoyage.mention_yacht_spin && <span className="px-2 py-1 bg-lime-100 text-lime-800 text-xs rounded-md">Yacht Spin</span>}
               {currentVoyage.mention_menu && <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">Menu</span>}
               {currentVoyage.mention_drinks_wine && <span className="px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-md">Drinks/Wine</span>}

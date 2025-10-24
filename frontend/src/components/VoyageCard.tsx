@@ -72,7 +72,7 @@ const VoyageCard: React.FC<{ voyage: Voyage; groupName?: string }> = ({ voyage }
     { key: 'mention_mount_vernon', label: 'Mount Vernon' },
     { key: 'mention_captain', label: 'Captain' },
     { key: 'mention_crew', label: 'Crew' },
-    { key: 'mention_rmd', label: 'RMD' },
+    { key: 'mention_rmd', label: 'Restoration, Maintenance, or Damage' },
     { key: 'mention_yacht_spin', label: 'Yacht Spin' },
     { key: 'mention_menu', label: 'Menu Info' },
     { key: 'mention_drinks_wine', label: 'Drinks/Wine' },

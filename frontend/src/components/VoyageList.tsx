@@ -110,7 +110,7 @@ export default function VoyageList() {
     { key: 'mention_mount_vernon', label: 'Mentions Mount Vernon' },
     { key: 'mention_captain', label: 'Mentions Captain' },
     { key: 'mention_crew', label: 'Mentions Crew' },
-    { key: 'mention_rmd', label: 'Mentions RMD' },
+    { key: 'mention_rmd', label: 'Mentions Restoration, Maintenance, or Damage' },
     { key: 'mention_yacht_spin', label: 'Yacht Spin' },
     { key: 'mention_menu', label: 'Includes Menu Info' },
     { key: 'mention_drinks_wine', label: 'Mentions Drinks/Wine' },
