@@ -128,7 +128,7 @@ def people_autocomplete(q: str = Query(..., min_length=2)):
 
         return [dict(row) for row in results]
 
-@router.get("/grouped-by-president", response_model=Dict[str, Any])
+@router.get("/grouped-by-president")
 def get_people_grouped_by_president(
     limit: int = Query(default=500, ge=1, le=1000),
 ) -> Dict[str, Any]:
