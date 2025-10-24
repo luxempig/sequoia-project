@@ -709,11 +709,19 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
           <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setLightboxSrc(null)}
-              className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 shadow"
+              className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 shadow hover:bg-gray-100 transition-colors"
               aria-label="Close"
             >
               ✕
             </button>
+            <a
+              href={lightboxSrc}
+              download
+              className="absolute -top-3 -right-14 bg-blue-600 text-white rounded-md px-3 py-1.5 shadow hover:bg-blue-700 transition-colors text-sm font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Download
+            </a>
             <img
               src={lightboxSrc}
               alt="Media"

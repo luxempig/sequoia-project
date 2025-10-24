@@ -134,6 +134,9 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [showSourceMediaSearch, setShowSourceMediaSearch] = useState(false);
   const [showAdditionalSourceMediaSearch, setShowAdditionalSourceMediaSearch] = useState(false);
 
+  // Lightbox state for viewing media
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
   // Media loading function
   const loadMedia = () => {
     setLoadingMedia(true);
@@ -957,15 +960,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {sourceMedia.map((media) => {
                     const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
-                    const fullUrl = media.s3_url || media.url || '#';
+                    const fullUrl = media.s3_url || media.url || '';
 
                     return (
-                      <a
+                      <button
                         key={media.media_slug}
-                        href={fullUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition-colors"
+                        onClick={() => setLightboxSrc(fullUrl)}
+                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition-colors cursor-pointer"
                       >
                         {thumbnailUrl ? (
                           <img
@@ -988,7 +989,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {[media.title, media.credit, media.date].filter(Boolean).join(' • ') || 'Source'}
                           </div>
                         </div>
-                      </a>
+                      </button>
                     );
                   })}
                 </div>
@@ -1137,15 +1138,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {additionalSourceMedia.map((media) => {
                     const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
-                    const fullUrl = media.s3_url || media.url || '#';
+                    const fullUrl = media.s3_url || media.url || '';
 
                     return (
-                      <a
+                      <button
                         key={media.media_slug}
-                        href={fullUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-purple-500 transition-colors"
+                        onClick={() => setLightboxSrc(fullUrl)}
+                        className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-purple-500 transition-colors cursor-pointer"
                       >
                         {thumbnailUrl ? (
                           <img
@@ -1168,7 +1167,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             {[media.title, media.credit, media.date].filter(Boolean).join(' • ') || 'Additional Source'}
                           </div>
                         </div>
-                      </a>
+                      </button>
                     );
                   })}
                 </div>
@@ -1705,6 +1704,39 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox for viewing media */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxSrc(null)}
+              className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 shadow hover:bg-gray-100 transition-colors z-10"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <a
+              href={lightboxSrc}
+              download
+              className="absolute -top-3 -right-14 bg-blue-600 text-white rounded-md px-3 py-1.5 shadow hover:bg-blue-700 transition-colors text-sm font-medium z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Download
+            </a>
+            <img
+              src={lightboxSrc}
+              alt="Media"
+              className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
+            />
           </div>
         </div>
       )}
