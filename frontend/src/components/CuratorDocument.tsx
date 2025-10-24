@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 import Layout from './Layout';
 
 interface VoyageData {
@@ -375,11 +376,7 @@ const CuratorDocument: React.FC = () => {
                   </h3>
                   {entry.voyage?.start_date && (
                     <p className="text-sm text-gray-500 mt-1">
-                      {new Date(entry.voyage.start_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {dayjs(entry.voyage.start_date).format('MMMM D, YYYY')}
                     </p>
                   )}
                 </div>

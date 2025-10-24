@@ -48,7 +48,8 @@ const formatTimeInput = (value: string): string => {
 const formatDate = (iso: string | null | undefined) => {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
+    // Use dayjs to parse date string without timezone conversion
+    return dayjs(iso).format('MMM D, YYYY');
   } catch {
     return iso;
   }
