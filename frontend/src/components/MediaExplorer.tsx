@@ -614,17 +614,45 @@ const MediaExplorer: React.FC = () => {
                     </video>
                   )}
 
-                  {selectedFile.type === "pdf" && (
-                    <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
-                      <span className="text-8xl">📄</span>
-                    </div>
-                  )}
+                  {selectedFile.type === "pdf" && (() => {
+                    const metadata = mediaMetadata[selectedFile.url];
+                    const thumbnailUrl = metadata?.public_derivative_url;
 
-                  {selectedFile.type === "document" && (
-                    <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
-                      <span className="text-8xl">📋</span>
-                    </div>
-                  )}
+                    if (thumbnailUrl) {
+                      return (
+                        <img
+                          src={thumbnailUrl}
+                          alt={selectedFile.name}
+                          className="w-full rounded-lg border border-gray-300"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
+                        <span className="text-8xl">📄</span>
+                      </div>
+                    );
+                  })()}
+
+                  {selectedFile.type === "document" && (() => {
+                    const metadata = mediaMetadata[selectedFile.url];
+                    const thumbnailUrl = metadata?.public_derivative_url;
+
+                    if (thumbnailUrl) {
+                      return (
+                        <img
+                          src={thumbnailUrl}
+                          alt={selectedFile.name}
+                          className="w-full rounded-lg border border-gray-300"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
+                        <span className="text-8xl">📋</span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Details and Actions */}

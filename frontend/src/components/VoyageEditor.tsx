@@ -208,7 +208,7 @@ const VoyageEditor: React.FC = () => {
 
       const newPerson = await response.json();
 
-      // Create president/owner entry with term dates
+      // Create president/owner entry with term/ownership dates
       const term_start = newPresidentData.start_year ? `${newPresidentData.start_year}-01-01` : null;
       const term_end = newPresidentData.end_year ? `${newPresidentData.end_year}-12-31` : null;
 
@@ -1253,7 +1253,7 @@ const VoyageEditor: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Year of Term <span className="text-red-500">*</span>
+                      Start Year of Term/Ownership <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -1268,7 +1268,7 @@ const VoyageEditor: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Year of Term
+                      End Year of Term/Ownership
                     </label>
                     <input
                       type="number"

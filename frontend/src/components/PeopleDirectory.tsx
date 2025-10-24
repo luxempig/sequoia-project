@@ -351,35 +351,6 @@ const PeopleDirectory: React.FC = () => {
             </p>
           </div>
         )}
-
-        {/* Top Roles */}
-        {stats?.by_role && (
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Common Roles</h3>
-            <div className="bg-white shadow rounded-md border border-gray-200">
-              <ul className="divide-y divide-gray-200">
-                {stats.by_role.slice(0, 10).map((role: any, index: number) => (
-                  <li key={role.capacity_role} className="px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="text-sm font-medium text-gray-600 mr-2">
-                        {index + 1}.
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{role.capacity_role}</div>
-                        <div className="text-sm text-gray-500">
-                          {role.unique_people} people, {role.voyage_count} voyages
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {role.count} records
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );

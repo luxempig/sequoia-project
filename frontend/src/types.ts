@@ -3,8 +3,8 @@
 export interface President {
   president_slug: string;
   full_name: string;
-  term_start: string;          // ISO date
-  term_end: string | null;     // ISO or null
+  term_start: string;          // ISO date - term/ownership start
+  term_end: string | null;     // ISO or null - term/ownership end
   party?: string | null;
 }
 
