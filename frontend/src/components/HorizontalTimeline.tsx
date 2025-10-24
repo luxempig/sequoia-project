@@ -505,21 +505,12 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
             <div className="absolute z-20 mt-1 w-64 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-80 overflow-y-auto">
               <div className="p-3 border-b border-gray-200 flex justify-between items-center">
                 <span className="text-sm font-semibold text-gray-900">Filter Presidents</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPendingPresidents(presidents.map(p => p.president_slug))}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    All
-                  </button>
-                  <span className="text-gray-300">|</span>
-                  <button
-                    onClick={() => setPendingPresidents([])}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    None
-                  </button>
-                </div>
+                <button
+                  onClick={() => setPendingPresidents(presidents.map(p => p.president_slug))}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Select All
+                </button>
               </div>
               <div className="p-2">
                 {presidents.map(president => {
@@ -536,6 +527,11 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                           if (e.target.checked) {
                             setPendingPresidents([...pendingPresidents, president.president_slug]);
                           } else {
+                            // Prevent deselecting the last president
+                            if (pendingPresidents.length <= 1) {
+                              alert('Must select at least 1 President/Owner');
+                              return;
+                            }
                             setPendingPresidents(pendingPresidents.filter(s => s !== president.president_slug));
                           }
                         }}
