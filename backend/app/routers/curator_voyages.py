@@ -190,6 +190,12 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
             # Insert the voyage (excluding legacy fields that don't exist in DB)
             voyage_data = voyage.model_dump(exclude={'significant', 'royalty'})
 
+            # Combine date + time into timestamps if both are provided
+            if voyage.start_date and voyage.start_time:
+                voyage_data['start_timestamp'] = f"{voyage.start_date} {voyage.start_time}"
+            if voyage.end_date and voyage.end_time:
+                voyage_data['end_timestamp'] = f"{voyage.end_date} {voyage.end_time}"
+
             cur.execute("""
                 INSERT INTO sequoia.voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
@@ -233,12 +239,13 @@ def update_voyage(voyage_slug: str, updates: VoyageUpdate) -> Dict[str, Any]:
     """Update an existing voyage"""
     try:
         with db_cursor() as cur:
-            # Check if voyage exists
+            # Check if voyage exists and get current data
             cur.execute(
-                "SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s",
+                "SELECT * FROM sequoia.voyages WHERE voyage_slug = %s",
                 (voyage_slug,)
             )
-            if not cur.fetchone():
+            current_voyage = cur.fetchone()
+            if not current_voyage:
                 raise HTTPException(status_code=404, detail=f"Voyage '{voyage_slug}' not found")
 
             # Validate voyage_type if provided
@@ -253,6 +260,27 @@ def update_voyage(voyage_slug: str, updates: VoyageUpdate) -> Dict[str, Any]:
 
             if not update_data:
                 raise HTTPException(status_code=400, detail="No fields to update")
+
+            # Recalculate timestamps if date or time fields are being updated
+            # Use updated values if provided, otherwise use current values
+            start_date = update_data.get('start_date', current_voyage['start_date'])
+            start_time = update_data.get('start_time', current_voyage['start_time'])
+            end_date = update_data.get('end_date', current_voyage['end_date'])
+            end_time = update_data.get('end_time', current_voyage['end_time'])
+
+            if start_date and start_time:
+                update_data['start_timestamp'] = f"{start_date} {start_time}"
+            elif 'start_date' in update_data or 'start_time' in update_data:
+                # One was updated but not both - clear timestamp if one is now missing
+                if not (start_date and start_time):
+                    update_data['start_timestamp'] = None
+
+            if end_date and end_time:
+                update_data['end_timestamp'] = f"{end_date} {end_time}"
+            elif 'end_date' in update_data or 'end_time' in update_data:
+                # One was updated but not both - clear timestamp if one is now missing
+                if not (end_date and end_time):
+                    update_data['end_timestamp'] = None
 
             set_clause = ", ".join([f"{k} = %({k})s" for k in update_data.keys()])
             update_data['voyage_slug'] = voyage_slug
