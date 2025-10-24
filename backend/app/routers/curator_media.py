@@ -728,6 +728,7 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, director
             Key=thumb_key,
             Body=thumb_bytes,
             ContentType='image/jpeg',
+            ContentDisposition='inline',
             CacheControl='public, max-age=31536000'  # Cache for 1 year
         )
 
@@ -749,7 +750,8 @@ def upload_to_s3(file_content: bytes, bucket: str, key: str, content_type: str) 
             Bucket=bucket,
             Key=key,
             Body=file_content,
-            ContentType=content_type
+            ContentType=content_type,
+            ContentDisposition='inline'
         )
 
         s3_url = f"https://{bucket}.s3.amazonaws.com/{key}"
