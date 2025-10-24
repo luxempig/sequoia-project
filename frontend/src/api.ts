@@ -60,6 +60,22 @@ export const api = {
     getJSON<any>("/api/media/types/stats"),
   getMediaRelatedVoyages: (mediaSlug: string) =>
     getJSON<any[]>(`/api/media/${encodeURIComponent(mediaSlug)}/related-voyages`),
+  updateMedia: async (mediaSlug: string, updates: Partial<MediaItem>) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), TIMEOUT);
+    try {
+      const res = await fetch(`${API_BASE}/api/curator/media/${encodeURIComponent(mediaSlug)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+        signal: ctrl.signal
+      });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return await res.json();
+    } finally {
+      clearTimeout(t);
+    }
+  },
 
   /** Analytics API */
   getDashboard: () =>

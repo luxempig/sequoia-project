@@ -149,6 +149,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [crewCollapsed, setCrewCollapsed] = useState(false);
   const [passengersCollapsed, setPassengersCollapsed] = useState(false);
 
+  // Media editing state
+  const [editingMediaSlug, setEditingMediaSlug] = useState<string | null>(null);
+  const [editingMediaData, setEditingMediaData] = useState<Partial<MediaItem>>({});
+
   // Media loading function
   const loadMedia = () => {
     setLoadingMedia(true);
@@ -529,6 +533,37 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       }
     } catch (error) {
       console.error('Failed to remove media:', error);
+    }
+  };
+
+  // Start editing media
+  const handleEditMedia = (media: MediaItem) => {
+    setEditingMediaSlug(media.media_slug);
+    setEditingMediaData({
+      title: media.title || '',
+      media_type: media.media_type || '',
+      credit: media.credit || '',
+      date: media.date || '',
+      description_markdown: media.description_markdown || ''
+    });
+  };
+
+  // Cancel editing media
+  const handleCancelEditMedia = () => {
+    setEditingMediaSlug(null);
+    setEditingMediaData({});
+  };
+
+  // Save media changes
+  const handleSaveMedia = async (mediaSlug: string) => {
+    try {
+      await api.updateMedia(mediaSlug, editingMediaData);
+      setEditingMediaSlug(null);
+      setEditingMediaData({});
+      loadMedia(); // Reload to show updated data
+    } catch (error) {
+      console.error('Failed to update media:', error);
+      alert('Failed to update media. Please try again.');
     }
   };
 
@@ -1225,31 +1260,131 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {sourceMedia.length > 0 && (
                 <div className="mb-4">
                   <div className="text-xs font-medium text-gray-600 mb-2">Attached Source Media ({sourceMedia.length}):</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {sourceMedia.map((media) => (
-                      <div key={media.media_slug} className="relative group">
-                        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                          {media.public_derivative_url || media.s3_url || media.url ? (
-                            <img
-                              src={media.public_derivative_url || media.s3_url || media.url || ''}
-                              alt={media.title || 'Source'}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                              <div className="text-2xl">
-                                {getMediaIcon(media.media_type)}
+                  <div className="space-y-3">
+                    {sourceMedia.map((mediaItem) => (
+                      <div key={mediaItem.media_slug} className="border border-gray-200 rounded-lg p-3 bg-white">
+                        {editingMediaSlug === mediaItem.media_slug ? (
+                          /* Editing Mode */
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-3">
+                              <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
+                                {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
+                                  <img
+                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                    alt={mediaItem.title || 'Source'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-lg">
+                                    {getMediaIcon(mediaItem.media_type)}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <input
+                                  type="text"
+                                  value={editingMediaData.title || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, title: e.target.value})}
+                                  placeholder="Title"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <select
+                                  value={editingMediaData.media_type || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, media_type: e.target.value})}
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                >
+                                  <option value="">Select Type</option>
+                                  <option value="unchecked">Unchecked</option>
+                                  <option value="article">Article</option>
+                                  <option value="document">Document</option>
+                                  <option value="logbook">Logbook</option>
+                                  <option value="image">Image</option>
+                                  <option value="video">Video</option>
+                                  <option value="audio">Audio</option>
+                                  <option value="book">Book</option>
+                                  <option value="other">Other</option>
+                                </select>
+                                <input
+                                  type="text"
+                                  value={editingMediaData.credit || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, credit: e.target.value})}
+                                  placeholder="Credit"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <input
+                                  type="text"
+                                  value={editingMediaData.date || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, date: e.target.value})}
+                                  placeholder="Date"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <textarea
+                                  value={editingMediaData.description_markdown || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, description_markdown: e.target.value})}
+                                  placeholder="Description"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                  rows={2}
+                                />
                               </div>
                             </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDetachMedia(media.media_slug, 'source')}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
-                          title="Remove from voyage"
-                        >
-                          ✕
-                        </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleSaveMedia(mediaItem.media_slug)}
+                                className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={handleCancelEditMedia}
+                                className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Display Mode */
+                          <div className="flex items-start gap-3">
+                            <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
+                              {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
+                                <img
+                                  src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                  alt={mediaItem.title || 'Source'}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-lg">
+                                  {getMediaIcon(mediaItem.media_type)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">{mediaItem.title || 'Untitled'}</div>
+                              <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                                {mediaItem.media_type && <div>Type: {mediaItem.media_type}</div>}
+                                {mediaItem.credit && <div>Credit: {mediaItem.credit}</div>}
+                                {mediaItem.date && <div>Date: {mediaItem.date}</div>}
+                                {mediaItem.description_markdown && <div className="mt-1 text-gray-700">{mediaItem.description_markdown}</div>}
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleEditMedia(mediaItem)}
+                                className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                                title="Edit metadata"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDetachMedia(mediaItem.media_slug, 'source')}
+                                className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1441,31 +1576,131 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {additionalSourceMedia.length > 0 && (
                 <div className="mb-4">
                   <div className="text-xs font-medium text-gray-600 mb-2">Attached Additional Source Media ({additionalSourceMedia.length}):</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {additionalSourceMedia.map((media) => (
-                      <div key={media.media_slug} className="relative group">
-                        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                          {media.public_derivative_url || media.s3_url || media.url ? (
-                            <img
-                              src={media.public_derivative_url || media.s3_url || media.url || ''}
-                              alt={media.title || 'Additional Source'}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                              <div className="text-2xl">
-                                {getMediaIcon(media.media_type)}
+                  <div className="space-y-3">
+                    {additionalSourceMedia.map((mediaItem) => (
+                      <div key={mediaItem.media_slug} className="border border-gray-200 rounded-lg p-3 bg-white">
+                        {editingMediaSlug === mediaItem.media_slug ? (
+                          /* Editing Mode */
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-3">
+                              <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
+                                {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
+                                  <img
+                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                    alt={mediaItem.title || 'Additional Source'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-lg">
+                                    {getMediaIcon(mediaItem.media_type)}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <input
+                                  type="text"
+                                  value={editingMediaData.title || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, title: e.target.value})}
+                                  placeholder="Title"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <select
+                                  value={editingMediaData.media_type || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, media_type: e.target.value})}
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                >
+                                  <option value="">Select Type</option>
+                                  <option value="unchecked">Unchecked</option>
+                                  <option value="article">Article</option>
+                                  <option value="document">Document</option>
+                                  <option value="logbook">Logbook</option>
+                                  <option value="image">Image</option>
+                                  <option value="video">Video</option>
+                                  <option value="audio">Audio</option>
+                                  <option value="book">Book</option>
+                                  <option value="other">Other</option>
+                                </select>
+                                <input
+                                  type="text"
+                                  value={editingMediaData.credit || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, credit: e.target.value})}
+                                  placeholder="Credit"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <input
+                                  type="text"
+                                  value={editingMediaData.date || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, date: e.target.value})}
+                                  placeholder="Date"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                />
+                                <textarea
+                                  value={editingMediaData.description_markdown || ''}
+                                  onChange={(e) => setEditingMediaData({...editingMediaData, description_markdown: e.target.value})}
+                                  placeholder="Description"
+                                  className="w-full border rounded px-2 py-1 text-sm"
+                                  rows={2}
+                                />
                               </div>
                             </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDetachMedia(media.media_slug, 'additional_source')}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
-                          title="Remove from voyage"
-                        >
-                          ✕
-                        </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleSaveMedia(mediaItem.media_slug)}
+                                className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={handleCancelEditMedia}
+                                className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Display Mode */
+                          <div className="flex items-start gap-3">
+                            <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
+                              {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
+                                <img
+                                  src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                  alt={mediaItem.title || 'Additional Source'}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-lg">
+                                  {getMediaIcon(mediaItem.media_type)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">{mediaItem.title || 'Untitled'}</div>
+                              <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                                {mediaItem.media_type && <div>Type: {mediaItem.media_type}</div>}
+                                {mediaItem.credit && <div>Credit: {mediaItem.credit}</div>}
+                                {mediaItem.date && <div>Date: {mediaItem.date}</div>}
+                                {mediaItem.description_markdown && <div className="mt-1 text-gray-700">{mediaItem.description_markdown}</div>}
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleEditMedia(mediaItem)}
+                                className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                                title="Edit metadata"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDetachMedia(mediaItem.media_slug, 'additional_source')}
+                                className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                                title="Remove from voyage"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

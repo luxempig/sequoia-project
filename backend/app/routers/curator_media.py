@@ -148,12 +148,13 @@ def update_media(media_slug: str, updates: MediaUpdate) -> Dict[str, Any]:
     """Update an existing media item"""
     try:
         with db_cursor() as cur:
-            # Check if media exists
+            # Get current media record
             cur.execute(
-                "SELECT media_slug FROM sequoia.media WHERE media_slug = %s",
+                "SELECT * FROM sequoia.media WHERE media_slug = %s",
                 (media_slug,)
             )
-            if not cur.fetchone():
+            current_media = cur.fetchone()
+            if not current_media:
                 raise HTTPException(status_code=404, detail=f"Media '{media_slug}' not found")
 
             # Build dynamic UPDATE query for only provided fields
@@ -161,6 +162,29 @@ def update_media(media_slug: str, updates: MediaUpdate) -> Dict[str, Any]:
 
             if not update_data:
                 raise HTTPException(status_code=400, detail="No fields to update")
+
+            # Check if media_type is being changed and S3 URLs exist
+            if 'media_type' in update_data and current_media['media_type'] != update_data['media_type']:
+                old_media_type = current_media['media_type']
+                new_media_type = update_data['media_type']
+                s3_url = current_media['s3_url']
+                derivative_url = current_media['public_derivative_url']
+
+                LOG.info(f"Media type changing from '{old_media_type}' to '{new_media_type}' - reorganizing S3 files")
+
+                # Reorganize S3 files and get new URLs
+                new_urls = reorganize_media_in_s3(
+                    s3_url=s3_url,
+                    derivative_url=derivative_url,
+                    old_media_type=old_media_type,
+                    new_media_type=new_media_type
+                )
+
+                # Update the URLs in update_data
+                if new_urls.get('s3_url'):
+                    update_data['s3_url'] = new_urls['s3_url']
+                if new_urls.get('public_derivative_url'):
+                    update_data['public_derivative_url'] = new_urls['public_derivative_url']
 
             set_clause = ", ".join([f"{k} = %({k})s" for k in update_data.keys()])
             update_data['media_slug'] = media_slug
@@ -784,3 +808,92 @@ def delete_from_s3_bucket(s3_url: str) -> bool:
     except Exception as e:
         LOG.error(f"S3 delete error: {e}")
         return False
+
+
+def reorganize_media_in_s3(
+    s3_url: Optional[str],
+    derivative_url: Optional[str],
+    old_media_type: str,
+    new_media_type: str
+) -> Dict[str, Optional[str]]:
+    """
+    Reorganize media files in S3 when media_type changes.
+
+    Moves files from old path (president/old-type/file) to new path (president/new-type/file).
+    Returns dict with new URLs.
+    """
+    result = {'s3_url': None, 'public_derivative_url': None}
+
+    try:
+        s3_client = boto3.client('s3')
+
+        # Reorganize main file
+        if s3_url and 's3.amazonaws.com' in s3_url:
+            # Parse current URL
+            parts = s3_url.replace('https://', '').split('/')
+            bucket = parts[0].replace('.s3.amazonaws.com', '')
+            old_key = '/'.join(parts[1:])
+
+            # Parse the key structure: president/media-type/filename
+            key_parts = old_key.split('/')
+            if len(key_parts) >= 3:
+                # Replace media_type in path
+                # Find which part is the media_type (should be second part)
+                president = key_parts[0]
+                filename = '/'.join(key_parts[2:])  # Everything after media_type
+
+                new_key = f"{president}/{new_media_type}/{filename}"
+
+                LOG.info(f"Copying S3 file: {old_key} -> {new_key}")
+
+                # Copy to new location
+                s3_client.copy_object(
+                    Bucket=bucket,
+                    CopySource={'Bucket': bucket, 'Key': old_key},
+                    Key=new_key,
+                    MetadataDirective='COPY'
+                )
+
+                # Delete old location
+                s3_client.delete_object(Bucket=bucket, Key=old_key)
+
+                result['s3_url'] = f"https://{bucket}.s3.amazonaws.com/{new_key}"
+                LOG.info(f"Reorganized main file to: {result['s3_url']}")
+
+        # Reorganize thumbnail/derivative
+        if derivative_url and 's3.amazonaws.com' in derivative_url:
+            # Parse current URL
+            parts = derivative_url.replace('https://', '').split('/')
+            bucket = parts[0].replace('.s3.amazonaws.com', '')
+            old_key = '/'.join(parts[1:])
+
+            # Parse the key structure: president/media-type/filename
+            key_parts = old_key.split('/')
+            if len(key_parts) >= 3:
+                president = key_parts[0]
+                filename = '/'.join(key_parts[2:])  # Everything after media_type
+
+                new_key = f"{president}/{new_media_type}/{filename}"
+
+                LOG.info(f"Copying derivative: {old_key} -> {new_key}")
+
+                # Copy to new location
+                s3_client.copy_object(
+                    Bucket=bucket,
+                    CopySource={'Bucket': bucket, 'Key': old_key},
+                    Key=new_key,
+                    MetadataDirective='COPY'
+                )
+
+                # Delete old location
+                s3_client.delete_object(Bucket=bucket, Key=old_key)
+
+                result['public_derivative_url'] = f"https://{bucket}.s3.amazonaws.com/{new_key}"
+                LOG.info(f"Reorganized derivative to: {result['public_derivative_url']}")
+
+        return result
+
+    except Exception as e:
+        LOG.error(f"Error reorganizing S3 files: {e}")
+        # Return empty result - update will proceed without URL changes
+        return {'s3_url': None, 'public_derivative_url': None}
