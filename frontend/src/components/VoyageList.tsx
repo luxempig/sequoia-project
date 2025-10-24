@@ -345,16 +345,45 @@ export default function VoyageList() {
   return (
     <Layout>
       <div ref={scrollContainerRef} className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
-        <form
-        onSubmit={apply}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            apply();
-          }
-        }}
-        className="flex flex-wrap items-end gap-4 mb-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm"
-      >
+        {/* View Mode Toggle - Always visible */}
+        <div className="mb-4 flex justify-end">
+          <div className="flex rounded-md border border-gray-300 bg-white">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-2 text-sm font-medium rounded-l-md transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className={`px-3 py-2 text-sm font-medium rounded-r-md border-l transition-colors ${
+                viewMode === 'timeline'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+              }`}
+            >
+              Timeline
+            </button>
+          </div>
+        </div>
+
+        {viewMode !== 'timeline' && (
+          <form
+          onSubmit={apply}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              apply();
+            }
+          }}
+          className="flex flex-wrap items-end gap-4 mb-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm"
+        >
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <span>From:</span>
           <input type="date" value={df} onChange={(e) => setDF(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
@@ -497,75 +526,50 @@ export default function VoyageList() {
         )}
 
         <div className="flex items-center gap-2 ml-auto flex-wrap">
+          {/* Edit/Read mode toggle - only in list view */}
           <div className="flex rounded-md border border-gray-300 bg-white">
             <button
               type="button"
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-2 text-sm font-medium rounded-l-md transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-gray-900 text-white'
+              onClick={() => setEditMode(!editMode)}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                editMode
+                  ? 'bg-green-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
+              title="Enable inline editing"
             >
-              List
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('timeline')}
-              className={`px-3 py-2 text-sm font-medium rounded-r-md border-l transition-colors ${
-                viewMode === 'timeline'
-                  ? 'bg-gray-900 text-white border-gray-900'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-              }`}
-            >
-              Timeline
+              {editMode ? 'Editing' : 'Edit Mode'}
             </button>
           </div>
 
-          {viewMode === 'list' && (
-            <>
-              <div className="flex rounded-md border border-gray-300 bg-white">
-                <button
-                  type="button"
-                  onClick={() => setEditMode(!editMode)}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    editMode
-                      ? 'bg-green-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  title="Enable inline editing"
-                >
-                  {editMode ? 'Editing' : 'Edit Mode'}
-                </button>
-              </div>
-
-              {editMode && (
-                <button
-                  type="button"
-                  onClick={handleCreateNewVoyage}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
-                  title="Create a new voyage"
-                >
-                  + New Voyage
-                </button>
-              )}
-
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-gray-300 rounded-md w-48 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
-              <button type="submit" className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 font-medium transition-colors">Apply Filters</button>
-              <button type="button" onClick={clear} className="px-4 py-2 rounded-md bg-white hover:bg-gray-50 text-gray-900 font-medium border border-gray-300 hover:border-gray-400 transition-colors">Clear</button>
-            </>
+          {editMode && (
+            <button
+              type="button"
+              onClick={handleCreateNewVoyage}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
+              title="Create a new voyage"
+            >
+              + New Voyage
+            </button>
           )}
+
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search voyages..." className="px-3 py-2 border border-gray-300 rounded-md w-48 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
+          <button type="submit" className="px-4 py-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 font-medium transition-colors">Apply Filters</button>
+          <button type="button" onClick={clear} className="px-4 py-2 rounded-md bg-white hover:bg-gray-50 text-gray-900 font-medium border border-gray-300 hover:border-gray-400 transition-colors">Clear</button>
         </div>
       </form>
+        )}
 
       {loading && <p className="text-center text-gray-600 py-12">Loading voyages...</p>}
       {!loading && voyages.length === 0 && <p className="text-center text-gray-600 py-12">No voyages found.</p>}
 
       {!loading && filteredVoyages.length > 0 && (
         <>
-          <div className="mb-4 text-sm text-gray-700 font-medium">
-            Showing {filteredVoyages.length} voyage{filteredVoyages.length === 1 ? '' : 's'}
-          </div>
+          {viewMode !== 'timeline' && (
+            <div className="mb-4 text-sm text-gray-700 font-medium">
+              Showing {filteredVoyages.length} voyage{filteredVoyages.length === 1 ? '' : 's'}
+            </div>
+          )}
           {viewMode === 'timeline' ? (
             <HorizontalTimeline voyages={filteredVoyages} />
           ) : (
