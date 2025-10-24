@@ -699,10 +699,14 @@ const MediaExplorer: React.FC = () => {
                       onChange={(e) => setUploadForm({ ...uploadForm, media_type: e.target.value })}
                       className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                     >
+                      <option value="article">Article</option>
+                      <option value="document">Document</option>
+                      <option value="logbook">Logbook</option>
                       <option value="image">Image</option>
                       <option value="video">Video</option>
-                      <option value="pdf">PDF</option>
-                      <option value="document">Document</option>
+                      <option value="audio">Audio</option>
+                      <option value="book">Book</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
 
@@ -811,10 +815,14 @@ const MediaExplorer: React.FC = () => {
                       onChange={(e) => setEditForm({ ...editForm, media_type: e.target.value })}
                       className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                     >
+                      <option value="article">Article</option>
+                      <option value="document">Document</option>
+                      <option value="logbook">Logbook</option>
                       <option value="image">Image</option>
                       <option value="video">Video</option>
-                      <option value="pdf">PDF</option>
-                      <option value="document">Document</option>
+                      <option value="audio">Audio</option>
+                      <option value="book">Book</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
 

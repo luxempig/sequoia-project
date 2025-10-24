@@ -469,7 +469,7 @@ async def upload_media_file(
         # Infer media_type from file extension if not provided
         if not media_type:
             ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
-            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']:
+            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tif', 'tiff']:
                 media_type = 'image'
             elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv']:
                 media_type = 'video'
@@ -497,7 +497,7 @@ async def upload_media_file(
 
         # Generate thumbnail for images and articles (both attached and unattached media)
         thumbnail_url = None
-        if media_type in ('image', 'article', 'book'):
+        if media_type in ('image', 'article', 'book', 'document', 'logbook'):
             # Generate thumbnail filename (add -thumb before extension)
             thumb_filename = formatted_filename.rsplit('.', 1)[0] + '-thumb.jpg'
             thumbnail_url = generate_and_upload_thumbnail(
@@ -664,9 +664,12 @@ def generate_and_upload_thumbnail(file_content: bytes, media_type: str, director
 
         if media_type == 'image':
             thumb_bytes = make_image_thumbnail(file_content)
-        elif media_type in ('article', 'book', 'pdf'):  # pdf for legacy support
-            # Try PDF thumbnail generation (articles/books are often PDFs)
-            thumb_bytes = make_pdf_thumbnail(file_content)
+        elif media_type in ('article', 'book', 'document', 'logbook', 'pdf'):  # pdf for legacy support
+            # Try image thumbnail first (for scanned documents as images)
+            thumb_bytes = make_image_thumbnail(file_content)
+            if not thumb_bytes:
+                # Fall back to PDF thumbnail generation
+                thumb_bytes = make_pdf_thumbnail(file_content)
         else:
             LOG.info(f"Thumbnail generation not supported for media_type: {media_type}")
             return None
