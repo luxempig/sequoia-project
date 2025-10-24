@@ -1347,9 +1347,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                                     if (response.ok) {
                                       const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
                                       setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
                                     }
                                   } catch (error) {
                                     console.error('Reorder up failed:', error);
+                                    alert(`Error reordering: ${error}`);
                                   }
                                 }}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -1369,9 +1374,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                                     if (response.ok) {
                                       const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
                                       setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
                                     }
                                   } catch (error) {
                                     console.error('Reorder down failed:', error);
+                                    alert(`Error reordering: ${error}`);
                                   }
                                 }}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -1463,9 +1473,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                                     if (response.ok) {
                                       const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
                                       setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
                                     }
                                   } catch (error) {
                                     console.error('Reorder up failed:', error);
+                                    alert(`Error reordering: ${error}`);
                                   }
                                 }}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -1485,9 +1500,14 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                                     if (response.ok) {
                                       const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
                                       setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
                                     }
                                   } catch (error) {
                                     console.error('Reorder down failed:', error);
+                                    alert(`Error reordering: ${error}`);
                                   }
                                 }}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
