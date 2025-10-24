@@ -476,6 +476,78 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
       </div>
 
+      {/* Timeline Filters */}
+      <div className="mb-4 bg-white border-2 border-gray-400 rounded-lg p-4 shadow-md">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter Timeline</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* President Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              President
+            </label>
+            <select
+              value={selectedPresident}
+              onChange={(e) => setSelectedPresident(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Presidents</option>
+              {presidents.map(p => (
+                <option key={p.president_slug} value={p.president_slug}>
+                  {p.full_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Start Date Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Start Date (from)
+            </label>
+            <input
+              type="date"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* End Date Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              End Date (to)
+            </label>
+            <input
+              type="date"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Clear Filters Button */}
+        {(selectedPresident || startDateFilter || endDateFilter) && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => {
+                setSelectedPresident('');
+                setStartDateFilter('');
+                setEndDateFilter('');
+              }}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        )}
+
+        {/* Filter Summary */}
+        <div className="mt-3 text-xs text-gray-600">
+          Showing {filteredVoyages.length} of {voyages.length} voyages
+        </div>
+      </div>
+
       {/* Current Date Display */}
       <div className="mb-4 text-center bg-gray-200 px-8 py-4 border-2 border-gray-500 shadow-md" style={{
         background: 'linear-gradient(to bottom, #f3f4f6 0%, #e5e7eb 100%)'
