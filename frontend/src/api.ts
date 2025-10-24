@@ -49,7 +49,7 @@ export const api = {
   getPeopleStats: () =>
     getJSON<any>("/api/people/roles/stats"),
   getPeopleGroupedByPresident: () =>
-    getJSON<any>("/api/people/grouped-by-president"),
+    getJSON<any>("/api/people/by-president"),
 
   /** Media API */
   listMedia: (params?: URLSearchParams) =>
