@@ -51,11 +51,15 @@ export default function VoyageList() {
   const [q, setQ] = useState(() => params.get("q") || "");
   const [df, setDF] = useState(() => params.get("date_from") || "");
   const [dt, setDT] = useState(() => params.get("date_to") || "");
-  const [pres, setPres] = useState(() => params.get("president_slug") || "");
+  const [pres, setPres] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem('voyageListPresidentFilter');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [sig, setSig] = useState(params.get("significant") === "1");
   const [roy, setRoy] = useState(params.get("royalty") === "1");
   // Boolean field filters
   const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
+  const [presidentDropdownOpen, setPresidentDropdownOpen] = useState(false);
 
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [presidents, setPrez] = useState<President[]>([]);
@@ -93,6 +97,7 @@ export default function VoyageList() {
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const presidentDropdownRef = useRef<HTMLDivElement>(null);
 
   // Boolean field filter options with human-readable labels
   const filterOptions = [
@@ -114,7 +119,15 @@ export default function VoyageList() {
   useEffect(() => {
     api
       .listPresidents()
-      .then(setPrez)
+      .then(presidents => {
+        setPrez(presidents);
+        // Initialize to all presidents selected if no saved filter
+        const saved = sessionStorage.getItem('voyageListPresidentFilter');
+        if (!saved) {
+          const allSlugs = presidents.map(p => p.president_slug);
+          setPres(allSlugs);
+        }
+      })
       .catch(console.error);
 
     // Set default limit if no params are present
@@ -144,10 +157,27 @@ export default function VoyageList() {
   }, [moreOpen]);
 
   useEffect(() => {
+    if (!presidentDropdownOpen) return;
+    const close = (e: MouseEvent) => {
+      if (presidentDropdownRef.current && !presidentDropdownRef.current.contains(e.target as Node)) {
+        setPresidentDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", close, true);
+    return () => document.removeEventListener("mousedown", close, true);
+  }, [presidentDropdownOpen]);
+
+  // Save president filter to sessionStorage
+  useEffect(() => {
+    if (pres.length > 0) {
+      sessionStorage.setItem('voyageListPresidentFilter', JSON.stringify(pres));
+    }
+  }, [pres]);
+
+  useEffect(() => {
     setQ(params.get("q") || "");
     setDF(params.get("date_from") || "");
     setDT(params.get("date_to") || "");
-    setPres(params.get("president_slug") || "");
     setSig(params.get("significant") === "1");
     setRoy(params.get("royalty") === "1");
   }, [params]);
@@ -169,13 +199,16 @@ export default function VoyageList() {
     if (roy) p.set("royalty", "1");
     if (df) p.set("date_from", df);
     if (dt) p.set("date_to", dt);
-    if (pres) p.set("president_slug", pres);
+    // Note: president filter is now client-side only, not sent to API
     p.set("limit", "1000"); // Fetch all voyages
     setParams(p);
     setMore(false);
   };
   const clear = () => {
-    setQ(""); setDF(""); setDT(""); setPres(""); setSig(false); setRoy(false);
+    setQ(""); setDF(""); setDT("");
+    const allSlugs = presidents.map(p => p.president_slug);
+    setPres(allSlugs); // Reset to all selected
+    setSig(false); setRoy(false);
     const p = new URLSearchParams();
     p.set("limit", "1000");
     setParams(p);
@@ -239,10 +272,19 @@ export default function VoyageList() {
     navigate('/voyages/new');
   };
 
-  // Filter voyages by selected boolean fields
+  // Filter voyages by selected boolean fields AND selected presidents
   const filteredVoyages = useMemo(() => {
-    if (selectedFilters.size === 0) return voyages;
     return voyages.filter(v => {
+      // Filter by selected presidents
+      if (pres.length > 0) {
+        const voyagePresident = v.president_slug_from_voyage;
+        if (!voyagePresident || !pres.includes(voyagePresident)) {
+          return false;
+        }
+      }
+
+      // Filter by boolean fields
+      if (selectedFilters.size === 0) return true;
       // Voyage must match ALL selected filters (AND logic)
       return Array.from(selectedFilters).every(filterKey => {
         // Access the boolean field dynamically
@@ -251,7 +293,7 @@ export default function VoyageList() {
         return value === true;
       });
     });
-  }, [voyages, selectedFilters]);
+  }, [voyages, selectedFilters, pres]);
 
   // Group by presidency using denormalized field + map to name
   const presBySlug = new Map(presidents.map((p) => [p.president_slug, p.full_name]));
@@ -322,19 +364,77 @@ export default function VoyageList() {
           <input type="date" value={dt} onChange={(e) => setDT(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent" />
         </label>
 
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-          <span>Vessel Owner:</span>
-          <select value={pres} onChange={(e) => setPres(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-            <option value="">All Owners/Presidents</option>
-            {presidents
-              .filter((p) => !['reagan-ronald', 'bush-george-w', 'obama-barack', 'post-presidential'].includes(p.president_slug))
-              .map((p) => (
-                <option key={p.president_slug} value={p.president_slug}>
-                  {p.full_name}
-                </option>
-              ))}
-          </select>
-        </label>
+        <div ref={presidentDropdownRef} className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Vessel Owner:
+          </label>
+          <button
+            type="button"
+            onClick={() => setPresidentDropdownOpen(!presidentDropdownOpen)}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent w-48 text-left flex items-center justify-between"
+          >
+            <span>
+              {pres.length === 0
+                ? 'None selected'
+                : pres.length === presidents.length
+                ? 'All Owners/Presidents'
+                : `${pres.length} selected`}
+            </span>
+            <span>▾</span>
+          </button>
+
+          {presidentDropdownOpen && (
+            <div className="absolute z-20 mt-1 w-72 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-80 overflow-y-auto">
+              <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+                <span className="text-sm font-semibold text-gray-900">Select Presidents/Owners</span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPres(presidents.map(p => p.president_slug))}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Select All
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setPres([])}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
+              <div className="p-2">
+                {presidents.map(president => {
+                  const isSelected = pres.includes(president.president_slug);
+                  return (
+                    <label
+                      key={president.president_slug}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPres([...pres, president.president_slug]);
+                          } else {
+                            setPres(pres.filter(s => s !== president.president_slug));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                      />
+                      <span className="text-sm text-gray-700">
+                        {president.full_name}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         {viewMode === 'list' && (
           <div ref={moreRef} className="relative">
