@@ -185,10 +185,20 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail=f"Person '{link.person_slug}' not found")
 
-            # Verify voyage exists
-            cur.execute("SELECT voyage_slug FROM sequoia.voyages WHERE voyage_slug = %s", (link.voyage_slug,))
-            if not cur.fetchone():
+            # Verify voyage exists and get president_slug
+            cur.execute("SELECT voyage_slug, president_slug_from_voyage FROM sequoia.voyages WHERE voyage_slug = %s", (link.voyage_slug,))
+            voyage = cur.fetchone()
+            if not voyage:
                 raise HTTPException(status_code=404, detail=f"Voyage '{link.voyage_slug}' not found")
+
+            president_slug = voyage.get('president_slug_from_voyage')
+
+            # Check if this person is already linked to this voyage
+            cur.execute("""
+                SELECT person_slug FROM sequoia.voyage_passengers
+                WHERE voyage_slug = %s AND person_slug = %s
+            """, (link.voyage_slug, link.person_slug))
+            already_linked = cur.fetchone() is not None
 
             # Get max sort_order for this voyage
             cur.execute("""
@@ -207,6 +217,16 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
                     capacity_role = EXCLUDED.capacity_role, is_crew = EXCLUDED.is_crew,
                     notes = EXCLUDED.notes
             """, {**link.model_dump(), 'sort_order': next_order})
+
+            # Update person_president_stats if this is a new link and voyage has a president
+            if not already_linked and president_slug:
+                cur.execute("""
+                    INSERT INTO sequoia.person_president_stats (person_slug, president_slug, voyage_count)
+                    VALUES (%s, %s, 1)
+                    ON CONFLICT (person_slug, president_slug)
+                    DO UPDATE SET voyage_count = person_president_stats.voyage_count + 1,
+                                  updated_at = CURRENT_TIMESTAMP
+                """, (link.person_slug, president_slug))
 
             LOG.info(f"Linked person {link.person_slug} to voyage {link.voyage_slug}")
 
@@ -228,6 +248,11 @@ def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, A
     """Remove a person from a voyage and delete person if they have no other voyage associations"""
     try:
         with db_cursor() as cur:
+            # Get president_slug before deleting
+            cur.execute("SELECT president_slug_from_voyage FROM sequoia.voyages WHERE voyage_slug = %s", (voyage_slug,))
+            voyage = cur.fetchone()
+            president_slug = voyage.get('president_slug_from_voyage') if voyage else None
+
             cur.execute(
                 "DELETE FROM sequoia.voyage_passengers WHERE voyage_slug = %s AND person_slug = %s",
                 (voyage_slug, person_slug)
@@ -238,6 +263,21 @@ def unlink_person_from_voyage(person_slug: str, voyage_slug: str) -> Dict[str, A
                     status_code=404,
                     detail=f"No link found between person '{person_slug}' and voyage '{voyage_slug}'"
                 )
+
+            # Decrement person_president_stats if voyage has a president
+            if president_slug:
+                cur.execute("""
+                    UPDATE sequoia.person_president_stats
+                    SET voyage_count = GREATEST(voyage_count - 1, 0),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE person_slug = %s AND president_slug = %s
+                """, (person_slug, president_slug))
+
+                # Delete the stats entry if count is now 0
+                cur.execute("""
+                    DELETE FROM sequoia.person_president_stats
+                    WHERE person_slug = %s AND president_slug = %s AND voyage_count = 0
+                """, (person_slug, president_slug))
 
             LOG.info(f"Unlinked person {person_slug} from voyage {voyage_slug}")
 
@@ -282,6 +322,9 @@ def delete_person(person_slug: str) -> Dict[str, Any]:
             )
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail=f"Person '{person_slug}' not found")
+
+            # Delete president stats (will also be handled by CASCADE but doing it explicitly)
+            cur.execute("DELETE FROM sequoia.person_president_stats WHERE person_slug = %s", (person_slug,))
 
             # Delete voyage associations first
             cur.execute("DELETE FROM sequoia.voyage_passengers WHERE person_slug = %s", (person_slug,))
