@@ -138,6 +138,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   // Lightbox state for viewing media
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
+  // Collapse state for passenger sections
+  const [crewCollapsed, setCrewCollapsed] = useState(false);
+  const [passengersCollapsed, setPassengersCollapsed] = useState(false);
+
   // Media loading function
   const loadMedia = () => {
     setLoadingMedia(true);
@@ -1313,8 +1317,16 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               const crew = people.filter(p => p.is_crew === true);
               return (
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase bg-blue-50 p-2 rounded">Crew{crew.length > 0 && ` (${crew.length})`}</h4>
-                  {crew.length > 0 ? (
+                  <button
+                    onClick={() => setCrewCollapsed(!crewCollapsed)}
+                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-blue-50 p-2 rounded hover:bg-blue-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>Crew{crew.length > 0 && ` (${crew.length})`}</span>
+                    <span className="text-lg transition-transform" style={{ transform: crewCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                      ▼
+                    </span>
+                  </button>
+                  {!crewCollapsed && crew.length > 0 && (
                   <ul className="space-y-2">
                     {crew.map((p) => {
                       const bioLink = p.bio || p.wikipedia_url;
@@ -1427,7 +1439,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       );
                     })}
                   </ul>
-                  ) : (
+                  )}
+                  {!crewCollapsed && crew.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No crew members</p>
                   )}
                 </div>
@@ -1439,8 +1452,16 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               const passengers = people.filter(p => p.is_crew !== true);
               return (
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase bg-gray-50 p-2 rounded">Passengers & Guests{passengers.length > 0 && ` (${passengers.length})`}</h4>
-                  {passengers.length > 0 ? (
+                  <button
+                    onClick={() => setPassengersCollapsed(!passengersCollapsed)}
+                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-gray-50 p-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>Passengers & Guests{passengers.length > 0 && ` (${passengers.length})`}</span>
+                    <span className="text-lg transition-transform" style={{ transform: passengersCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                      ▼
+                    </span>
+                  </button>
+                  {!passengersCollapsed && passengers.length > 0 && (
                   <ul className="space-y-2">
                     {passengers.map((p) => {
                       const bioLink = p.bio || p.wikipedia_url;
@@ -1553,7 +1574,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       );
                     })}
                   </ul>
-                  ) : (
+                  )}
+                  {!passengersCollapsed && passengers.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No passengers</p>
                   )}
                 </div>

@@ -70,6 +70,26 @@ export default function VoyageList() {
     return saved === 'true';
   });
 
+  // Track which president/owner sections are collapsed
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem('voyageListCollapsedSections');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  // Toggle section collapse
+  const toggleSection = (sectionName: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionName)) {
+        newSet.delete(sectionName);
+      } else {
+        newSet.add(sectionName);
+      }
+      sessionStorage.setItem('voyageListCollapsedSections', JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+  };
+
   const [moreOpen, setMore] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -461,26 +481,37 @@ export default function VoyageList() {
                   )[0]?.start_date || '';
                   return String(earliestA).localeCompare(String(earliestB));
                 })
-                .map(([hdr, items]) => (
-                <section key={hdr} className="mb-8">
-                  <h2 className="sticky top-0 z-10 py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900">
-                    {hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`}
-                  </h2>
+                .map(([hdr, items]) => {
+                  const isCollapsed = collapsedSections.has(hdr);
+                  const displayName = hdr === "Non-presidential" ? "Before / After Presidential Service" : `${hdr} Administration`;
 
-                  {items
-                    .filter((v) => v.start_date)
-                    .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
-                    .map((v) => (
-                      <VoyageCardExpanded
-                        key={v.voyage_slug}
-                        voyage={v}
-                        editMode={editMode}
-                        onSave={handleVoyageSave}
-                        onDelete={handleVoyageDelete}
-                      />
-                    ))}
-                </section>
-              ))}
+                  return (
+                    <section key={hdr} className="mb-8">
+                      <button
+                        onClick={() => toggleSection(hdr)}
+                        className="sticky top-0 z-10 w-full py-4 mb-6 text-lg font-semibold bg-white border-b border-gray-200 text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                      >
+                        <span>{displayName} ({items.length})</span>
+                        <span className="text-2xl transition-transform" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                          ▼
+                        </span>
+                      </button>
+
+                      {!isCollapsed && items
+                        .filter((v) => v.start_date)
+                        .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)))
+                        .map((v) => (
+                          <VoyageCardExpanded
+                            key={v.voyage_slug}
+                            voyage={v}
+                            editMode={editMode}
+                            onSave={handleVoyageSave}
+                            onDelete={handleVoyageDelete}
+                          />
+                        ))}
+                    </section>
+                  );
+                })}
             </div>
           )}
         </>
