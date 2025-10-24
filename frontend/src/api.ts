@@ -48,6 +48,8 @@ export const api = {
     getJSON<any>(`/api/people/${encodeURIComponent(personSlug)}`),
   getPeopleStats: () =>
     getJSON<any>("/api/people/roles/stats"),
+  getPeopleGroupedByPresident: () =>
+    getJSON<any>("/api/people/grouped-by-president"),
 
   /** Media API */
   listMedia: (params?: URLSearchParams) =>

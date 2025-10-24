@@ -11,6 +11,8 @@ const PeopleDirectory: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [filteredPeople, setFilteredPeople] = useState<Person[]>([]);
   const [groupBy, setGroupBy] = useState<'none' | 'role' | 'president'>('none');
+  const [presidentGroupedData, setPresidentGroupedData] = useState<any>(null);
+  const [loadingPresidentData, setLoadingPresidentData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +49,24 @@ const PeopleDirectory: React.FC = () => {
       setFilteredPeople(people);
     }
   }, [searchQuery, people]);
+
+  // Fetch president-grouped data when needed
+  useEffect(() => {
+    if (groupBy === 'president' && !presidentGroupedData) {
+      const fetchPresidentData = async () => {
+        try {
+          setLoadingPresidentData(true);
+          const data = await api.getPeopleGroupedByPresident();
+          setPresidentGroupedData(data);
+        } catch (error) {
+          console.error('Failed to fetch president-grouped data:', error);
+        } finally {
+          setLoadingPresidentData(false);
+        }
+      };
+      fetchPresidentData();
+    }
+  }, [groupBy, presidentGroupedData]);
 
   if (loading) {
     return (
@@ -225,11 +245,71 @@ const PeopleDirectory: React.FC = () => {
             );
           })()
         ) : (
-          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              Grouping by president/owner requires additional data. This feature is coming soon.
-            </p>
-          </div>
+          loadingPresidentData ? (
+            <div className="mt-6 text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading president groupings...</p>
+            </div>
+          ) : presidentGroupedData ? (
+            (() => {
+              // Apply search filter to president-grouped data
+              let groupedData = presidentGroupedData.grouped_by_president || [];
+
+              if (searchQuery.trim()) {
+                groupedData = groupedData.map((group: any) => ({
+                  ...group,
+                  people: group.people.filter((person: any) =>
+                    person.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    person.role_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    person.organization?.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                })).filter((group: any) => group.people.length > 0);
+              }
+
+              return (
+                <div className="mt-6 space-y-6">
+                  {groupedData.map((group: any) => (
+                    <div key={group.president_slug} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        {group.president_name}
+                        {group.president_party && (
+                          <span className="ml-2 text-sm font-normal text-gray-500">
+                            ({group.president_party})
+                          </span>
+                        )}
+                        <span className="ml-2 text-sm font-normal text-gray-500">
+                          ({group.people.length} {group.people.length === 1 ? 'person' : 'people'})
+                        </span>
+                      </h3>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {group.people.map((person: any) => (
+                          <Link
+                            key={`${person.person_slug}-${group.president_slug}`}
+                            to={`/people/${person.person_slug}`}
+                            className="flex items-center p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <span className="text-gray-600 font-medium text-xs">
+                                {person.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                              </span>
+                            </div>
+                            <div className="ml-3 flex-1 min-w-0">
+                              <span className="text-sm font-medium text-gray-900 truncate block">
+                                {person.full_name}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Appearances: {person.appearance_count}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
+          ) : null
         )}
 
         {filteredPeople.length === 0 && !loading && (

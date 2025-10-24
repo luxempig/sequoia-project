@@ -123,5 +123,68 @@ def people_autocomplete(q: str = Query(..., min_length=2)):
             LIMIT 20
         """, (f"%{q}%",))
         results = cur.fetchall()
-        
+
         return [dict(row) for row in results]
+
+@router.get("/grouped-by-president", response_model=Dict[str, Any])
+def get_people_grouped_by_president(
+    limit: int = Query(500, ge=1, le=1000),
+) -> Dict[str, Any]:
+    """
+    Get people grouped by the presidents/owners they sailed with.
+    Each person may appear under multiple presidents if they sailed with multiple.
+    Returns appearance counts for each person-president combination.
+    """
+    with db_cursor(read_only=True) as cur:
+        # Get all person-president combinations with appearance counts
+        cur.execute("""
+            SELECT
+                p.person_slug,
+                p.full_name,
+                p.role_title,
+                p.organization,
+                p.wikipedia_url,
+                pres.president_slug,
+                pres.full_name as president_name,
+                pres.party as president_party,
+                COUNT(vp.voyage_slug) as appearance_count
+            FROM sequoia.people p
+            JOIN sequoia.voyage_passengers vp ON p.person_slug = vp.person_slug
+            JOIN sequoia.voyages v ON vp.voyage_slug = v.voyage_slug
+            LEFT JOIN sequoia.presidents pres ON v.president_slug_from_voyage = pres.president_slug
+            GROUP BY
+                p.person_slug, p.full_name, p.role_title, p.organization, p.wikipedia_url,
+                pres.president_slug, pres.full_name, pres.party
+            ORDER BY pres.full_name, appearance_count DESC, p.full_name
+            LIMIT %s
+        """, (limit,))
+
+        rows = cur.fetchall()
+
+        # Group results by president
+        grouped: Dict[str, Any] = {}
+        for row in rows:
+            president_slug = row['president_slug'] or 'unknown'
+            president_name = row['president_name'] or 'Unknown/Private Owner'
+
+            if president_slug not in grouped:
+                grouped[president_slug] = {
+                    'president_slug': president_slug,
+                    'president_name': president_name,
+                    'president_party': row.get('president_party'),
+                    'people': []
+                }
+
+            grouped[president_slug]['people'].append({
+                'person_slug': row['person_slug'],
+                'full_name': row['full_name'],
+                'role_title': row['role_title'],
+                'organization': row['organization'],
+                'wikipedia_url': row['wikipedia_url'],
+                'appearance_count': row['appearance_count']
+            })
+
+        return {
+            'grouped_by_president': list(grouped.values()),
+            'total_president_groups': len(grouped)
+        }
