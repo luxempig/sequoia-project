@@ -518,11 +518,11 @@ const MediaExplorer: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {data.files.map((file) => {
                       const metadata = mediaMetadata[file.url];
-                      const captionParts: string[] = [];
-                      if (metadata?.date) captionParts.push(metadata.date);
-                      if (metadata?.credit) captionParts.push(metadata.credit);
-                      if (metadata?.description_markdown) captionParts.push(metadata.description_markdown);
-                      const caption = captionParts.join(' — ') || file.name;
+                      const caption = metadata
+                        ? [metadata.title, metadata.credit, metadata.date].filter(Boolean).join(' • ') || file.name
+                        : file.name;
+
+                      const thumbnailUrl = metadata?.public_derivative_url || (file.type === "image" ? file.url : null);
 
                       return (
                         <figure
@@ -534,10 +534,10 @@ const MediaExplorer: React.FC = () => {
                           }`}
                           onClick={() => setSelectedFile(file)}
                         >
-                          {file.type === "image" ? (
+                          {thumbnailUrl ? (
                             <div className="aspect-square bg-gray-50">
                               <img
-                                src={file.url}
+                                src={thumbnailUrl}
                                 alt={caption}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
