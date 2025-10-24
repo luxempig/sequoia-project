@@ -1,7 +1,9 @@
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Query
 from app.db import db_cursor
+import logging
 
+LOG = logging.getLogger("app.routers.people")
 router = APIRouter(prefix="/api/people", tags=["people"])
 
 @router.get("/", response_model=List[Dict[str, Any]])
@@ -135,6 +137,7 @@ def get_people_grouped_by_president(
     Each person may appear under multiple presidents if they sailed with multiple.
     Returns appearance counts for each person-president combination.
     """
+    LOG.info(f"grouped-by-president called with limit={limit}")
     with db_cursor(read_only=True) as cur:
         # Get all person-president combinations with appearance counts
         cur.execute("""
@@ -160,6 +163,7 @@ def get_people_grouped_by_president(
         """, (limit,))
 
         rows = cur.fetchall()
+        LOG.info(f"Query returned {len(rows)} rows")
 
         # Group results by president
         grouped: Dict[str, Any] = {}
@@ -184,7 +188,9 @@ def get_people_grouped_by_president(
                 'appearance_count': row['appearance_count']
             })
 
-        return {
+        result = {
             'grouped_by_president': list(grouped.values()),
             'total_president_groups': len(grouped)
         }
+        LOG.info(f"Returning {len(grouped)} president groups")
+        return result
