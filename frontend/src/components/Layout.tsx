@@ -107,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               USS Sequoia Presidential Yacht Archive
             </p>
             <p className="text-gray-500 text-xs mt-2">
-              &copy; 2025 • Equator Capital LLC
+              &copy; 2025 • Daniel Freymann
             </p>
           </div>
         </div>
