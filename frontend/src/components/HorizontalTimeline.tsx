@@ -641,7 +641,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
                             )}
                             <div className="p-1.5">
                               <div className="text-xs text-gray-700 line-clamp-2">
-                                {media.title || media.description_markdown?.slice(0, 30) || 'View media'}
+                                {[media.title, media.credit, media.date].filter(Boolean).join(' • ') || 'View media'}
                               </div>
                             </div>
                           </button>
