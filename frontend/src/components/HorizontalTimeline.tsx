@@ -52,21 +52,18 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     api.listPresidents().then(setPresidents).catch(() => setPresidents([]));
   }, []);
 
-  // Filter voyages by president and date range (memoized to prevent infinite loops)
+  // Filter voyages by date range (president filter sets the date range via term dates)
   const filteredVoyages = useMemo(() => {
     return voyages.filter(voyage => {
-      // President filter
-      if (selectedPresident && voyage.president_slug_from_voyage !== selectedPresident) {
-        return false;
-      }
+      if (!voyage.start_date) return false;
 
-      // Date range filters
-      if (startDateFilter && voyage.start_date) {
+      // Date range filters (set by president selection or manual date inputs)
+      if (startDateFilter) {
         if (dayjs(voyage.start_date).isBefore(dayjs(startDateFilter), 'day')) {
           return false;
         }
       }
-      if (endDateFilter && voyage.start_date) {
+      if (endDateFilter) {
         if (dayjs(voyage.start_date).isAfter(dayjs(endDateFilter), 'day')) {
           return false;
         }
@@ -74,12 +71,23 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
       return true;
     });
-  }, [voyages, selectedPresident, startDateFilter, endDateFilter]);
+  }, [voyages, startDateFilter, endDateFilter]);
 
-  // Save filters to sessionStorage
+  // When president changes, set date range to their term dates
   useEffect(() => {
+    if (selectedPresident) {
+      const president = presidents.find(p => p.president_slug === selectedPresident);
+      if (president && president.term_start && president.term_end) {
+        setStartDateFilter(president.term_start);
+        setEndDateFilter(president.term_end);
+      }
+    } else {
+      // Clear date filters when no president selected
+      setStartDateFilter('');
+      setEndDateFilter('');
+    }
     sessionStorage.setItem('timelinePresidentFilter', selectedPresident);
-  }, [selectedPresident]);
+  }, [selectedPresident, presidents]);
 
   useEffect(() => {
     sessionStorage.setItem('timelineStartDate', startDateFilter);
@@ -109,15 +117,24 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
       organized[year][month][day].voyages.push(voyage);
     });
 
-    // Fetch all media with dates and add to timeline
+    // Fetch all media with dates and add to timeline (filtered by date range)
     api.listMedia(new URLSearchParams({ limit: '500' })).then(allMedia => {
       allMedia.forEach(media => {
         if (!media.date) return;
 
-        const date = dayjs(media.date);
-        const year = date.format('YYYY');
-        const month = date.format('MMMM');
-        const day = date.format('D');
+        const mediaDate = dayjs(media.date);
+
+        // Filter media by date range (same as voyages)
+        if (startDateFilter && mediaDate.isBefore(dayjs(startDateFilter), 'day')) {
+          return;
+        }
+        if (endDateFilter && mediaDate.isAfter(dayjs(endDateFilter), 'day')) {
+          return;
+        }
+
+        const year = mediaDate.format('YYYY');
+        const month = mediaDate.format('MMMM');
+        const day = mediaDate.format('D');
 
         // Include media with valid URLs (s3, drive, dropbox)
         const url = media.s3_url || media.url || media.public_derivative_url || '';
@@ -313,8 +330,8 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
 
   // Navigate to next/previous voyage
   const navigateVoyage = (direction: 'prev' | 'next') => {
-    // Get ALL voyages sorted by date (unfiltered - navigate through entire timeline)
-    const sortedVoyages = [...voyages]
+    // Get filtered voyages sorted by date (respect date range filters)
+    const sortedVoyages = [...filteredVoyages]
       .filter(v => v.start_date)
       .sort((a, b) => dayjs(a.start_date).valueOf() - dayjs(b.start_date).valueOf());
 
