@@ -59,14 +59,17 @@ const formatDateTime = (timestamp: string | null | undefined) => {
   if (!timestamp) return null;
   try {
     const date = new Date(timestamp);
-    return date.toLocaleString(undefined, {
-      dateStyle: "medium",
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+    }
+    // If invalid, try to replace T with space in ISO format
+    return timestamp.replace('T', ' ');
   } catch {
-    return timestamp;
+    // Fallback: replace T with space
+    return timestamp.replace('T', ' ');
   }
 };
 
