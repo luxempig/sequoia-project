@@ -108,6 +108,8 @@ def main():
     parser = argparse.ArgumentParser(description='Fix S3 Content-Disposition metadata')
     parser.add_argument('--apply', action='store_true',
                        help='Actually apply changes (default is dry-run)')
+    parser.add_argument('--yes', action='store_true',
+                       help='Skip confirmation prompt (use with --apply)')
     parser.add_argument('--bucket', type=str,
                        help='Only process specific bucket (sequoia-canonical or sequoia-public)')
 
@@ -124,10 +126,13 @@ def main():
         print("\n" + "=" * 80)
         print("⚠️  APPLYING CHANGES - This will modify S3 metadata")
         print("=" * 80)
-        response = input("Are you sure you want to continue? (yes/no): ")
-        if response.lower() != 'yes':
-            print("Aborted.")
-            return
+        if not args.yes:
+            response = input("Are you sure you want to continue? (yes/no): ")
+            if response.lower() != 'yes':
+                print("Aborted.")
+                return
+        else:
+            print("Auto-confirmed with --yes flag")
 
     buckets = []
     if args.bucket:
