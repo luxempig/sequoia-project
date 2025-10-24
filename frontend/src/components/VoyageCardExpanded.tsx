@@ -866,7 +866,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                     {sourceMedia.map((media) => (
                       <div key={media.media_slug} className="relative group">
                         <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                          {media.media_type === 'image' ? (
+                          {media.public_derivative_url || media.s3_url || media.url ? (
                             <img
                               src={media.public_derivative_url || media.s3_url || media.url || ''}
                               alt={media.title || 'Source'}
@@ -962,7 +962,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         rel="noopener noreferrer"
                         className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition-colors"
                       >
-                        {media.media_type === 'image' ? (
+                        {thumbnailUrl ? (
                           <img
                             src={thumbnailUrl}
                             alt={media.title || 'Source'}
@@ -1046,7 +1046,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                     {additionalSourceMedia.map((media) => (
                       <div key={media.media_slug} className="relative group">
                         <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                          {media.media_type === 'image' ? (
+                          {media.public_derivative_url || media.s3_url || media.url ? (
                             <img
                               src={media.public_derivative_url || media.s3_url || media.url || ''}
                               alt={media.title || 'Additional Source'}
@@ -1142,7 +1142,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                         rel="noopener noreferrer"
                         className="group relative block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-purple-500 transition-colors"
                       >
-                        {media.media_type === 'image' ? (
+                        {thumbnailUrl ? (
                           <img
                             src={thumbnailUrl}
                             alt={media.title || 'Additional Source'}

@@ -432,9 +432,9 @@ export default function VoyageDetail() {
                                 rel="noopener noreferrer"
                                 className="block aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-indigo-500 transition-colors shadow-md hover:shadow-xl"
                               >
-                                {mediaItem.media_type === 'image' ? (
+                                {mediaItem.public_derivative_url ? (
                                   <img
-                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || ''}
+                                    src={mediaItem.public_derivative_url}
                                     alt={mediaItem.title || ''}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                   />
