@@ -136,7 +136,7 @@ def people_autocomplete(q: str = Query(..., min_length=2)):
 def test_endpoint():
     return {"test": "it works", "number": 123}
 
-@router.get("/grouped-by-president")
+@router.get("/president-groups")
 def get_people_grouped_by_president(
     limit: int = Query(default=500, ge=1, le=1000),
 ) -> Dict[str, Any]:
@@ -145,7 +145,7 @@ def get_people_grouped_by_president(
     Each person may appear under multiple presidents if they sailed with multiple.
     Returns appearance counts for each person-president combination.
     """
-    LOG.info(f"grouped-by-president called with limit={limit}")
+    LOG.info(f"president-groups called with limit={limit}")
     return {"test": "endpoint called", "limit": limit}
     with db_cursor(read_only=True) as cur:
         # Get all person-president combinations with appearance counts
