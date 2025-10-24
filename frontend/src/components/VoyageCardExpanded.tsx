@@ -788,6 +788,283 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         </div>
       )}
 
+        {loadingPeople ? (
+          <p className="text-sm text-gray-500">Loading...</p>
+        ) : people.length === 0 ? (
+          <p className="text-sm text-gray-600">No people recorded for this voyage.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Crew Column */}
+            {(() => {
+              const crew = people.filter(p => p.is_crew === true);
+              return (
+                <div>
+                  <button
+                    onClick={() => setCrewCollapsed(!crewCollapsed)}
+                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-blue-50 p-2 rounded hover:bg-blue-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>Crew{crew.length > 0 && ` (${crew.length})`}</span>
+                    <span className="text-lg transition-transform" style={{ transform: crewCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                      ▼
+                    </span>
+                  </button>
+                  {!crewCollapsed && crew.length > 0 && (
+                  <ul className="space-y-2">
+                    {crew.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
+                          <span className="mt-1">•</span>
+                          <div className="flex-1 text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                          {isEditing && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder up failed:', error);
+                                    alert(`Error reordering: ${error}`);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move up"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder down failed:', error);
+                                    alert(`Error reordering: ${error}`);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move down"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => openEditPerson(p)}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
+                                title="Edit person"
+                              >
+                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    if (response.ok) {
+                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Remove failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
+                                title="Remove from voyage"
+                              >
+                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  )}
+                  {!crewCollapsed && crew.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No crew members</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Passengers & Guests Column */}
+            {(() => {
+              const passengers = people.filter(p => p.is_crew !== true);
+              return (
+                <div>
+                  <button
+                    onClick={() => setPassengersCollapsed(!passengersCollapsed)}
+                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-gray-50 p-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>Passengers & Guests{passengers.length > 0 && ` (${passengers.length})`}</span>
+                    <span className="text-lg transition-transform" style={{ transform: passengersCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                      ▼
+                    </span>
+                  </button>
+                  {!passengersCollapsed && passengers.length > 0 && (
+                  <ul className="space-y-2">
+                    {passengers.map((p) => {
+                      const bioLink = p.bio || p.wikipedia_url;
+                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
+                      return (
+                        <li key={p.person_slug} className="flex items-start gap-2 bg-gray-50 p-2 rounded">
+                          <span className="mt-1">•</span>
+                          <div className="flex-1 text-sm">
+                            <div className="font-medium">
+                              {bioLink ? (
+                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {p.full_name}
+                                </a>
+                              ) : (
+                                p.full_name
+                              )}
+                            </div>
+                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
+                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
+                          </div>
+                          {isEditing && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder up failed:', error);
+                                    alert(`Error reordering: ${error}`);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move up"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    } else {
+                                      const errorText = await response.text();
+                                      console.error('Reorder failed:', response.status, errorText);
+                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder down failed:', error);
+                                    alert(`Error reordering: ${error}`);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move down"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => openEditPerson(p)}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
+                                title="Edit person"
+                              >
+                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
+                                      { method: 'DELETE' }
+                                    );
+                                    if (response.ok) {
+                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Remove failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
+                                title="Remove from voyage"
+                              >
+                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  )}
+                  {!passengersCollapsed && passengers.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No passengers</p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
       {/* Additional Information */}
       {currentVoyage.additional_information && (
         <div className="mb-4 bg-blue-50 rounded-lg p-4">
@@ -1306,283 +1583,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           </div>
         )}
 
-        {loadingPeople ? (
-          <p className="text-sm text-gray-500">Loading...</p>
-        ) : people.length === 0 ? (
-          <p className="text-sm text-gray-600">No people recorded for this voyage.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Crew Column */}
-            {(() => {
-              const crew = people.filter(p => p.is_crew === true);
-              return (
-                <div>
-                  <button
-                    onClick={() => setCrewCollapsed(!crewCollapsed)}
-                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-blue-50 p-2 rounded hover:bg-blue-100 transition-colors flex items-center justify-between"
-                  >
-                    <span>Crew{crew.length > 0 && ` (${crew.length})`}</span>
-                    <span className="text-lg transition-transform" style={{ transform: crewCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
-                      ▼
-                    </span>
-                  </button>
-                  {!crewCollapsed && crew.length > 0 && (
-                  <ul className="space-y-2">
-                    {crew.map((p) => {
-                      const bioLink = p.bio || p.wikipedia_url;
-                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
-                      return (
-                        <li key={p.person_slug} className="flex items-start gap-2 bg-blue-50 p-2 rounded">
-                          <span className="mt-1">•</span>
-                          <div className="flex-1 text-sm">
-                            <div className="font-medium">
-                              {bioLink ? (
-                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                  {p.full_name}
-                                </a>
-                              ) : (
-                                p.full_name
-                              )}
-                            </div>
-                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
-                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
-                          </div>
-                          {isEditing && (
-                            <div className="flex gap-1">
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
-                                      { method: 'POST' }
-                                    );
-                                    if (response.ok) {
-                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
-                                      setPeople(updatedPeople);
-                                    } else {
-                                      const errorText = await response.text();
-                                      console.error('Reorder failed:', response.status, errorText);
-                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
-                                    }
-                                  } catch (error) {
-                                    console.error('Reorder up failed:', error);
-                                    alert(`Error reordering: ${error}`);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                                title="Move up"
-                              >
-                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
-                                      { method: 'POST' }
-                                    );
-                                    if (response.ok) {
-                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
-                                      setPeople(updatedPeople);
-                                    } else {
-                                      const errorText = await response.text();
-                                      console.error('Reorder failed:', response.status, errorText);
-                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
-                                    }
-                                  } catch (error) {
-                                    console.error('Reorder down failed:', error);
-                                    alert(`Error reordering: ${error}`);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                                title="Move down"
-                              >
-                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => openEditPerson(p)}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
-                                title="Edit person"
-                              >
-                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
-                                      { method: 'DELETE' }
-                                    );
-                                    if (response.ok) {
-                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-                                    }
-                                  } catch (error) {
-                                    console.error('Remove failed:', error);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
-                                title="Remove from voyage"
-                              >
-                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  )}
-                  {!crewCollapsed && crew.length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No crew members</p>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Passengers & Guests Column */}
-            {(() => {
-              const passengers = people.filter(p => p.is_crew !== true);
-              return (
-                <div>
-                  <button
-                    onClick={() => setPassengersCollapsed(!passengersCollapsed)}
-                    className="w-full text-sm font-semibold text-gray-700 mb-3 uppercase bg-gray-50 p-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-between"
-                  >
-                    <span>Passengers & Guests{passengers.length > 0 && ` (${passengers.length})`}</span>
-                    <span className="text-lg transition-transform" style={{ transform: passengersCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
-                      ▼
-                    </span>
-                  </button>
-                  {!passengersCollapsed && passengers.length > 0 && (
-                  <ul className="space-y-2">
-                    {passengers.map((p) => {
-                      const bioLink = p.bio || p.wikipedia_url;
-                      const roleToDisplay = p.capacity_role || p.role_title || p.title;
-                      return (
-                        <li key={p.person_slug} className="flex items-start gap-2 bg-gray-50 p-2 rounded">
-                          <span className="mt-1">•</span>
-                          <div className="flex-1 text-sm">
-                            <div className="font-medium">
-                              {bioLink ? (
-                                <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                  {p.full_name}
-                                </a>
-                              ) : (
-                                p.full_name
-                              )}
-                            </div>
-                            {roleToDisplay && <div className="text-gray-700">{roleToDisplay}</div>}
-                            {p.voyage_notes && <div className="text-gray-600 text-xs mt-1">{p.voyage_notes}</div>}
-                          </div>
-                          {isEditing && (
-                            <div className="flex gap-1">
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
-                                      { method: 'POST' }
-                                    );
-                                    if (response.ok) {
-                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
-                                      setPeople(updatedPeople);
-                                    } else {
-                                      const errorText = await response.text();
-                                      console.error('Reorder failed:', response.status, errorText);
-                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
-                                    }
-                                  } catch (error) {
-                                    console.error('Reorder up failed:', error);
-                                    alert(`Error reordering: ${error}`);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                                title="Move up"
-                              >
-                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
-                                      { method: 'POST' }
-                                    );
-                                    if (response.ok) {
-                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
-                                      setPeople(updatedPeople);
-                                    } else {
-                                      const errorText = await response.text();
-                                      console.error('Reorder failed:', response.status, errorText);
-                                      alert(`Failed to reorder: ${response.status} ${errorText}`);
-                                    }
-                                  } catch (error) {
-                                    console.error('Reorder down failed:', error);
-                                    alert(`Error reordering: ${error}`);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
-                                title="Move down"
-                              >
-                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => openEditPerson(p)}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
-                                title="Edit person"
-                              >
-                                <svg className="w-3 h-3 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(
-                                      `/api/curator/people/unlink-from-voyage?person_slug=${encodeURIComponent(p.person_slug)}&voyage_slug=${encodeURIComponent(voyage.voyage_slug)}`,
-                                      { method: 'DELETE' }
-                                    );
-                                    if (response.ok) {
-                                      api.getVoyagePeople(voyage.voyage_slug).then(setPeople);
-                                    }
-                                  } catch (error) {
-                                    console.error('Remove failed:', error);
-                                  }
-                                }}
-                                className="w-6 h-6 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 transition-colors"
-                                title="Remove from voyage"
-                              >
-                                <svg className="w-3 h-3 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  )}
-                  {!passengersCollapsed && passengers.length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No passengers</p>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        )}
       </div>
 
       {/* Media Upload Dialog - Sources */}

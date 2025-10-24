@@ -771,6 +771,134 @@ const VoyageEditor: React.FC = () => {
           </div>
         </div>
 
+        {/* Passengers */}
+        <div className="pt-4 border-t border-gray-200">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Passengers</h4>
+
+          {/* Search/Add Interface */}
+          <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+            <label className="block text-xs font-medium text-gray-600 mb-2">Search and add passengers:</label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                searchPeople(e.target.value);
+              }}
+              placeholder="Type to search existing people or leave blank to see all..."
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
+            />
+
+            {/* Search Results Dropdown */}
+            {searchResults.length > 0 && (
+              <div className="mt-2 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white">
+                {searchResults.map((person) => (
+                  <div
+                    key={person.person_slug}
+                    onClick={() => {
+                      addExistingPassenger(person);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
+                  >
+                    <div className="font-medium text-sm">{person.full_name}</div>
+                    {person.role_title && (
+                      <div className="text-xs text-gray-500">{person.role_title}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Create New Person */}
+            <div className="mt-3 pt-3 border-t border-gray-300">
+              <label className="block text-xs font-medium text-gray-600 mb-2">Or create new person:</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={newPassengerData.full_name}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, full_name: e.target.value})}
+                  placeholder="Full Name *"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="text"
+                  value={newPassengerData.role_title}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
+                  placeholder="Role/Title (e.g., Secretary of State, Senator)"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="new-is-crew"
+                    checked={newPassengerData.is_crew}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked, crew_role: e.target.checked ? newPassengerData.crew_role : ''})}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="new-is-crew" className="text-sm text-gray-700">Is Crew</label>
+                </div>
+                {newPassengerData.is_crew && (
+                  <input
+                    type="text"
+                    value={newPassengerData.crew_role}
+                    onChange={(e) => setNewPassengerData({...newPassengerData, crew_role: e.target.value})}
+                    placeholder="Crew Role (e.g., Captain, Steward, Cook)"
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                )}
+                <input
+                  type="url"
+                  value={newPassengerData.wikipedia_url}
+                  onChange={(e) => setNewPassengerData({...newPassengerData, wikipedia_url: e.target.value})}
+                  placeholder="Wikipedia/Bio URL (optional)"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                />
+              </div>
+              <button
+                onClick={createAndAddPassenger}
+                disabled={!newPassengerData.full_name.trim()}
+                className="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Create & Add
+              </button>
+            </div>
+          </div>
+
+          {/* Selected Passengers List */}
+          {selectedPassengers.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No passengers added yet</p>
+          ) : (
+            <div className="space-y-2">
+              {selectedPassengers.map((passenger, index) => (
+                <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 group hover:bg-gray-100">
+                  <span className="flex-1 text-sm font-medium text-gray-700">
+                    {passenger.full_name}
+                    {passenger.role_title && <span className="text-gray-500 ml-2">({passenger.role_title})</span>}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`crew-${index}`}
+                      checked={passenger.is_crew}
+                      onChange={(e) => updatePassengerCrew(index, e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={`crew-${index}`} className="text-xs text-gray-600">Crew</label>
+                  </div>
+                  <button
+                    onClick={() => removePassenger(index)}
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center text-lg font-bold transition-colors"
+                    title="Remove passenger"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {/* Additional Information */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Additional Information</label>
@@ -1051,135 +1179,6 @@ const VoyageEditor: React.FC = () => {
               <p className="text-xs text-gray-500 mt-1">Upload PDFs, images, or documents as additional source materials</p>
             </div>
           </div>
-        </div>
-
-        {/* Passengers */}
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">Passengers</h4>
-
-          {/* Search/Add Interface */}
-          <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-            <label className="block text-xs font-medium text-gray-600 mb-2">Search and add passengers:</label>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                searchPeople(e.target.value);
-              }}
-              placeholder="Type to search existing people or leave blank to see all..."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
-            />
-
-            {/* Search Results Dropdown */}
-            {searchResults.length > 0 && (
-              <div className="mt-2 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white">
-                {searchResults.map((person) => (
-                  <div
-                    key={person.person_slug}
-                    onClick={() => {
-                      addExistingPassenger(person);
-                      setSearchQuery('');
-                      setSearchResults([]);
-                    }}
-                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
-                  >
-                    <div className="font-medium text-sm">{person.full_name}</div>
-                    {person.role_title && (
-                      <div className="text-xs text-gray-500">{person.role_title}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Quick Create New Person */}
-            <div className="mt-3 pt-3 border-t border-gray-300">
-              <label className="block text-xs font-medium text-gray-600 mb-2">Or create new person:</label>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={newPassengerData.full_name}
-                  onChange={(e) => setNewPassengerData({...newPassengerData, full_name: e.target.value})}
-                  placeholder="Full Name *"
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-                <input
-                  type="text"
-                  value={newPassengerData.role_title}
-                  onChange={(e) => setNewPassengerData({...newPassengerData, role_title: e.target.value})}
-                  placeholder="Role/Title (e.g., Secretary of State, Senator)"
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="new-is-crew"
-                    checked={newPassengerData.is_crew}
-                    onChange={(e) => setNewPassengerData({...newPassengerData, is_crew: e.target.checked, crew_role: e.target.checked ? newPassengerData.crew_role : ''})}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="new-is-crew" className="text-sm text-gray-700">Is Crew</label>
-                </div>
-                {newPassengerData.is_crew && (
-                  <input
-                    type="text"
-                    value={newPassengerData.crew_role}
-                    onChange={(e) => setNewPassengerData({...newPassengerData, crew_role: e.target.value})}
-                    placeholder="Crew Role (e.g., Captain, Steward, Cook)"
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                )}
-                <input
-                  type="url"
-                  value={newPassengerData.wikipedia_url}
-                  onChange={(e) => setNewPassengerData({...newPassengerData, wikipedia_url: e.target.value})}
-                  placeholder="Wikipedia/Bio URL (optional)"
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-              </div>
-              <button
-                onClick={createAndAddPassenger}
-                disabled={!newPassengerData.full_name.trim()}
-                className="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                Create & Add
-              </button>
-            </div>
-          </div>
-
-          {/* Selected Passengers List */}
-          {selectedPassengers.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No passengers added yet</p>
-          ) : (
-            <div className="space-y-2">
-              {selectedPassengers.map((passenger, index) => (
-                <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 group hover:bg-gray-100">
-                  <span className="flex-1 text-sm font-medium text-gray-700">
-                    {passenger.full_name}
-                    {passenger.role_title && <span className="text-gray-500 ml-2">({passenger.role_title})</span>}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={`crew-${index}`}
-                      checked={passenger.is_crew}
-                      onChange={(e) => updatePassengerCrew(index, e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor={`crew-${index}`} className="text-xs text-gray-600">Crew</label>
-                  </div>
-                  <button
-                    onClick={() => removePassenger(index)}
-                    className="text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center text-lg font-bold transition-colors"
-                    title="Remove passenger"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Footer note */}
