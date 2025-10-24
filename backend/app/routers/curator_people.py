@@ -190,15 +190,23 @@ def link_person_to_voyage(link: VoyagePassengerLink) -> Dict[str, str]:
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail=f"Voyage '{link.voyage_slug}' not found")
 
+            # Get max sort_order for this voyage
+            cur.execute("""
+                SELECT COALESCE(MAX(sort_order), -1) + 1 as next_order
+                FROM sequoia.voyage_passengers
+                WHERE voyage_slug = %s
+            """, (link.voyage_slug,))
+            next_order = cur.fetchone()['next_order']
+
             # Insert or update the link
             cur.execute("""
-                INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, capacity_role, notes, is_crew)
-                VALUES (%(voyage_slug)s, %(person_slug)s, %(capacity_role)s, %(notes)s, %(is_crew)s)
+                INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, capacity_role, notes, is_crew, sort_order)
+                VALUES (%(voyage_slug)s, %(person_slug)s, %(capacity_role)s, %(notes)s, %(is_crew)s, %(sort_order)s)
                 ON CONFLICT (voyage_slug, person_slug)
                 DO UPDATE SET
                     capacity_role = EXCLUDED.capacity_role, is_crew = EXCLUDED.is_crew,
                     notes = EXCLUDED.notes
-            """, link.model_dump())
+            """, {**link.model_dump(), 'sort_order': next_order})
 
             LOG.info(f"Linked person {link.person_slug} to voyage {link.voyage_slug}")
 
@@ -351,4 +359,88 @@ def check_similar_people(full_name: str) -> List[Dict[str, Any]]:
 
     except Exception as e:
         LOG.error(f"Error checking similar people: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.post("/reorder-passenger")
+def reorder_passenger(
+    voyage_slug: str,
+    person_slug: str,
+    direction: str  # "up" or "down"
+) -> Dict[str, Any]:
+    """Move a passenger up or down in the sort order"""
+    try:
+        with db_cursor() as cur:
+            # Get current passenger's sort_order
+            cur.execute("""
+                SELECT sort_order
+                FROM sequoia.voyage_passengers
+                WHERE voyage_slug = %s AND person_slug = %s
+            """, (voyage_slug, person_slug))
+            
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Passenger not found")
+            
+            current_order = row['sort_order'] or 0
+            
+            if direction == "up":
+                # Find the passenger with the next lower sort_order
+                cur.execute("""
+                    SELECT person_slug, sort_order
+                    FROM sequoia.voyage_passengers
+                    WHERE voyage_slug = %s AND sort_order < %s
+                    ORDER BY sort_order DESC
+                    LIMIT 1
+                """, (voyage_slug, current_order))
+                
+                swap_row = cur.fetchone()
+                if swap_row:
+                    # Swap sort_order values
+                    cur.execute("""
+                        UPDATE sequoia.voyage_passengers
+                        SET sort_order = %s
+                        WHERE voyage_slug = %s AND person_slug = %s
+                    """, (swap_row['sort_order'], voyage_slug, person_slug))
+                    
+                    cur.execute("""
+                        UPDATE sequoia.voyage_passengers
+                        SET sort_order = %s
+                        WHERE voyage_slug = %s AND person_slug = %s
+                    """, (current_order, voyage_slug, swap_row['person_slug']))
+            
+            elif direction == "down":
+                # Find the passenger with the next higher sort_order
+                cur.execute("""
+                    SELECT person_slug, sort_order
+                    FROM sequoia.voyage_passengers
+                    WHERE voyage_slug = %s AND sort_order > %s
+                    ORDER BY sort_order ASC
+                    LIMIT 1
+                """, (voyage_slug, current_order))
+                
+                swap_row = cur.fetchone()
+                if swap_row:
+                    # Swap sort_order values
+                    cur.execute("""
+                        UPDATE sequoia.voyage_passengers
+                        SET sort_order = %s
+                        WHERE voyage_slug = %s AND person_slug = %s
+                    """, (swap_row['sort_order'], voyage_slug, person_slug))
+                    
+                    cur.execute("""
+                        UPDATE sequoia.voyage_passengers
+                        SET sort_order = %s
+                        WHERE voyage_slug = %s AND person_slug = %s
+                    """, (current_order, voyage_slug, swap_row['person_slug']))
+            
+            else:
+                raise HTTPException(status_code=400, detail="Direction must be 'up' or 'down'")
+        
+        return {"message": "Passenger reordered successfully"}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error reordering passenger: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

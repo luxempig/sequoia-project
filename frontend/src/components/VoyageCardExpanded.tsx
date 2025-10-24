@@ -33,6 +33,11 @@ const formatTimeInput = (value: string): string => {
   if (numbers.length <= 2) {
     const hours = Math.min(23, parseInt(numbers) || 0);
     return hours.toString().padStart(numbers.length, '0');
+  } else if (numbers.length === 3) {
+    // Don't pad minutes yet - let user continue typing
+    const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
+    const mins = parseInt(numbers.slice(2, 3)) || 0;
+    return `${hours.toString().padStart(2, '0')}:${mins}`;
   } else {
     const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
     const mins = Math.min(59, parseInt(numbers.slice(2, 4)) || 0);
@@ -1333,6 +1338,50 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           {isEditing && (
                             <div className="flex gap-1">
                               <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder up failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move up"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder down failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move down"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                              <button
                                 onClick={() => openEditPerson(p)}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"
                                 title="Edit person"
@@ -1404,6 +1453,50 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                           </div>
                           {isEditing && (
                             <div className="flex gap-1">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=up`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder up failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move up"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(
+                                      `/api/curator/people/reorder-passenger?voyage_slug=${encodeURIComponent(voyage.voyage_slug)}&person_slug=${encodeURIComponent(p.person_slug)}&direction=down`,
+                                      { method: 'POST' }
+                                    );
+                                    if (response.ok) {
+                                      const updatedPeople = await api.getVoyagePeople(voyage.voyage_slug);
+                                      setPeople(updatedPeople);
+                                    }
+                                  } catch (error) {
+                                    console.error('Reorder down failed:', error);
+                                  }
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                                title="Move down"
+                              >
+                                <svg className="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
                               <button
                                 onClick={() => openEditPerson(p)}
                                 className="w-6 h-6 flex items-center justify-center rounded bg-blue-100 hover:bg-blue-200 transition-colors"

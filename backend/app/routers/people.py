@@ -23,11 +23,11 @@ def people_for_voyage(voyage_slug: str) -> List[Dict[str, Any]]:
     with db_cursor(read_only=True) as cur:
         cur.execute(
             """
-            SELECT p.*, vp.capacity_role, vp.notes AS voyage_notes, vp.is_crew
+            SELECT p.*, vp.capacity_role, vp.notes AS voyage_notes, vp.is_crew, vp.sort_order
             FROM sequoia.voyage_passengers vp
             JOIN sequoia.people p ON p.person_slug = vp.person_slug
             WHERE vp.voyage_slug = %s
-            ORDER BY p.full_name
+            ORDER BY vp.sort_order, p.full_name
             """,
             (voyage_slug,)
         )

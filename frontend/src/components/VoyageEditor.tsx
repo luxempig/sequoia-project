@@ -26,6 +26,11 @@ const formatTimeInput = (value: string): string => {
   if (numbers.length <= 2) {
     const hours = Math.min(23, parseInt(numbers) || 0);
     return hours.toString().padStart(numbers.length, '0');
+  } else if (numbers.length === 3) {
+    // Don't pad minutes yet - let user continue typing
+    const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
+    const mins = parseInt(numbers.slice(2, 3)) || 0;
+    return `${hours.toString().padStart(2, '0')}:${mins}`;
   } else {
     const hours = Math.min(23, parseInt(numbers.slice(0, 2)) || 0);
     const mins = Math.min(59, parseInt(numbers.slice(2, 4)) || 0);
