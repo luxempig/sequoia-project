@@ -460,15 +460,10 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   const handleMediaClick = (media: MediaItem) => {
     // Prefer high-quality original (s3_url) over thumbnail (public_derivative_url)
     const url = media.s3_url || media.url || media.public_derivative_url || '';
-    const mediaType = media.media_type?.toLowerCase();
 
-    // Check if it's an image by URL extension or media_type
-    const isImage = looksLikeImage(url) || mediaType === 'image' || mediaType === 'photo';
-
-    if (isImage && url) {
+    // Open all media in lightbox (not just images)
+    if (url) {
       setLightboxSrc(url);
-    } else if (looksLikeVideo(url) || url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
 
