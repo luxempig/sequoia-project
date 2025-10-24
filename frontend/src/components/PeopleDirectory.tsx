@@ -10,6 +10,7 @@ const PeopleDirectory: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [filteredPeople, setFilteredPeople] = useState<Person[]>([]);
+  const [groupBy, setGroupBy] = useState<'none' | 'role' | 'president'>('none');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +38,8 @@ const PeopleDirectory: React.FC = () => {
       const filtered = people.filter(person =>
         person.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         person.role_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.capacity_role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         person.organization?.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredPeople(filtered);
@@ -106,63 +109,128 @@ const PeopleDirectory: React.FC = () => {
         )}
 
         <div className="mt-6 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="max-w-md">
-            <label htmlFor="search" className="sr-only">Search people</label>
-            <input
-              type="text"
-              id="search"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              placeholder="Search by name, role, or organization..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="search" className="sr-only">Search people</label>
+              <input
+                type="text"
+                id="search"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                placeholder="Search by name, crew member role, or title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="groupBy" className="sr-only">Group by</label>
+              <select
+                id="groupBy"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as 'none' | 'role' | 'president')}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              >
+                <option value="none">No Grouping</option>
+                <option value="role">Group by Role/Title</option>
+                <option value="president">Group by Most Frequent President/Owner</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* People Grid */}
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredPeople.map((person) => (
-            <Link
-              key={person.person_slug}
-              to={`/people/${person.person_slug}`}
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-600 font-medium text-sm">
-                        {person.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </span>
+        {groupBy === 'none' ? (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredPeople.map((person) => (
+              <Link
+                key={person.person_slug}
+                to={`/people/${person.person_slug}`}
+                className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
+              >
+                <div className="p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-600 font-medium text-sm">
+                          {person.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900">
-                        {person.full_name}
-                      </span>
-                    </div>
-                    {person.role_title && (
-                      <p className="text-sm text-gray-500">{person.role_title}</p>
-                    )}
-                    {person.organization && (
-                      <p className="text-xs text-gray-400 mt-1">{person.organization}</p>
-                    )}
-                    <div className="mt-2 flex items-center space-x-2 text-xs text-gray-400">
-                      {person.birth_year && (
-                        <span>Born: {person.birth_year}</span>
+                    <div className="ml-4 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900">
+                          {person.full_name}
+                        </span>
+                      </div>
+                      {person.role_title && (
+                        <p className="text-sm text-gray-500">{person.role_title}</p>
                       )}
-                      {person.birth_year && person.death_year && <span>•</span>}
-                      {person.death_year && (
-                        <span>Died: {person.death_year}</span>
+                      {person.organization && (
+                        <p className="text-xs text-gray-400 mt-1">{person.organization}</p>
                       )}
+                      <div className="mt-2 flex items-center space-x-2 text-xs text-gray-400">
+                        {person.birth_year && (
+                          <span>Born: {person.birth_year}</span>
+                        )}
+                        {person.birth_year && person.death_year && <span>•</span>}
+                        {person.death_year && (
+                          <span>Died: {person.death_year}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
+              </Link>
+            ))}
+          </div>
+        ) : groupBy === 'role' ? (
+          (() => {
+            // Group by role_title or capacity_role
+            const grouped = filteredPeople.reduce<Record<string, Person[]>>((acc, person) => {
+              const role = person.role_title || person.capacity_role || 'Unknown Role';
+              if (!acc[role]) acc[role] = [];
+              acc[role].push(person);
+              return acc;
+            }, {});
+
+            return (
+              <div className="mt-6 space-y-6">
+                {Object.entries(grouped)
+                  .sort(([, a], [, b]) => b.length - a.length)
+                  .map(([role, persons]) => (
+                    <div key={role} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        {role} ({persons.length})
+                      </h3>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {persons.map((person) => (
+                          <Link
+                            key={person.person_slug}
+                            to={`/people/${person.person_slug}`}
+                            className="flex items-center p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <span className="text-gray-600 font-medium text-xs">
+                                {person.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              </span>
+                            </div>
+                            <span className="ml-3 text-sm font-medium text-gray-900 truncate">
+                              {person.full_name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
               </div>
-            </Link>
-          ))}
-        </div>
+            );
+          })()
+        ) : (
+          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-sm text-yellow-800">
+              Grouping by president/owner requires additional data. This feature is coming soon.
+            </p>
+          </div>
+        )}
 
         {filteredPeople.length === 0 && !loading && (
           <div className="text-center py-12">
