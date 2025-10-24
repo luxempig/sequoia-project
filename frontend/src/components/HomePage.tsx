@@ -60,14 +60,14 @@ export default function HomePage() {
             </Link>
 
             <Link
-              to="/curators"
+              to="/media-explorer"
               className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                For Curators
+                Media Explorer
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Edit and manage voyage data, media, and passenger information through the curator interface
+                Browse and manage the media library with advanced search and organization tools
               </p>
             </Link>
           </div>

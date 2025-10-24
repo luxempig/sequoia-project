@@ -617,14 +617,12 @@ const MediaExplorer: React.FC = () => {
                   {selectedFile.type === "pdf" && (
                     <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
                       <span className="text-8xl">📄</span>
-                      <p className="text-sm text-gray-600 mt-4">PDF Document</p>
                     </div>
                   )}
 
                   {selectedFile.type === "document" && (
                     <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
                       <span className="text-8xl">📋</span>
-                      <p className="text-sm text-gray-600 mt-4">Document</p>
                     </div>
                   )}
                 </div>
@@ -702,13 +700,13 @@ const MediaExplorer: React.FC = () => {
                       onClick={() => handleDetachFromVoyages(selectedFile)}
                       className="block w-full bg-orange-500 text-white text-center px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
                     >
-                      🗃️ Detach from All Voyages
+                      Detach from All Voyages
                     </button>
                     <button
                       onClick={() => handleDeleteCompletely(selectedFile)}
                       className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      🗑️ Detach and Delete from Media Library
+                      Detach and Delete from Media Library
                     </button>
                   </div>
                 </div>

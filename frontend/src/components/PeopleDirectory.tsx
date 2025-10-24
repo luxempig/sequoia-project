@@ -13,6 +13,10 @@ const PeopleDirectory: React.FC = () => {
   const [groupBy, setGroupBy] = useState<'none' | 'role' | 'president'>('none');
   const [presidentGroupedData, setPresidentGroupedData] = useState<any>(null);
   const [loadingPresidentData, setLoadingPresidentData] = useState(false);
+  const [collapsedPresidents, setCollapsedPresidents] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem('peoplePresidentCollapsed');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -151,7 +155,7 @@ const PeopleDirectory: React.FC = () => {
               >
                 <option value="none">No Grouping</option>
                 <option value="role">Group by Role/Title</option>
-                <option value="president">Group by Most Frequent President/Owner</option>
+                <option value="president">Group by President/Owner</option>
               </select>
             </div>
           </div>
@@ -266,23 +270,47 @@ const PeopleDirectory: React.FC = () => {
                 })).filter((group: any) => group.people.length > 0);
               }
 
+              const togglePresidentCollapse = (presidentSlug: string) => {
+                setCollapsedPresidents(prev => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(presidentSlug)) {
+                    newSet.delete(presidentSlug);
+                  } else {
+                    newSet.add(presidentSlug);
+                  }
+                  sessionStorage.setItem('peoplePresidentCollapsed', JSON.stringify(Array.from(newSet)));
+                  return newSet;
+                });
+              };
+
               return (
                 <div className="mt-6 space-y-6">
-                  {groupedData.map((group: any) => (
-                    <div key={group.president_slug} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        {group.president_name}
-                        {group.president_party && (
-                          <span className="ml-2 text-sm font-normal text-gray-500">
-                            ({group.president_party})
+                  {groupedData.map((group: any) => {
+                    const isCollapsed = collapsedPresidents.has(group.president_slug);
+                    return (
+                      <div key={group.president_slug} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                        <button
+                          onClick={() => togglePresidentCollapse(group.president_slug)}
+                          className="w-full text-left text-lg font-semibold text-gray-900 mb-4 hover:text-gray-700 transition-colors flex items-center justify-between"
+                        >
+                          <span>
+                            {group.president_name}
+                            {group.president_party && (
+                              <span className="ml-2 text-sm font-normal text-gray-500">
+                                ({group.president_party})
+                              </span>
+                            )}
+                            <span className="ml-2 text-sm font-normal text-gray-500">
+                              ({group.people.length} {group.people.length === 1 ? 'person' : 'people'})
+                            </span>
                           </span>
-                        )}
-                        <span className="ml-2 text-sm font-normal text-gray-500">
-                          ({group.people.length} {group.people.length === 1 ? 'person' : 'people'})
-                        </span>
-                      </h3>
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {group.people.map((person: any) => (
+                          <span className="text-lg transition-transform" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                            ▼
+                          </span>
+                        </button>
+                        {!isCollapsed && (
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {group.people.map((person: any) => (
                           <Link
                             key={`${person.person_slug}-${group.president_slug}`}
                             to={`/people/${person.person_slug}`}
@@ -302,10 +330,12 @@ const PeopleDirectory: React.FC = () => {
                               </span>
                             </div>
                           </Link>
-                        ))}
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               );
             })()
