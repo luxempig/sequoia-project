@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
-import { Voyage, MediaItem, President } from "../types";
+import { Voyage, MediaItem } from "../types";
 import { api } from "../api";
 import { looksLikeImage, looksLikeVideo } from "../utils/media";
 
@@ -34,74 +34,11 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(true);
-  const filterDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Timeline-specific filters (separate from list view)
-  const [presidents, setPresidents] = useState<President[]>([]);
-  const [selectedPresidents, setSelectedPresidents] = useState<string[]>(() => {
-    const saved = sessionStorage.getItem('timelinePresidentFilter');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [pendingPresidents, setPendingPresidents] = useState<string[]>([]);
-  const [appliedPresidents, setAppliedPresidents] = useState<string[]>([]);
-  const [startDateFilter, setStartDateFilter] = useState<string>("");
-  const [endDateFilter, setEndDateFilter] = useState<string>("");
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
-
-  // Load presidents and initialize filter to all selected
-  useEffect(() => {
-    api.listPresidents().then(pres => {
-      setPresidents(pres);
-      // Initialize to all presidents selected if no saved filter
-      const saved = sessionStorage.getItem('timelinePresidentFilter');
-      if (!saved) {
-        const allSlugs = pres.map(p => p.president_slug);
-        setSelectedPresidents(allSlugs);
-        setAppliedPresidents(allSlugs);
-        setPendingPresidents(allSlugs);
-      } else {
-        const savedSlugs = JSON.parse(saved);
-        setAppliedPresidents(savedSlugs);
-        setPendingPresidents(savedSlugs);
-      }
-    }).catch(() => setPresidents([]));
-  }, []);
-
-  // Filter voyages by selected presidents (using appliedPresidents which updates on Apply button click)
+  // Filter voyages - show all voyages with start_date
   const filteredVoyages = useMemo(() => {
-    return voyages.filter(voyage => {
-      if (!voyage.start_date) return false;
-
-      // Filter by applied presidents
-      if (appliedPresidents.length > 0) {
-        const voyagePresident = voyage.president_slug_from_voyage;
-        if (!voyagePresident || !appliedPresidents.includes(voyagePresident)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [voyages, appliedPresidents]);
-
-  // Save applied filter to sessionStorage
-  useEffect(() => {
-    if (appliedPresidents.length > 0) {
-      sessionStorage.setItem('timelinePresidentFilter', JSON.stringify(appliedPresidents));
-    }
-  }, [appliedPresidents]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!filterDropdownOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
-        setFilterDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside, true);
-    return () => document.removeEventListener("mousedown", handleClickOutside, true);
-  }, [filterDropdownOpen]);
+    return voyages.filter(voyage => voyage.start_date);
+  }, [voyages]);
 
   // Organize voyages by year/month/day
   useEffect(() => {
@@ -490,112 +427,15 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         <h2 className="text-2xl font-bold text-red-700" style={{ fontFamily: 'serif' }}>timeline</h2>
       </div>
 
-      {/* Timeline Filters */}
-      <div className="mb-4 bg-white border-2 border-gray-400 rounded-lg p-4 shadow-md">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter Timeline</h3>
-        <div className="flex items-end gap-4">
-          {/* President/Owner Multi-Select Filter */}
-          <div ref={filterDropdownRef} className="flex-1 relative">
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              President/Owner
-            </label>
-            <button
-              onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between"
-            >
-              <span className="text-gray-900">
-                {pendingPresidents.length === 0
-                  ? 'None selected'
-                  : pendingPresidents.length === presidents.length
-                  ? 'Presidents/Owners'
-                  : `${pendingPresidents.length} selected`}
-              </span>
-              <span>▾</span>
-            </button>
-
-            {filterDropdownOpen && (
-              <div className="absolute z-20 mt-1 w-full bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-80 overflow-y-auto">
-                <div className="p-3 border-b border-gray-200 flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-900">Select Presidents/Owners</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setPendingPresidents(presidents.map(p => p.president_slug))}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Select All
-                    </button>
-                    <span className="text-gray-300">|</span>
-                    <button
-                      onClick={() => setPendingPresidents([])}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Deselect All
-                    </button>
-                  </div>
-                </div>
-                <div className="p-2">
-                  {presidents.map(president => {
-                    const isSelected = pendingPresidents.includes(president.president_slug);
-                    return (
-                      <label
-                        key={president.president_slug}
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setPendingPresidents([...pendingPresidents, president.president_slug]);
-                            } else {
-                              setPendingPresidents(pendingPresidents.filter(s => s !== president.president_slug));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          {president.full_name}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Apply Filter Button */}
-          <button
-            onClick={() => {
-              setAppliedPresidents(pendingPresidents);
-              setSelectedPresidents(pendingPresidents);
-              setFilterDropdownOpen(false);
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors text-sm"
-          >
-            Apply Filter
-          </button>
-
-          {/* Clear Filter Button */}
-          {appliedPresidents.length !== presidents.length && (
-            <button
-              onClick={() => {
-                const allSlugs = presidents.map(p => p.president_slug);
-                setPendingPresidents(allSlugs);
-                setAppliedPresidents(allSlugs);
-                setSelectedPresidents(allSlugs);
-              }}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors text-sm"
-            >
-              Clear Filter
-            </button>
-          )}
-        </div>
-
-        {/* Filter Summary */}
-        <div className="mt-3 text-xs text-gray-600">
-          Showing {filteredVoyages.length} of {voyages.length} voyages
-        </div>
+      {/* Back to List View */}
+      <div className="mb-4">
+        <Link
+          to="/list"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-400 rounded-lg shadow-md hover:bg-gray-50 transition-colors text-gray-700 font-medium"
+        >
+          <span className="text-lg">←</span>
+          <span>Back to List View</span>
+        </Link>
       </div>
 
       {/* Current Date Display */}
