@@ -219,7 +219,13 @@ const PeopleDirectory: React.FC = () => {
             return (
               <div className="mt-6 space-y-6">
                 {Object.entries(grouped)
-                  .sort(([, a], [, b]) => b.length - a.length)
+                  .sort(([roleA, a], [roleB, b]) => {
+                    // Put "Unknown Role" at the bottom
+                    if (roleA === 'Unknown Role') return 1;
+                    if (roleB === 'Unknown Role') return -1;
+                    // Sort rest by count descending
+                    return b.length - a.length;
+                  })
                   .map(([role, persons]) => (
                     <div key={role} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">

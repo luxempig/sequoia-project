@@ -573,14 +573,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
             Clear Filter
           </button>
         )}
-
-        <Link
-          to="/list"
-          className="inline-flex items-center gap-2 px-3 py-2 bg-white border-2 border-gray-400 rounded-lg shadow-md hover:bg-gray-50 transition-colors text-gray-700 font-medium text-sm ml-auto"
-        >
-          <span>←</span>
-          <span>Back to List</span>
-        </Link>
       </div>
 
       {/* Current Date Display */}
