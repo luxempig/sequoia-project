@@ -12,15 +12,16 @@ Parse voyage markdown files from Google Docs using Claude API and intelligently 
 
 ## Setup
 
-1. Add your Anthropic API key to `.env`:
-```bash
-echo 'ANTHROPIC_API_KEY=your-api-key-here' >> ../backend/.env
-```
+1. API key is already configured in `.env` as `ANTHROPIC_API_KEY`
 
 2. Install required packages (if not already installed):
 ```bash
 pip install anthropic psycopg2-binary python-dotenv
 ```
+
+3. **For Local Testing**: Dry-run mode works without database access. The script will show what would be created but skip passenger deduplication.
+
+4. **For Production Use**: Run the script on the EC2 server where it can access the RDS database for full passenger deduplication.
 
 ## Usage
 

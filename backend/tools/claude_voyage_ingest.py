@@ -13,12 +13,15 @@ import json
 import re
 import argparse
 from typing import Dict, List, Optional
+from pathlib import Path
 from dotenv import load_dotenv
 import anthropic
 import psycopg2
 from psycopg2.extras import execute_values
 
-load_dotenv()
+# Load .env from backend directory
+backend_dir = Path(__file__).parent.parent
+load_dotenv(backend_dir / '.env')
 
 # Database connection
 def get_db_connection():
@@ -207,7 +210,7 @@ Return ONLY valid JSON, no other text."""
 
     try:
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-opus-4-1-20250805",
             max_tokens=4096,
             messages=[{
                 "role": "user",
@@ -235,8 +238,32 @@ Return ONLY valid JSON, no other text."""
 def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
     """Insert parsed voyage data into database with passenger deduplication"""
 
-    conn = get_db_connection()
-    conn.autocommit = False
+    try:
+        conn = get_db_connection()
+        conn.autocommit = False
+    except Exception as e:
+        if dry_run:
+            print(f"\n⚠ Cannot connect to database (expected for local dry-run): {e}")
+            print("\n" + "="*60)
+            print("DRY RUN MODE - DATABASE NOT AVAILABLE")
+            print("="*60)
+            # Show what would be created without database access
+            voyage_data = parsed_data['voyage']
+            passengers_data = parsed_data.get('passengers', [])
+
+            start_date = voyage_data['start_date']
+            title_slug = slugify(voyage_data.get('title', ''))[:30]
+            voyage_slug = f"{start_date}-{title_slug}" if title_slug else start_date
+
+            print(f"\nWould create voyage: {voyage_slug}")
+            print(f"  Title: {voyage_data.get('title')}")
+            print(f"  Date: {voyage_data['start_date']} to {voyage_data.get('end_date', 'same day')}")
+            print(f"\nWould process {len(passengers_data)} passengers (deduplication requires database)")
+            for passenger in passengers_data:
+                print(f"  • {passenger['full_name']} ({passenger.get('role', 'no role')})")
+            return voyage_slug
+        else:
+            raise
 
     try:
         cur = conn.cursor()
