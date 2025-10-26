@@ -949,18 +949,6 @@ const VoyageEditor: React.FC = () => {
           />
         </div>
 
-        {/* Internal Notes */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Internal Notes</label>
-          <textarea
-            value={voyage.notes_internal || ''}
-            onChange={(e) => updateField('notes_internal', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-            rows={2}
-            placeholder="Internal notes (not shown publicly)..."
-          />
-        </div>
-
         {/* Public Notes */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
@@ -1318,6 +1306,18 @@ const VoyageEditor: React.FC = () => {
               <p className="text-xs text-gray-500 mt-1">Upload PDFs, images, or documents as additional source materials</p>
             </div>
           </div>
+        </div>
+
+        {/* Curator Notes */}
+        <div className="mb-4 mt-6 pt-6 border-t-2 border-gray-300 bg-gray-50 rounded-lg p-4">
+          <label className="block text-sm font-medium text-gray-800 mb-1">Curator Notes</label>
+          <textarea
+            value={voyage.notes_internal || ''}
+            onChange={(e) => updateField('notes_internal', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            rows={3}
+            placeholder="Internal notes for curators (not shown publicly)..."
+          />
         </div>
 
         {/* Footer note */}

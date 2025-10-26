@@ -1178,25 +1178,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         </div>
       )}
 
-      {/* Internal Notes */}
-      {(isEditing || currentVoyage.notes_internal) && (
-        <div className="mb-4 bg-gray-50 rounded-lg p-4">
-          <h4 className="font-semibold text-sm mb-2">Internal Notes</h4>
-          {isEditing ? (
-            <textarea
-              value={currentVoyage.notes_internal || ''}
-              onChange={(e) => updateField('notes_internal', e.target.value)}
-              className="w-full border rounded px-2 py-1 text-sm"
-              rows={2}
-            />
-          ) : (
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {currentVoyage.notes_internal}
-            </p>
-          )}
-        </div>
-      )}
-
       {/* Public Notes */}
       {(isEditing || currentVoyage.notes) && (
         <div className="mb-4 bg-green-50 rounded-lg p-4">
@@ -2190,6 +2171,26 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
             />
           </div>
+        </div>
+      )}
+
+      {/* Curator Notes */}
+      {(isEditing || currentVoyage.notes_internal) && (
+        <div className="mt-6 pt-6 border-t-2 border-gray-300 bg-gray-50 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-2 text-gray-800">Curator Notes</h4>
+          {isEditing ? (
+            <textarea
+              value={currentVoyage.notes_internal || ''}
+              onChange={(e) => updateField('notes_internal', e.target.value)}
+              className="w-full border rounded px-2 py-1 text-sm"
+              rows={3}
+              placeholder="Internal notes for curators (not shown publicly)"
+            />
+          ) : (
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {currentVoyage.notes_internal}
+            </p>
+          )}
         </div>
       )}
     </div>
