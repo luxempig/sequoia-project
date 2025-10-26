@@ -2,17 +2,57 @@
 CRUD endpoints for curator interface - Voyages
 Direct database manipulation without JSON intermediary
 """
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from fastapi import APIRouter, HTTPException, Body
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from app.db import db_cursor
 import logging
 import re
+import json
 
 LOG = logging.getLogger("app.routers.curator_voyages")
 
 router = APIRouter(prefix="/api/curator/voyages", tags=["curator-voyages"])
+
+
+def normalize_source_urls(value: Union[List[str], List[Dict[str, str]], None]) -> Optional[List[str]]:
+    """
+    Convert source_urls to list of JSON strings.
+    Accepts either:
+    - List of JSON strings (already correct format)
+    - List of dicts (from frontend) - converts to JSON strings
+    """
+    if value is None:
+        return None
+
+    result = []
+    for item in value:
+        if isinstance(item, str):
+            # Already a JSON string
+            result.append(item)
+        elif isinstance(item, dict):
+            # Convert dict to JSON string
+            result.append(json.dumps(item))
+        else:
+            # Unknown type, skip
+            LOG.warning(f"Unknown source_url type: {type(item)}")
+
+    return result if result else None
+
+
+def parse_voyage_sources(voyage: Dict[str, Any]) -> Dict[str, Any]:
+    """Parse source_urls from JSON strings to objects for API responses"""
+    if voyage.get('source_urls'):
+        try:
+            # If source_urls is a list of JSON strings, parse each one
+            if isinstance(voyage['source_urls'], list) and voyage['source_urls']:
+                if isinstance(voyage['source_urls'][0], str):
+                    voyage['source_urls'] = [json.loads(s) for s in voyage['source_urls']]
+        except (json.JSONDecodeError, TypeError, IndexError):
+            # If parsing fails, leave as is
+            pass
+    return voyage
 
 
 def slugify(text: str) -> str:
@@ -81,9 +121,14 @@ class VoyageCreate(BaseModel):
     notes: Optional[str] = None
     spin: Optional[str] = None
     spin_source: Optional[str] = None
-    source_urls: Optional[List[str]] = Field(None, description="List of source URLs")
+    source_urls: Optional[Union[List[str], List[Dict[str, str]]]] = Field(None, description="List of source URLs (strings or objects)")
     tags: Optional[str] = None
     president_slug_from_voyage: Optional[str] = None
+
+    @field_validator('source_urls', mode='before')
+    @classmethod
+    def normalize_sources(cls, v):
+        return normalize_source_urls(v)
 
     # Boolean metadata flags
     has_photo: bool = False
@@ -132,9 +177,14 @@ class VoyageUpdate(BaseModel):
     notes: Optional[str] = None
     spin: Optional[str] = None
     spin_source: Optional[str] = None
-    source_urls: Optional[List[str]] = None
+    source_urls: Optional[Union[List[str], List[Dict[str, str]]]] = None
     tags: Optional[str] = None
     president_slug_from_voyage: Optional[str] = None
+
+    @field_validator('source_urls', mode='before')
+    @classmethod
+    def normalize_sources(cls, v):
+        return normalize_source_urls(v)
 
     # Boolean metadata flags
     has_photo: Optional[bool] = None
@@ -233,7 +283,7 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
 
             row = cur.fetchone()
             LOG.info(f"Created voyage: {voyage.voyage_slug}")
-            return dict(row)
+            return parse_voyage_sources(dict(row))
 
     except HTTPException:
         raise
@@ -302,7 +352,7 @@ def update_voyage(voyage_slug: str, updates: VoyageUpdate) -> Dict[str, Any]:
 
             row = cur.fetchone()
             LOG.info(f"Updated voyage: {voyage_slug} ({len(update_data)} fields)")
-            return dict(row)
+            return parse_voyage_sources(dict(row))
 
     except HTTPException:
         raise
