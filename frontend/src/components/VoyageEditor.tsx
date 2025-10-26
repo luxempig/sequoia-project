@@ -69,6 +69,9 @@ const VoyageEditor: React.FC = () => {
     summary_markdown: '',
     notes_internal: '',
     additional_information: '',
+    notes: '',
+    spin: '',
+    spin_source: '',
     presidential_use: false,
     has_royalty: false,
     has_foreign_leader: false,
@@ -955,6 +958,47 @@ const VoyageEditor: React.FC = () => {
             className="w-full border border-gray-300 rounded-md px-3 py-2"
             rows={2}
             placeholder="Internal notes (not shown publicly)..."
+          />
+        </div>
+
+        {/* Public Notes */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea
+            value={voyage.notes || ''}
+            onChange={(e) => updateField('notes', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            rows={3}
+            placeholder="Public notes about this voyage..."
+          />
+        </div>
+
+        {/* Spin */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Spin</label>
+          <textarea
+            value={voyage.spin || ''}
+            onChange={(e) => updateField('spin', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            rows={2}
+            placeholder="Spin quote (will be displayed in italics with quotes)..."
+          />
+          {voyage.spin && (
+            <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200">
+              <p className="text-sm text-gray-700 italic">"{voyage.spin}"</p>
+            </div>
+          )}
+        </div>
+
+        {/* Spin Source */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Spin Source</label>
+          <input
+            type="text"
+            value={voyage.spin_source || ''}
+            onChange={(e) => updateField('spin_source', e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+            placeholder="Source attribution for the spin quote (optional)..."
           />
         </div>
 

@@ -78,6 +78,9 @@ class VoyageCreate(BaseModel):
     notes_internal: Optional[str] = None
     additional_information: Optional[str] = None
     additional_sources: Optional[str] = None
+    notes: Optional[str] = None
+    spin: Optional[str] = None
+    spin_source: Optional[str] = None
     source_urls: Optional[List[str]] = Field(None, description="List of source URLs")
     tags: Optional[str] = None
     president_slug_from_voyage: Optional[str] = None
@@ -126,6 +129,9 @@ class VoyageUpdate(BaseModel):
     notes_internal: Optional[str] = None
     additional_information: Optional[str] = None
     additional_sources: Optional[str] = None
+    notes: Optional[str] = None
+    spin: Optional[str] = None
+    spin_source: Optional[str] = None
     source_urls: Optional[List[str]] = None
     tags: Optional[str] = None
     president_slug_from_voyage: Optional[str] = None
@@ -202,7 +208,8 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
                     start_timestamp, end_timestamp, origin, destination,
                     start_location, end_location, vessel_name, voyage_type,
                     summary_markdown, notes_internal, additional_information,
-                    additional_sources, source_urls, tags, president_slug_from_voyage,
+                    additional_sources, notes, spin, spin_source,
+                    source_urls, tags, president_slug_from_voyage,
                     has_photo, has_video, presidential_use, has_royalty, has_foreign_leader,
                     mention_camp_david, mention_mount_vernon, mention_captain, mention_crew,
                     mention_rmd, mention_yacht_spin, mention_menu, mention_drinks_wine,
@@ -213,7 +220,8 @@ def create_voyage(voyage: VoyageCreate) -> Dict[str, Any]:
                     %(start_timestamp)s, %(end_timestamp)s, %(origin)s, %(destination)s,
                     %(start_location)s, %(end_location)s, %(vessel_name)s, %(voyage_type)s,
                     %(summary_markdown)s, %(notes_internal)s, %(additional_information)s,
-                    %(additional_sources)s, %(source_urls)s, %(tags)s, %(president_slug_from_voyage)s,
+                    %(additional_sources)s, %(notes)s, %(spin)s, %(spin_source)s,
+                    %(source_urls)s, %(tags)s, %(president_slug_from_voyage)s,
                     %(has_photo)s, %(has_video)s, %(presidential_use)s, %(has_royalty)s, %(has_foreign_leader)s,
                     %(mention_camp_david)s, %(mention_mount_vernon)s, %(mention_captain)s, %(mention_crew)s,
                     %(mention_rmd)s, %(mention_yacht_spin)s, %(mention_menu)s, %(mention_drinks_wine)s,

@@ -1178,13 +1178,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         </div>
       )}
 
-      {/* Notes */}
-      {currentVoyage.notes_internal && (
+      {/* Internal Notes */}
+      {(isEditing || currentVoyage.notes_internal) && (
         <div className="mb-4 bg-gray-50 rounded-lg p-4">
-          <h4 className="font-semibold text-sm mb-2">Notes</h4>
+          <h4 className="font-semibold text-sm mb-2">Internal Notes</h4>
           {isEditing ? (
             <textarea
-              value={currentVoyage.notes_internal}
+              value={currentVoyage.notes_internal || ''}
               onChange={(e) => updateField('notes_internal', e.target.value)}
               className="w-full border rounded px-2 py-1 text-sm"
               rows={2}
@@ -1193,6 +1193,58 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
               {currentVoyage.notes_internal}
             </p>
+          )}
+        </div>
+      )}
+
+      {/* Public Notes */}
+      {(isEditing || currentVoyage.notes) && (
+        <div className="mb-4 bg-green-50 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-2">Notes</h4>
+          {isEditing ? (
+            <textarea
+              value={currentVoyage.notes || ''}
+              onChange={(e) => updateField('notes', e.target.value)}
+              className="w-full border rounded px-2 py-1 text-sm"
+              rows={3}
+              placeholder="Public notes about this voyage"
+            />
+          ) : (
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {currentVoyage.notes}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Spin */}
+      {(isEditing || currentVoyage.spin) && (
+        <div className="mb-4 bg-yellow-50 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-2">Spin</h4>
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={currentVoyage.spin || ''}
+                onChange={(e) => updateField('spin', e.target.value)}
+                className="w-full border rounded px-2 py-1 text-sm"
+                rows={2}
+                placeholder="Spin quote (will be displayed in italics with quotes)"
+              />
+              <input
+                type="text"
+                value={currentVoyage.spin_source || ''}
+                onChange={(e) => updateField('spin_source', e.target.value)}
+                className="w-full border rounded px-2 py-1 text-sm"
+                placeholder="Source (optional)"
+              />
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-gray-700 italic">"{currentVoyage.spin}"</p>
+              {currentVoyage.spin_source && (
+                <p className="text-xs text-gray-600 mt-2">— {currentVoyage.spin_source}</p>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -27,6 +27,9 @@ export interface Voyage {
   notes_internal?: string | null;   // Internal curator notes
   additional_information?: string | null;  // Public-facing additional info
   additional_sources?: string | null;
+  notes?: string | null;  // Public notes
+  spin?: string | null;  // Spin text (displayed in italics with quotes)
+  spin_source?: string | null;  // Source for the spin
   tags?: string | null;
   source_urls?: string[] | null;
   // denormalized hint to group by presidency (from your schema)
