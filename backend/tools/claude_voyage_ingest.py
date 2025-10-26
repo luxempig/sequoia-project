@@ -342,7 +342,7 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
         # Process passengers with deduplication
         print(f"\n{'[DRY RUN] ' if dry_run else ''}Processing {len(passengers_data)} passengers:")
 
-        for passenger in passengers_data:
+        for sort_order, passenger in enumerate(passengers_data):
             full_name = passenger['full_name']
             bio_url = passenger.get('bio')
 
@@ -376,13 +376,13 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                         VALUES (%s, %s, %s, %s)
                     """, (person_slug, full_name, passenger.get('role'), passenger.get('bio')))
 
-            # Link person to voyage
+            # Link person to voyage with sort_order to preserve markdown ordering
             if not dry_run:
                 cur.execute("""
-                    INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, is_crew)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, is_crew, sort_order)
+                    VALUES (%s, %s, %s, %s)
                     ON CONFLICT (voyage_slug, person_slug) DO NOTHING
-                """, (voyage_slug, person_slug, passenger.get('is_crew', False)))
+                """, (voyage_slug, person_slug, passenger.get('is_crew', False), sort_order))
 
         if dry_run:
             print("\n[DRY RUN] Rolling back changes...")
