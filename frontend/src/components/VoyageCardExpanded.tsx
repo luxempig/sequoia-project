@@ -952,6 +952,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         </div>
       )}
 
+      {/* People */}
+      <div className="pt-4 border-t border-gray-200">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">People ({people.length})</h4>
+
         {loadingPeople ? (
           <p className="text-sm text-gray-500">Loading...</p>
         ) : people.length === 0 ? (
@@ -1224,11 +1228,128 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   {!passengersCollapsed && passengers.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No passengers</p>
                   )}
+
+                  {/* Add People to Voyage - Search Interface */}
+                  {isEditing && (
+                    <div className="mt-4 bg-blue-50 p-3 rounded">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Add People to Voyage</label>
+
+                      {!showCreatePersonForm ? (
+                        <>
+                          <div className="flex gap-2 mb-2">
+                            <input
+                              type="text"
+                              value={personSearch}
+                              onChange={(e) => {
+                                setPersonSearch(e.target.value);
+                                searchPeople(e.target.value);
+                              }}
+                              placeholder="Search by name..."
+                              className="flex-1 border rounded px-2 py-1 text-sm"
+                            />
+                            <button
+                              onClick={() => setShowCreatePersonForm(true)}
+                              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap"
+                            >
+                              + Create New
+                            </button>
+                          </div>
+                          {searching && <p className="text-xs text-gray-500 mt-1">Searching...</p>}
+                          {searchResults.length > 0 && (
+                            <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                              {searchResults.map(person => (
+                                <div key={person.person_slug} className="p-2 bg-white border rounded text-xs">
+                                  <div className="font-medium">{person.full_name}</div>
+                                  {person.role_title && <div className="text-gray-600">{person.role_title}</div>}
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      onClick={() => linkPerson(person.person_slug, true)}
+                                      className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
+                                    >
+                                      Add as Crew
+                                    </button>
+                                    <button
+                                      onClick={() => linkPerson(person.person_slug, false)}
+                                      className="bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700 text-xs"
+                                    >
+                                      Add as Passenger
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="space-y-3 bg-white p-3 rounded border border-gray-300">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Full Name *</label>
+                            <input
+                              type="text"
+                              value={newPersonData.full_name}
+                              onChange={(e) => setNewPersonData({ ...newPersonData, full_name: e.target.value })}
+                              placeholder="e.g., John Smith"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Role/Title</label>
+                            <input
+                              type="text"
+                              value={newPersonData.role_title}
+                              onChange={(e) => setNewPersonData({ ...newPersonData, role_title: e.target.value })}
+                              placeholder="e.g., Secretary of State"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Bio/Wikipedia URL</label>
+                            <input
+                              type="text"
+                              value={newPersonData.bio_url}
+                              onChange={(e) => setNewPersonData({ ...newPersonData, bio_url: e.target.value })}
+                              placeholder="https://..."
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="new-person-is-crew"
+                              checked={newPersonData.is_crew}
+                              onChange={(e) => setNewPersonData({ ...newPersonData, is_crew: e.target.checked })}
+                              className="mr-2"
+                            />
+                            <label htmlFor="new-person-is-crew" className="text-sm">Is Crew Member</label>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={createAndLinkNewPerson}
+                              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
+                            >
+                              Create & Add
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowCreatePersonForm(false);
+                                setNewPersonData({ full_name: '', role_title: '', bio_url: '', is_crew: false });
+                              }}
+                              className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })()}
           </div>
         )}
+      </div>
+
       {/* Additional Information */}
       {currentVoyage.additional_information && (
         <div className="mb-4 bg-blue-50 rounded-lg p-4">
@@ -1965,127 +2086,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       {/* Albums */}
       <div className="pt-4 border-t border-gray-200">
         <AlbumManager voyageSlug={voyage.voyage_slug} media={media} editMode={isEditing} />
-      </div>
-
-      {/* People */}
-      <div className="pt-4 border-t border-gray-200">
-        <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">People ({people.length})</h4>
-
-        {/* Person Search (Edit Mode Only) */}
-        {isEditing && (
-          <div className="mb-4 bg-blue-50 p-3 rounded">
-            <label className="block text-xs font-medium text-gray-700 mb-1">Add People to Voyage</label>
-
-            {!showCreatePersonForm ? (
-              <>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={personSearch}
-                    onChange={(e) => {
-                      setPersonSearch(e.target.value);
-                      searchPeople(e.target.value);
-                    }}
-                    placeholder="Search by name..."
-                    className="flex-1 border rounded px-2 py-1 text-sm"
-                  />
-                  <button
-                    onClick={() => setShowCreatePersonForm(true)}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs whitespace-nowrap"
-                  >
-                    + Create New
-                  </button>
-                </div>
-                {searching && <p className="text-xs text-gray-500 mt-1">Searching...</p>}
-                {searchResults.length > 0 && (
-                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                    {searchResults.map(person => (
-                      <div key={person.person_slug} className="p-2 bg-white border rounded text-xs">
-                        <div className="font-medium">{person.full_name}</div>
-                        {person.role_title && <div className="text-gray-600">{person.role_title}</div>}
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => linkPerson(person.person_slug, true)}
-                            className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
-                          >
-                            Add as Crew
-                          </button>
-                          <button
-                            onClick={() => linkPerson(person.person_slug, false)}
-                            className="bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700 text-xs"
-                          >
-                            Add as Passenger
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="space-y-3 bg-white p-3 rounded border border-gray-300">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    value={newPersonData.full_name}
-                    onChange={(e) => setNewPersonData({ ...newPersonData, full_name: e.target.value })}
-                    placeholder="e.g., John Smith"
-                    className="w-full border rounded px-2 py-1 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Role/Title</label>
-                  <input
-                    type="text"
-                    value={newPersonData.role_title}
-                    onChange={(e) => setNewPersonData({ ...newPersonData, role_title: e.target.value })}
-                    placeholder="e.g., Secretary of State"
-                    className="w-full border rounded px-2 py-1 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Bio/Wikipedia URL</label>
-                  <input
-                    type="text"
-                    value={newPersonData.bio_url}
-                    onChange={(e) => setNewPersonData({ ...newPersonData, bio_url: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full border rounded px-2 py-1 text-sm"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="new-person-is-crew"
-                    checked={newPersonData.is_crew}
-                    onChange={(e) => setNewPersonData({ ...newPersonData, is_crew: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <label htmlFor="new-person-is-crew" className="text-sm">Is Crew Member</label>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={createAndLinkNewPerson}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
-                  >
-                    Create & Add
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowCreatePersonForm(false);
-                      setNewPersonData({ full_name: '', role_title: '', bio_url: '', is_crew: false });
-                    }}
-                    className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
       </div>
 
       {/* Media Upload Dialog - Sources */}
