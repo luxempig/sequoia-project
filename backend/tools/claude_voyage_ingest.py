@@ -46,9 +46,9 @@ def slugify(name: str) -> str:
     return name
 
 # Check if person exists in database
-def find_existing_person(cur, full_name: str) -> Optional[str]:
-    """Check if person exists by exact name match only, return person_slug if found"""
-    # Only use exact name match (case-insensitive)
+def find_existing_person(cur, full_name: str, bio_url: Optional[str] = None) -> Optional[str]:
+    """Check if person exists by exact name match or identical bio URL, return person_slug if found"""
+    # Try exact name match (case-insensitive)
     cur.execute("""
         SELECT person_slug FROM sequoia.people
         WHERE LOWER(full_name) = LOWER(%s)
@@ -57,6 +57,17 @@ def find_existing_person(cur, full_name: str) -> Optional[str]:
     result = cur.fetchone()
     if result:
         return result[0]
+
+    # Try matching by bio URL if provided
+    if bio_url:
+        cur.execute("""
+            SELECT person_slug FROM sequoia.people
+            WHERE wikipedia_url = %s
+            LIMIT 1
+        """, (bio_url,))
+        result = cur.fetchone()
+        if result:
+            return result[0]
 
     return None
 
@@ -333,9 +344,10 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
 
         for passenger in passengers_data:
             full_name = passenger['full_name']
+            bio_url = passenger.get('bio')
 
-            # Check if person exists
-            existing_slug = find_existing_person(cur, full_name)
+            # Check if person exists (by exact name or identical bio URL)
+            existing_slug = find_existing_person(cur, full_name, bio_url)
 
             if existing_slug:
                 print(f"  ✓ Found existing: {full_name} ({existing_slug})")
