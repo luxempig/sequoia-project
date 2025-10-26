@@ -47,8 +47,8 @@ def slugify(name: str) -> str:
 
 # Check if person exists in database
 def find_existing_person(cur, full_name: str) -> Optional[str]:
-    """Check if person exists by name or slug, return person_slug if found"""
-    # Try exact name match first
+    """Check if person exists by exact name match only, return person_slug if found"""
+    # Only use exact name match (case-insensitive)
     cur.execute("""
         SELECT person_slug FROM sequoia.people
         WHERE LOWER(full_name) = LOWER(%s)
@@ -58,30 +58,6 @@ def find_existing_person(cur, full_name: str) -> Optional[str]:
     if result:
         return result[0]
 
-    # Try slug match
-    slug = slugify(full_name)
-    cur.execute("""
-        SELECT person_slug FROM sequoia.people
-        WHERE person_slug = %s
-        LIMIT 1
-    """, (slug,))
-    result = cur.fetchone()
-    if result:
-        return result[0]
-
-    # Try fuzzy match on last name
-    last_name = full_name.split()[-1] if full_name.split() else ""
-    if last_name:
-        cur.execute("""
-            SELECT person_slug, full_name FROM sequoia.people
-            WHERE LOWER(full_name) LIKE %s
-            LIMIT 5
-        """, (f'%{last_name.lower()}%',))
-        results = cur.fetchall()
-        # If we find exactly one match with same last name, use it
-        if len(results) == 1:
-            return results[0][0]
-
     return None
 
 def parse_with_claude(markdown_content: str, president_slug: Optional[str] = None) -> Dict:
@@ -89,10 +65,13 @@ def parse_with_claude(markdown_content: str, president_slug: Optional[str] = Non
 
     client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
-    prompt = f"""Parse this voyage markdown document into structured JSON. The document may be messy and inconsistently formatted.
+    prompt = f"""You are a data extraction specialist. Parse the following voyage markdown document into structured JSON.
 
-Example of the format:
+IMPORTANT: The markdown document below is the ACTUAL DATA to parse, not an example.
+
+=== BEGIN VOYAGE DOCUMENT ===
 {markdown_content}
+=== END VOYAGE DOCUMENT ===
 
 Extract and return JSON with this exact structure:
 {{
@@ -178,6 +157,7 @@ PARSING INSTRUCTIONS:
    - Convert to 24-hour format HH:MM
 
 5. PASSENGERS: Extract from "Passengers:" line
+   - IMPORTANT: Maintain the EXACT ORDER of passengers as they appear in the markdown
    - ONLY extract individuals with actual names or Wikipedia links
    - Format: [Name](url) (role), [Name](url) (role)
    - DO NOT create passengers for vague descriptions like "Imperial Party", "and others", "guests", etc.
