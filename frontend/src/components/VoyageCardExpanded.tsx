@@ -169,8 +169,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Collapse state for passenger sections
-  const [crewCollapsed, setCrewCollapsed] = useState(false);
-  const [passengersCollapsed, setPassengersCollapsed] = useState(false);
+  const [crewCollapsed, setCrewCollapsed] = useState(true);
+  const [passengersCollapsed, setPassengersCollapsed] = useState(true);
 
   // Media editing state
   const [editingMediaSlug, setEditingMediaSlug] = useState<string | null>(null);

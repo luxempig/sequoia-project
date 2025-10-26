@@ -12,7 +12,7 @@ export default function HomePage() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundColor: 'rgba(249, 250, 251, 0.85)',
+          backgroundColor: 'rgba(249, 250, 251, 0.75)',
           backgroundBlendMode: 'overlay'
         }}
       >

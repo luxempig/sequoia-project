@@ -62,6 +62,12 @@ const PeopleDirectory: React.FC = () => {
           setLoadingPresidentData(true);
           const data = await api.getPeopleGroupedByPresident();
           setPresidentGroupedData(data);
+          // Initialize all presidents collapsed if no saved state
+          const savedCollapsed = sessionStorage.getItem('peoplePresidentCollapsed');
+          if (!savedCollapsed && data) {
+            const allPresidentSlugs = Object.keys(data);
+            setCollapsedPresidents(new Set(allPresidentSlugs));
+          }
         } catch (error) {
           console.error('Failed to fetch president-grouped data:', error);
         } finally {

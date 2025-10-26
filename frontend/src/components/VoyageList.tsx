@@ -127,6 +127,12 @@ export default function VoyageList() {
           const allSlugs = presidents.map(p => p.president_slug);
           setPres(allSlugs);
         }
+        // Initialize all sections collapsed if no saved state
+        const savedCollapsed = sessionStorage.getItem('voyageListCollapsedSections');
+        if (!savedCollapsed) {
+          const allSlugs = presidents.map(p => p.president_slug);
+          setCollapsedSections(new Set(allSlugs));
+        }
       })
       .catch(console.error);
 
@@ -571,7 +577,7 @@ export default function VoyageList() {
             </div>
           )}
           {viewMode === 'timeline' ? (
-            <HorizontalTimeline voyages={filteredVoyages} />
+            <HorizontalTimeline voyages={voyages} />
           ) : (
             <div className="timeline">
               {Object.entries(grouped)
