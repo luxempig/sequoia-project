@@ -294,8 +294,9 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
         print(f"  Date: {voyage_data['start_date']} to {voyage_data.get('end_date', 'same day')}")
 
         if not dry_run:
-            # Convert source_urls to JSON
-            source_urls_json = json.dumps(voyage_data.get('source_urls', [])) if voyage_data.get('source_urls') else None
+            # Convert source_urls to JSONB - use psycopg2.extras.Json
+            from psycopg2.extras import Json
+            source_urls_json = Json(voyage_data.get('source_urls', [])) if voyage_data.get('source_urls') else None
 
             # Convert additional_source_urls to newline-separated JSON strings
             additional_sources = None
