@@ -2,10 +2,24 @@ from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Query
 from app.db import db_cursor
 import logging
+import json
 
 LOG = logging.getLogger("app.routers.voyages")
 
 router = APIRouter(prefix="/api/voyages", tags=["voyages"])
+
+def parse_voyage_sources(voyage: Dict[str, Any]) -> Dict[str, Any]:
+    """Parse source_urls from JSON strings to objects"""
+    if voyage.get('source_urls'):
+        try:
+            # If source_urls is a list of JSON strings, parse each one
+            if isinstance(voyage['source_urls'], list) and voyage['source_urls']:
+                if isinstance(voyage['source_urls'][0], str):
+                    voyage['source_urls'] = [json.loads(s) for s in voyage['source_urls']]
+        except (json.JSONDecodeError, TypeError, IndexError):
+            # If parsing fails, leave as is
+            pass
+    return voyage
 
 @router.get("/", response_model=List[Dict[str, Any]])
 def list_voyages(
@@ -91,7 +105,7 @@ def list_voyages(
 
             cur.execute(sql, params)
             rows = cur.fetchall()
-            return [dict(row) for row in rows]
+            return [parse_voyage_sources(dict(row)) for row in rows]
     except Exception as e:
         LOG.warning(f"Database error in list_voyages, returning mock data: {e}")
         return get_mock_voyages()
@@ -164,7 +178,7 @@ def get_voyage(voyage_slug: str) -> Dict[str, Any]:
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Voyage not found")
-        return dict(row)
+        return parse_voyage_sources(dict(row))
 
 @router.get("/{voyage_slug}/presidents", response_model=List[Dict[str, Any]])
 def voyage_presidents(voyage_slug: str) -> List[Dict[str, Any]]:
