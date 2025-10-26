@@ -624,7 +624,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const currentVoyage = isEditing ? editedVoyage : voyage;
 
   return (
-    <div className="bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm p-5 mb-6 max-w-5xl mx-auto space-y-6">
+    <div className="bg-white rounded-lg border-2 border-gray-300 shadow-md p-5 mb-6 max-w-5xl mx-auto space-y-6 hover:border-gray-400 transition-colors">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
