@@ -469,33 +469,60 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     if (!editingPerson) return;
 
     try {
-      // Update the person record (global)
-      const personResponse = await fetch(`/api/curator/people/${editingPerson.person_slug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          person_slug: editingPerson.person_slug,
-          full_name: personFormData.full_name,
-          role_title: personFormData.role_title,
-          organization: editingPerson.organization || null,
-          birth_year: editingPerson.birth_year || null,
-          death_year: editingPerson.death_year || null,
-          wikipedia_url: personFormData.bio || null,
-          notes_internal: editingPerson.notes_internal || null,
-          tags: editingPerson.tags || null
-        })
-      });
+      let personSlug = editingPerson.person_slug;
 
-      if (!personResponse.ok) {
-        throw new Error('Failed to update person');
+      // If person_slug is empty, this is a new person - create them first
+      if (!personSlug) {
+        const createResponse = await fetch('/api/curator/people/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: personFormData.full_name,
+            role_title: personFormData.role_title,
+            organization: null,
+            birth_year: null,
+            death_year: null,
+            wikipedia_url: personFormData.bio || null,
+            notes_internal: null,
+            tags: null
+          })
+        });
+
+        if (!createResponse.ok) {
+          throw new Error('Failed to create person');
+        }
+
+        const createdPerson = await createResponse.json();
+        personSlug = createdPerson.person_slug;
+      } else {
+        // Update existing person record
+        const personResponse = await fetch(`/api/curator/people/${editingPerson.person_slug}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            person_slug: editingPerson.person_slug,
+            full_name: personFormData.full_name,
+            role_title: personFormData.role_title,
+            organization: editingPerson.organization || null,
+            birth_year: editingPerson.birth_year || null,
+            death_year: editingPerson.death_year || null,
+            wikipedia_url: personFormData.bio || null,
+            notes_internal: editingPerson.notes_internal || null,
+            tags: editingPerson.tags || null
+          })
+        });
+
+        if (!personResponse.ok) {
+          throw new Error('Failed to update person');
+        }
       }
 
-      // Update the voyage-specific link (capacity_role and is_crew)
+      // Link person to voyage (works for both new and existing people)
       const linkResponse = await fetch('/api/curator/people/link-to-voyage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          person_slug: editingPerson.person_slug,
+          person_slug: personSlug,
           voyage_slug: voyage.voyage_slug,
           capacity_role: personFormData.capacity_role,
           is_crew: personFormData.is_crew,
@@ -509,6 +536,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       }
     } catch (error) {
       console.error('Update failed:', error);
+      alert(`Failed to save: ${error}`);
     }
   };
 
