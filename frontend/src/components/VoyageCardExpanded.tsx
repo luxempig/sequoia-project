@@ -1089,31 +1089,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   {!crewCollapsed && crew.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No crew members</p>
                   )}
-                  {isEditing && !crewCollapsed && (
-                    <button
-                      onClick={() => {
-                        setEditingPerson({
-                          person_slug: '',
-                          full_name: '',
-                          role_title: null,
-                          title: null,
-                          organization: null,
-                          birth_year: null,
-                          death_year: null,
-                          wikipedia_url: null,
-                          bio: null,
-                          notes_internal: null,
-                          tags: null,
-                          capacity_role: null,
-                          voyage_notes: null,
-                          is_crew: true
-                        });
-                      }}
-                      className="mt-3 w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
-                    >
-                      + Add Crew Member
-                    </button>
-                  )}
                 </div>
               );
             })()}
@@ -1248,31 +1223,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   )}
                   {!passengersCollapsed && passengers.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No passengers</p>
-                  )}
-                  {isEditing && !passengersCollapsed && (
-                    <button
-                      onClick={() => {
-                        setEditingPerson({
-                          person_slug: '',
-                          full_name: '',
-                          role_title: null,
-                          title: null,
-                          organization: null,
-                          birth_year: null,
-                          death_year: null,
-                          wikipedia_url: null,
-                          bio: null,
-                          notes_internal: null,
-                          tags: null,
-                          capacity_role: null,
-                          voyage_notes: null,
-                          is_crew: false
-                        });
-                      }}
-                      className="mt-3 w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
-                    >
-                      + Add Passenger
-                    </button>
                   )}
                 </div>
               );
