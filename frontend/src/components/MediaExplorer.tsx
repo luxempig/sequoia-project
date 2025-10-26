@@ -32,11 +32,27 @@ interface S3BrowseResponse {
   total_items: number;
 }
 
-// Helper to convert president slug to readable name
-const formatPresidentName = (slug: string): string => {
+// Helper to convert folder name to readable name (presidents and media types)
+const formatFolderName = (slug: string): string => {
   if (!slug) return slug;
 
-  // Remove numbers and suffixes
+  // Media type folders - make plural
+  const mediaTypes: Record<string, string> = {
+    'image': 'Images',
+    'video': 'Videos',
+    'article': 'Articles',
+    'document': 'Documents',
+    'logbook': 'Logbooks',
+    'book': 'Books',
+    'audio': 'Audio',
+    'pdf': 'PDFs'
+  };
+
+  if (mediaTypes[slug]) {
+    return mediaTypes[slug];
+  }
+
+  // Remove numbers and suffixes for president slugs
   const cleanSlug = slug.replace(/-\d+$/, '');
 
   // Convert to title case
@@ -446,7 +462,7 @@ const MediaExplorer: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Media Explorer</h1>
-                <p className="text-gray-600">Browse, upload, and edit media in sequoia-canonical S3 bucket</p>
+                <p className="text-gray-600">Browse, upload, and edit media in library</p>
               </div>
               <button
                 onClick={() => setShowUploadModal(true)}
@@ -470,7 +486,7 @@ const MediaExplorer: React.FC = () => {
                 onClick={() => setCurrentPrefix("")}
                 className="hover:text-blue-600 font-medium"
               >
-                📦 Root
+                📦 Media Library
               </button>
               {data?.breadcrumbs.map((crumb, index) => (
                 <React.Fragment key={index}>
@@ -479,7 +495,7 @@ const MediaExplorer: React.FC = () => {
                     onClick={() => setCurrentPrefix(crumb.path)}
                     className="hover:text-blue-600"
                   >
-                    {crumb.name}
+                    {formatFolderName(crumb.name)}
                   </button>
                 </React.Fragment>
               ))}
@@ -510,7 +526,7 @@ const MediaExplorer: React.FC = () => {
                         className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
                       >
                         <span className="text-4xl">📁</span>
-                        <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{formatPresidentName(folder.name)}</p>
+                        <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{formatFolderName(folder.name)}</p>
                       </div>
                     ))}
                   </div>

@@ -139,6 +139,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [newAdditionalSourceUrl, setNewAdditionalSourceUrl] = useState("");
   const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("unchecked");
 
+  // Spins state (multiple spins support)
+  type SpinItem = { spin: string; source: string };
+  const [spins, setSpins] = useState<SpinItem[]>([]);
+
   // Person search state
   const [personSearch, setPersonSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Person[]>([]);
@@ -243,7 +247,24 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       });
       setAdditionalSourceUrls(normalized);
     }
-  }, [voyage.voyage_slug, voyage.source_urls, voyage.additional_sources]);
+
+    // Initialize spins (handle both single spin and multiple spins as JSON array)
+    if (voyage.spin) {
+      try {
+        // Try to parse as JSON array
+        const parsed = JSON.parse(voyage.spin);
+        if (Array.isArray(parsed)) {
+          setSpins(parsed);
+        } else {
+          // If it's a JSON object but not array, treat as single spin
+          setSpins([{ spin: voyage.spin, source: voyage.spin_source || '' }]);
+        }
+      } catch {
+        // If not JSON, treat as single spin (legacy format)
+        setSpins([{ spin: voyage.spin, source: voyage.spin_source || '' }]);
+      }
+    }
+  }, [voyage.voyage_slug, voyage.source_urls, voyage.additional_sources, voyage.spin, voyage.spin_source]);
 
   const handleSave = async () => {
     if (onSave) {
@@ -309,6 +330,27 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
     );
     setAdditionalSourceUrls(updated);
     updateField('additional_sources', updated.map(s => JSON.stringify(s)).join('\n'));
+  };
+
+  // Spins management
+  const addSpin = () => {
+    const updated = [...spins, { spin: '', source: '' }];
+    setSpins(updated);
+    updateField('spin', JSON.stringify(updated));
+  };
+
+  const removeSpin = (index: number) => {
+    const updated = spins.filter((_, i) => i !== index);
+    setSpins(updated);
+    updateField('spin', updated.length > 0 ? JSON.stringify(updated) : null);
+  };
+
+  const updateSpin = (index: number, field: 'spin' | 'source', value: string) => {
+    const updated = spins.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item
+    );
+    setSpins(updated);
+    updateField('spin', JSON.stringify(updated));
   };
 
   // Person search and linking
@@ -1019,6 +1061,31 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   {!crewCollapsed && crew.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No crew members</p>
                   )}
+                  {isEditing && !crewCollapsed && (
+                    <button
+                      onClick={() => {
+                        setEditingPerson({
+                          person_slug: '',
+                          full_name: '',
+                          role_title: null,
+                          title: null,
+                          organization: null,
+                          birth_year: null,
+                          death_year: null,
+                          wikipedia_url: null,
+                          bio: null,
+                          notes_internal: null,
+                          tags: null,
+                          capacity_role: null,
+                          voyage_notes: null,
+                          is_crew: true
+                        });
+                      }}
+                      className="mt-3 w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+                    >
+                      + Add Crew Member
+                    </button>
+                  )}
                 </div>
               );
             })()}
@@ -1154,6 +1221,31 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                   {!passengersCollapsed && passengers.length === 0 && (
                     <p className="text-sm text-gray-500 italic">No passengers</p>
                   )}
+                  {isEditing && !passengersCollapsed && (
+                    <button
+                      onClick={() => {
+                        setEditingPerson({
+                          person_slug: '',
+                          full_name: '',
+                          role_title: null,
+                          title: null,
+                          organization: null,
+                          birth_year: null,
+                          death_year: null,
+                          wikipedia_url: null,
+                          bio: null,
+                          notes_internal: null,
+                          tags: null,
+                          capacity_role: null,
+                          voyage_notes: null,
+                          is_crew: false
+                        });
+                      }}
+                      className="mt-3 w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+                    >
+                      + Add Passenger
+                    </button>
+                  )}
                 </div>
               );
             })()}
@@ -1199,32 +1291,55 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
       )}
 
       {/* Spin */}
-      {(isEditing || currentVoyage.spin) && (
+      {(isEditing || spins.length > 0) && (
         <div className="mb-4 bg-yellow-50 rounded-lg p-4">
           <h4 className="font-semibold text-sm mb-2">Spin</h4>
           {isEditing ? (
-            <div className="space-y-2">
-              <textarea
-                value={currentVoyage.spin || ''}
-                onChange={(e) => updateField('spin', e.target.value)}
-                className="w-full border rounded px-2 py-1 text-sm"
-                rows={2}
-                placeholder="Spin quote (will be displayed in italics with quotes)"
-              />
-              <input
-                type="text"
-                value={currentVoyage.spin_source || ''}
-                onChange={(e) => updateField('spin_source', e.target.value)}
-                className="w-full border rounded px-2 py-1 text-sm"
-                placeholder="Source (optional)"
-              />
+            <div className="space-y-3">
+              {spins.map((spinItem, index) => (
+                <div key={index} className="space-y-2 pb-3 border-b border-yellow-200 last:border-b-0 last:pb-0">
+                  <div className="flex items-start gap-2">
+                    <textarea
+                      value={spinItem.spin}
+                      onChange={(e) => updateSpin(index, 'spin', e.target.value)}
+                      className="flex-1 border rounded px-2 py-1 text-sm"
+                      rows={2}
+                      placeholder="Spin quote (will be displayed in italics with quotes)"
+                    />
+                    <button
+                      onClick={() => removeSpin(index)}
+                      className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
+                      title="Remove spin"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={spinItem.source}
+                    onChange={(e) => updateSpin(index, 'source', e.target.value)}
+                    className="w-full border rounded px-2 py-1 text-sm"
+                    placeholder="Source (optional)"
+                  />
+                </div>
+              ))}
+              <button
+                onClick={addSpin}
+                className="w-full px-3 py-2 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-800 hover:bg-yellow-200 transition-colors"
+              >
+                + Add Spin
+              </button>
             </div>
           ) : (
-            <div>
-              <p className="text-sm text-gray-700 italic">"{currentVoyage.spin}"</p>
-              {currentVoyage.spin_source && (
-                <p className="text-xs text-gray-600 mt-2">— {currentVoyage.spin_source}</p>
-              )}
+            <div className="space-y-3">
+              {spins.map((spinItem, index) => (
+                <div key={index} className="pb-3 border-b border-yellow-200 last:border-b-0 last:pb-0">
+                  <p className="text-sm text-gray-700 italic">"{spinItem.spin}"</p>
+                  {spinItem.source && (
+                    <p className="text-xs text-gray-600 mt-2">— {spinItem.source}</p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -2184,7 +2299,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               onChange={(e) => updateField('notes_internal', e.target.value)}
               className="w-full border rounded px-2 py-1 text-sm"
               rows={3}
-              placeholder="Internal notes for curators (not shown publicly)"
+              placeholder="Curator notes..."
             />
           ) : (
             <p className="text-sm text-gray-700 whitespace-pre-wrap">

@@ -5,7 +5,17 @@ import Layout from "./Layout";
 export default function HomePage() {
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
+      <div
+        className="min-h-screen bg-gray-50"
+        style={{
+          backgroundImage: 'url(/sequoia-office.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: 'rgba(249, 250, 251, 0.85)',
+          backgroundBlendMode: 'overlay'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
           {/* About Section */}
           <div className="text-center mb-12">

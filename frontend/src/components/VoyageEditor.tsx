@@ -99,6 +99,10 @@ const VoyageEditor: React.FC = () => {
   const [newAdditionalSourceMediaType, setNewAdditionalSourceMediaType] = useState("unchecked");
   const [additionalSourceMediaFiles, setAdditionalSourceMediaFiles] = useState<Array<{file: File, date: string, credit: string, description: string}>>([]);
 
+  // Spins state (multiple spins support)
+  type SpinItem = { spin: string; source: string };
+  const [spins, setSpins] = useState<SpinItem[]>([]);
+
   // Existing media (loaded in edit mode)
   const [existingSourceMedia, setExistingSourceMedia] = useState<any[]>([]);
   const [existingAdditionalSourceMedia, setExistingAdditionalSourceMedia] = useState<any[]>([]);
@@ -161,6 +165,23 @@ const VoyageEditor: React.FC = () => {
             return { url: item, media_type: 'unchecked' };
           });
           setAdditionalSourceUrls(normalized);
+        }
+
+        // Initialize spins (handle both single spin and multiple spins as JSON array)
+        if (voyageData.spin) {
+          try {
+            // Try to parse as JSON array
+            const parsed = JSON.parse(voyageData.spin);
+            if (Array.isArray(parsed)) {
+              setSpins(parsed);
+            } else {
+              // If it's a JSON object but not array, treat as single spin
+              setSpins([{ spin: voyageData.spin, source: voyageData.spin_source || '' }]);
+            }
+          } catch {
+            // If not JSON, treat as single spin (legacy format)
+            setSpins([{ spin: voyageData.spin, source: voyageData.spin_source || '' }]);
+          }
         }
 
         // Set passengers
@@ -344,6 +365,22 @@ const VoyageEditor: React.FC = () => {
     setAdditionalSourceUrls(updated);
   };
 
+  // Spins management
+  const addSpin = () => {
+    setSpins([...spins, { spin: '', source: '' }]);
+  };
+
+  const removeSpin = (index: number) => {
+    setSpins(spins.filter((_, i) => i !== index));
+  };
+
+  const updateSpin = (index: number, field: 'spin' | 'source', value: string) => {
+    const updated = spins.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item
+    );
+    setSpins(updated);
+  };
+
   const handleAdditionalSourceMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files).map(file => ({
@@ -501,6 +538,8 @@ const VoyageEditor: React.FC = () => {
           ...voyage,
           source_urls: sourceUrls.length > 0 ? sourceUrls : null,
           additional_sources: additionalSourceUrls.length > 0 ? additionalSourceUrls.map(s => JSON.stringify(s)).join('\n') : null,
+          spin: spins.length > 0 ? JSON.stringify(spins) : null,
+          spin_source: null, // Legacy field, not used with multiple spins
         })
       });
 
@@ -963,31 +1002,53 @@ const VoyageEditor: React.FC = () => {
 
         {/* Spin */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Spin</label>
-          <textarea
-            value={voyage.spin || ''}
-            onChange={(e) => updateField('spin', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-            rows={2}
-            placeholder="Spin quote (will be displayed in italics with quotes)..."
-          />
-          {voyage.spin && (
-            <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200">
-              <p className="text-sm text-gray-700 italic">"{voyage.spin}"</p>
-            </div>
-          )}
-        </div>
-
-        {/* Spin Source */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Spin Source</label>
-          <input
-            type="text"
-            value={voyage.spin_source || ''}
-            onChange={(e) => updateField('spin_source', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-            placeholder="Source attribution for the spin quote (optional)..."
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">Spins</label>
+          <div className="space-y-3">
+            {spins.map((spinItem, index) => (
+              <div key={index} className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <textarea
+                      value={spinItem.spin}
+                      onChange={(e) => updateSpin(index, 'spin', e.target.value)}
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                      rows={2}
+                      placeholder="Spin quote (will be displayed in italics with quotes)..."
+                    />
+                    <button
+                      onClick={() => removeSpin(index)}
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                      type="button"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={spinItem.source}
+                    onChange={(e) => updateSpin(index, 'source', e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Source attribution (optional)..."
+                  />
+                  {spinItem.spin && (
+                    <div className="mt-2 p-2 bg-white rounded border border-yellow-300">
+                      <p className="text-sm text-gray-700 italic">"{spinItem.spin}"</p>
+                      {spinItem.source && (
+                        <p className="text-xs text-gray-600 mt-1">— {spinItem.source}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={addSpin}
+              className="w-full px-4 py-2 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-800 hover:bg-yellow-200 transition-colors"
+              type="button"
+            >
+              + Add Spin
+            </button>
+          </div>
         </div>
 
         {/* Sources */}
@@ -1316,7 +1377,7 @@ const VoyageEditor: React.FC = () => {
             onChange={(e) => updateField('notes_internal', e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2"
             rows={3}
-            placeholder="Internal notes for curators (not shown publicly)..."
+            placeholder="Curator notes..."
           />
         </div>
 
