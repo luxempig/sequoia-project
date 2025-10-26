@@ -57,8 +57,11 @@ export default function VoyageList() {
   });
   const [sig, setSig] = useState(params.get("significant") === "1");
   const [roy, setRoy] = useState(params.get("royalty") === "1");
-  // Boolean field filters
-  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
+  // Boolean field filters - initialize from sessionStorage
+  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem('voyageListFilters');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
   const [presidentDropdownOpen, setPresidentDropdownOpen] = useState(false);
 
   const [voyages, setVoyages] = useState<Voyage[]>([]);
@@ -335,19 +338,6 @@ export default function VoyageList() {
     sessionStorage.setItem('voyageListFilters', JSON.stringify(Array.from(selectedFilters)));
   }, [selectedFilters]);
 
-  // Restore selected filters on mount
-  useEffect(() => {
-    const savedFilters = sessionStorage.getItem('voyageListFilters');
-    if (savedFilters) {
-      try {
-        const filters = JSON.parse(savedFilters);
-        setSelectedFilters(new Set(filters));
-      } catch (e) {
-        console.error('Failed to restore filters:', e);
-      }
-    }
-  }, []);
-
   return (
     <Layout>
       <div ref={scrollContainerRef} className="px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
@@ -577,7 +567,7 @@ export default function VoyageList() {
             </div>
           )}
           {viewMode === 'timeline' ? (
-            <HorizontalTimeline voyages={voyages} />
+            <HorizontalTimeline />
           ) : (
             <div className="timeline">
               {Object.entries(grouped)

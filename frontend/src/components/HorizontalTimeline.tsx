@@ -16,11 +16,12 @@ interface TimelineData {
   }
 }
 
-interface HorizontalTimelineProps {
-  voyages: Voyage[];
-}
+interface HorizontalTimelineProps {}
 
-const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
+const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
+  // Fetch voyages independently from list view
+  const [voyages, setVoyages] = useState<Voyage[]>([]);
+  const [isLoadingVoyages, setIsLoadingVoyages] = useState(true);
   // Initialize from sessionStorage if available
   const [currentYear, setCurrentYear] = useState<string>(() => {
     return sessionStorage.getItem('timelineYear') || "";
@@ -87,6 +88,20 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
         setPendingPresidents(savedSlugs);
       }
     }).catch(() => setPresidents([]));
+  }, []);
+
+  // Fetch all voyages independently from list view
+  useEffect(() => {
+    setIsLoadingVoyages(true);
+    api.listVoyages(new URLSearchParams({ limit: '1000' }))
+      .then(data => {
+        setVoyages(Array.isArray(data) ? data : []);
+        setIsLoadingVoyages(false);
+      })
+      .catch(() => {
+        setVoyages([]);
+        setIsLoadingVoyages(false);
+      });
   }, []);
 
   // Filter voyages by selected presidents AND boolean fields
@@ -505,7 +520,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = ({ voyages }) => {
     }
   };
 
-  if (isLoadingTimeline) {
+  if (isLoadingVoyages || isLoadingTimeline) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
