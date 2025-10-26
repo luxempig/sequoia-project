@@ -111,10 +111,10 @@ Extract and return JSON with this exact structure:
     "spin": "Spin quote text (without quotes) or null",
     "spin_source": "Source for spin or null",
     "source_urls": [
-      {{"url": "url or text source", "media_type": "article/document/logbook/image/video/book/other"}}
+      {{"url": "url or text source", "media_type": "unchecked"}}
     ],
     "additional_source_urls": [
-      {{"url": "url or text source", "media_type": "article/document/logbook/image/video/book/other"}}
+      {{"url": "url or text source", "media_type": "unchecked"}}
     ],
     "tags": [],
     "president_slug_from_voyage": "{president_slug or 'null'}",
@@ -178,7 +178,9 @@ PARSING INSTRUCTIONS:
    - Convert to 24-hour format HH:MM
 
 5. PASSENGERS: Extract from "Passengers:" line
+   - ONLY extract individuals with actual names or Wikipedia links
    - Format: [Name](url) (role), [Name](url) (role)
+   - DO NOT create passengers for vague descriptions like "Imperial Party", "and others", "guests", etc.
    - Extract full_name, role (from parentheses), and bio URL
    - Mark as is_crew: true if role mentions Captain, Crew, Steward, Cook, etc.
 
@@ -186,13 +188,13 @@ PARSING INSTRUCTIONS:
 
 7. SOURCES:
    - Extract from "Sources:" line
-   - Classify as article, document, logbook, image, video, book, or other
+   - Set media_type to "unchecked" for ALL sources - DO NOT try to guess the type
    - Keep full URLs (Google Drive, Wikipedia, etc.)
-   - For book references, include full citation
+   - For book references, include full citation as the URL
 
 8. ADDITIONAL SOURCES:
    - Extract from "Additional Sources:" section
-   - Same classification as Sources
+   - Set media_type to "unchecked" for ALL sources - DO NOT try to guess the type
 
 9. NOTES: Extract from "Notes:" section (public notes)
 
