@@ -378,7 +378,7 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
 
                 if not dry_run:
                     cur.execute("""
-                        INSERT INTO sequoia.people (person_slug, full_name, role, bio)
+                        INSERT INTO sequoia.people (person_slug, full_name, role_title, wikipedia_url)
                         VALUES (%s, %s, %s, %s)
                     """, (person_slug, full_name, passenger.get('role'), passenger.get('bio')))
 
