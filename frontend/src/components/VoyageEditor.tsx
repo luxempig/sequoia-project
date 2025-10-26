@@ -49,8 +49,8 @@ const VoyageEditor: React.FC = () => {
   const [newPresidentData, setNewPresidentData] = useState({
     full_name: '',
     party: '',
-    start_year: '',
-    end_year: '',
+    term_start: '',
+    term_end: '',
     birth_year: '',
     death_year: '',
     wikipedia_url: '',
@@ -221,8 +221,8 @@ const VoyageEditor: React.FC = () => {
       return;
     }
 
-    if (!newPresidentData.start_year) {
-      alert('Please enter the start year of presidency/ownership');
+    if (!newPresidentData.term_start) {
+      alert('Please enter the start date of presidency/ownership');
       return;
     }
 
@@ -251,9 +251,6 @@ const VoyageEditor: React.FC = () => {
       const newPerson = await response.json();
 
       // Create president/owner entry with term/ownership dates
-      const term_start = newPresidentData.start_year ? `${newPresidentData.start_year}-01-01` : null;
-      const term_end = newPresidentData.end_year ? `${newPresidentData.end_year}-12-31` : null;
-
       const presidentResponse = await fetch('/api/curator/presidents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -261,8 +258,8 @@ const VoyageEditor: React.FC = () => {
           president_slug: newPerson.person_slug,
           full_name: newPresidentData.full_name.trim(),
           party: newPresidentData.party.trim() || null,
-          term_start: term_start,
-          term_end: term_end,
+          term_start: newPresidentData.term_start,
+          term_end: newPresidentData.term_end || null,
           wikipedia_url: newPresidentData.wikipedia_url.trim() || null,
           tags: null
         })
@@ -284,8 +281,8 @@ const VoyageEditor: React.FC = () => {
       setNewPresidentData({
         full_name: '',
         party: '',
-        start_year: '',
-        end_year: '',
+        term_start: '',
+        term_end: '',
         birth_year: '',
         death_year: '',
         wikipedia_url: '',
@@ -1452,31 +1449,27 @@ const VoyageEditor: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Year of Term/Ownership <span className="text-red-500">*</span>
+                      Start Date of Term/Ownership <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="number"
-                      value={newPresidentData.start_year}
-                      onChange={(e) => setNewPresidentData({ ...newPresidentData, start_year: e.target.value })}
+                      type="date"
+                      value={newPresidentData.term_start}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, term_start: e.target.value })}
                       className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 1933"
-                      min="1600"
-                      max="2100"
+                      placeholder="YYYY-MM-DD"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Year of Term/Ownership
+                      End Date of Term/Ownership
                     </label>
                     <input
-                      type="number"
-                      value={newPresidentData.end_year}
-                      onChange={(e) => setNewPresidentData({ ...newPresidentData, end_year: e.target.value })}
+                      type="date"
+                      value={newPresidentData.term_end}
+                      onChange={(e) => setNewPresidentData({ ...newPresidentData, term_end: e.target.value })}
                       className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 1945"
-                      min="1600"
-                      max="2100"
+                      placeholder="YYYY-MM-DD"
                     />
                   </div>
                 </div>
@@ -1532,10 +1525,10 @@ const VoyageEditor: React.FC = () => {
             <div className="bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse border-t border-gray-200">
               <button
                 type="button"
-                disabled={!newPresidentData.full_name.trim() || !newPresidentData.start_year}
+                disabled={!newPresidentData.full_name.trim() || !newPresidentData.term_start}
                 onClick={handleCreateNewPresident}
                 className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm ${
-                  !newPresidentData.full_name.trim() || !newPresidentData.start_year
+                  !newPresidentData.full_name.trim() || !newPresidentData.term_start
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
                 }`}
