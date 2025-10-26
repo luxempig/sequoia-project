@@ -1282,7 +1282,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                       onChange={(e) => updateSpin(index, 'spin', e.target.value)}
                       className="flex-1 border rounded px-2 py-1 text-sm"
                       rows={2}
-                      placeholder="Spin quote (will be displayed in italics with quotes)"
+                      placeholder="Spin quote (will be displayed in italics)"
                     />
                     <button
                       onClick={() => removeSpin(index)}
@@ -1312,7 +1312,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
             <div className="space-y-3">
               {spins.map((spinItem, index) => (
                 <div key={index} className="pb-3 border-b border-yellow-200 last:border-b-0 last:pb-0">
-                  <p className="text-sm text-gray-700 italic">"{spinItem.spin}"</p>
+                  <p className="text-sm text-gray-700 italic whitespace-pre-line">{spinItem.spin}</p>
                   {spinItem.source && (
                     <p className="text-xs text-gray-600 mt-2">— {spinItem.source}</p>
                   )}

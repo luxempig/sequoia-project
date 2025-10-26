@@ -1010,7 +1010,7 @@ const VoyageEditor: React.FC = () => {
                       onChange={(e) => updateSpin(index, 'spin', e.target.value)}
                       className="flex-1 border border-gray-300 rounded-md px-3 py-2"
                       rows={2}
-                      placeholder="Spin quote (will be displayed in italics with quotes)..."
+                      placeholder="Spin quote (will be displayed in italics)..."
                     />
                     <button
                       onClick={() => removeSpin(index)}
@@ -1029,7 +1029,7 @@ const VoyageEditor: React.FC = () => {
                   />
                   {spinItem.spin && (
                     <div className="mt-2 p-2 bg-white rounded border border-yellow-300">
-                      <p className="text-sm text-gray-700 italic">"{spinItem.spin}"</p>
+                      <p className="text-sm text-gray-700 italic whitespace-pre-line">{spinItem.spin}</p>
                       {spinItem.source && (
                         <p className="text-xs text-gray-600 mt-1">— {spinItem.source}</p>
                       )}
