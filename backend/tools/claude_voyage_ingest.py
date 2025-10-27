@@ -46,30 +46,63 @@ def slugify(name: str) -> str:
     return name
 
 # Check if person exists in database
-def find_existing_person(cur, full_name: str, bio_url: Optional[str] = None) -> Optional[str]:
-    """Check if person exists by exact name match or identical bio URL, return person_slug if found"""
+def find_existing_person(cur, full_name: str, bio_url: Optional[str] = None) -> Optional[tuple]:
+    """Check if person exists by exact name match or identical bio URL, return (person_slug, current_role_title) if found"""
     # Try exact name match (case-insensitive)
     cur.execute("""
-        SELECT person_slug FROM sequoia.people
+        SELECT person_slug, role_title FROM sequoia.people
         WHERE LOWER(full_name) = LOWER(%s)
         LIMIT 1
     """, (full_name,))
     result = cur.fetchone()
     if result:
-        return result[0]
+        return result  # (person_slug, role_title)
 
     # Try matching by bio URL if provided
     if bio_url:
         cur.execute("""
-            SELECT person_slug FROM sequoia.people
+            SELECT person_slug, role_title FROM sequoia.people
             WHERE wikipedia_url = %s
             LIMIT 1
         """, (bio_url,))
         result = cur.fetchone()
         if result:
-            return result[0]
+            return result  # (person_slug, role_title)
 
     return None
+
+def rank_title_importance(title1: str, title2: str, person_name: str) -> str:
+    """Use Claude API to determine which title is more important/notable for a person"""
+    client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+
+    prompt = f"""Compare these two titles/roles for {person_name} and determine which is MORE IMPORTANT or NOTABLE historically.
+
+Title A: {title1 or "(no title)"}
+Title B: {title2 or "(no title)"}
+
+Consider:
+- Higher political office (President > Vice President > Senator > Representative)
+- National vs local positions
+- Historical significance
+- Public recognition
+
+Respond with ONLY "A" or "B" - nothing else."""
+
+    try:
+        response = client.messages.create(
+            model="claude-3-5-haiku-20241022",  # Use fast, cheap model for this
+            max_tokens=10,
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }]
+        )
+
+        answer = response.content[0].text.strip().upper()
+        return title1 if answer == "A" else title2
+    except Exception as e:
+        print(f"  ⚠ Error ranking titles, keeping existing: {e}")
+        return title1  # Default to keeping existing title on error
 
 def parse_with_claude(markdown_content: str, president_slug: Optional[str] = None) -> Dict:
     """Use Claude API to parse voyage markdown into structured JSON"""
@@ -345,13 +378,28 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
         for sort_order, passenger in enumerate(passengers_data):
             full_name = passenger['full_name']
             bio_url = passenger.get('bio')
+            voyage_role = passenger.get('role')  # Role on this specific voyage
 
             # Check if person exists (by exact name or identical bio URL)
-            existing_slug = find_existing_person(cur, full_name, bio_url)
+            existing_person = find_existing_person(cur, full_name, bio_url)
 
-            if existing_slug:
-                print(f"  ✓ Found existing: {full_name} ({existing_slug})")
-                person_slug = existing_slug
+            if existing_person:
+                person_slug, current_role_title = existing_person
+                print(f"  ✓ Found existing: {full_name} ({person_slug})")
+
+                # Compare titles and update if new one is more important
+                if voyage_role and current_role_title != voyage_role:
+                    if not dry_run:
+                        more_important = rank_title_importance(current_role_title, voyage_role, full_name)
+                        if more_important != current_role_title:
+                            print(f"    → Updating role_title: '{current_role_title}' → '{more_important}'")
+                            cur.execute("""
+                                UPDATE sequoia.people
+                                SET role_title = %s
+                                WHERE person_slug = %s
+                            """, (more_important, person_slug))
+                        else:
+                            print(f"    ✓ Keeping existing role_title: '{current_role_title}'")
             else:
                 # Create new person
                 person_slug = slugify(full_name)
@@ -374,15 +422,16 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                     cur.execute("""
                         INSERT INTO sequoia.people (person_slug, full_name, role_title, wikipedia_url)
                         VALUES (%s, %s, %s, %s)
-                    """, (person_slug, full_name, passenger.get('role'), passenger.get('bio')))
+                    """, (person_slug, full_name, voyage_role, passenger.get('bio')))
 
-            # Link person to voyage with sort_order to preserve markdown ordering
+            # Link person to voyage with sort_order and capacity_role (voyage-specific role)
             if not dry_run:
                 cur.execute("""
-                    INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, is_crew, sort_order)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (voyage_slug, person_slug) DO NOTHING
-                """, (voyage_slug, person_slug, passenger.get('is_crew', False), sort_order))
+                    INSERT INTO sequoia.voyage_passengers (voyage_slug, person_slug, is_crew, sort_order, capacity_role)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (voyage_slug, person_slug) DO UPDATE
+                    SET capacity_role = EXCLUDED.capacity_role, sort_order = EXCLUDED.sort_order
+                """, (voyage_slug, person_slug, passenger.get('is_crew', False), sort_order, voyage_role))
 
         if dry_run:
             print("\n[DRY RUN] Rolling back changes...")
