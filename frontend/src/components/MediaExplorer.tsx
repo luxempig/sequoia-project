@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "./Layout";
 import { api } from "../api";
 import { MediaItem } from "../types";
@@ -63,7 +64,8 @@ const formatFolderName = (slug: string): string => {
 };
 
 const MediaExplorer: React.FC = () => {
-  const [currentPrefix, setCurrentPrefix] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentPrefix, setCurrentPrefix] = useState(searchParams.get("path") || "");
   const [data, setData] = useState<S3BrowseResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -102,6 +104,12 @@ const MediaExplorer: React.FC = () => {
 
   useEffect(() => {
     loadDirectory(currentPrefix);
+    // Update URL to reflect current folder path
+    if (currentPrefix) {
+      setSearchParams({ path: currentPrefix });
+    } else {
+      setSearchParams({});
+    }
   }, [currentPrefix]);
 
   useEffect(() => {
