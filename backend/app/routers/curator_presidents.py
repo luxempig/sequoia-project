@@ -26,11 +26,17 @@ class PresidentCreate(BaseModel):
     """Schema for creating a new president/owner"""
     president_slug: str = Field(..., description="Unique slug for president")
     full_name: str = Field(..., description="Full name of president/owner")
-    party: Optional[str] = Field(None, description="Political party")
+    party: str = Field(..., description="Type: 'Democratic', 'Republican', 'Private Owner', or 'U.S. Navy'")
     term_start: Optional[str] = Field(None, description="Start of term (YYYY-MM-DD)")
     term_end: Optional[str] = Field(None, description="End of term (YYYY-MM-DD)")
     wikipedia_url: Optional[str] = Field(None, description="Wikipedia URL")
     tags: Optional[str] = Field(None, description="Comma-separated tags")
+
+    def model_post_init(self, __context):
+        """Validate party field"""
+        valid_parties = ['Democratic', 'Republican', 'Private Owner', 'U.S. Navy']
+        if self.party and self.party not in valid_parties:
+            raise ValueError(f"Party must be one of: {', '.join(valid_parties)}")
 
 
 @router.post("/", response_model=Dict[str, Any])
