@@ -879,7 +879,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           <div>
             <strong className="text-gray-900">Start:</strong>
             <div className="text-gray-700">
-              {formatDateTime(currentVoyage.start_timestamp) || formatDate(currentVoyage.start_date)}
+              {currentVoyage.start_timestamp
+                ? formatDateTime(currentVoyage.start_timestamp)
+                : currentVoyage.start_date
+                  ? `${formatDate(currentVoyage.start_date)}${currentVoyage.start_time ? ` ${currentVoyage.start_time}` : ''}`
+                  : 'N/A'
+              }
             </div>
             {(currentVoyage.start_location || currentVoyage.origin) && (
               <div className="text-gray-600 text-xs mt-1">
@@ -891,7 +896,12 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           <div>
             <strong className="text-gray-900">End:</strong>
             <div className="text-gray-700">
-              {formatDateTime(currentVoyage.end_timestamp) || formatDate(currentVoyage.end_date)}
+              {currentVoyage.end_timestamp
+                ? formatDateTime(currentVoyage.end_timestamp)
+                : currentVoyage.end_date
+                  ? `${formatDate(currentVoyage.end_date)}${currentVoyage.end_time ? ` ${currentVoyage.end_time}` : ''}`
+                  : 'N/A'
+              }
             </div>
             {(currentVoyage.end_location || currentVoyage.destination) && (
               <div className="text-gray-600 text-xs mt-1">
