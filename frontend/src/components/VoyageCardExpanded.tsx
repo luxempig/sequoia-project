@@ -730,6 +730,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 >
                   Cancel
                 </button>
+                {voyage.original_markdown && (
+                  <button
+                    onClick={() => setShowOriginalMarkdown(!showOriginalMarkdown)}
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+                    title={showOriginalMarkdown ? "Hide source" : "Show source"}
+                  >
+                    {showOriginalMarkdown ? "Hide Source" : "Show Source"}
+                  </button>
+                )}
               </div>
             ) : (
               <div className="flex gap-2">
@@ -762,20 +771,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
         )}
       </div>
 
-      {/* Original Markdown Display */}
-      {showOriginalMarkdown && voyage.original_markdown && (
-        <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <h4 className="font-semibold text-gray-700">Original Markdown Source</h4>
-            <span className="text-xs text-gray-500">Used during ingestion</span>
-          </div>
-          <pre className="bg-white border border-gray-300 rounded p-3 text-sm overflow-x-auto whitespace-pre-wrap font-mono text-gray-800">
-            {voyage.original_markdown}
-          </pre>
-        </div>
-      )}
-
-      {/* Type */}
+      {/* Wrapper for side-by-side layout when showing source */}
+      <div className={isEditing && showOriginalMarkdown && voyage.original_markdown ? "flex gap-4 items-start" : ""}>
+        <div className={isEditing && showOriginalMarkdown && voyage.original_markdown ? "flex-1 min-w-0" : ""}>
+          {/* Type */}
       {isEditing ? (
         <div className="mb-4">
           <label className="block text-xs font-medium text-gray-700 mb-1">Voyage Type</label>
@@ -2319,6 +2318,23 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           )}
         </div>
       )}
+        </div>
+
+        {/* Original Markdown Source Panel - shown when editing with source visible */}
+        {isEditing && showOriginalMarkdown && voyage.original_markdown && (
+          <div className="w-96 flex-shrink-0">
+            <div className="sticky top-4 bg-gray-50 border-2 border-gray-300 rounded-lg p-4 max-h-screen overflow-y-auto">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-gray-700 text-sm">Original Source</h4>
+                <span className="text-xs text-gray-500">Used during ingestion</span>
+              </div>
+              <pre className="bg-white border border-gray-300 rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap font-mono text-gray-800">
+                {voyage.original_markdown}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
