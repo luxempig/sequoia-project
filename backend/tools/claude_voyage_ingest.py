@@ -335,7 +335,7 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                 INSERT INTO sequoia.voyages (
                     voyage_slug, title, start_date, end_date, start_time, end_time,
                     start_location, end_location, vessel_name, voyage_type,
-                    additional_information, notes, spin, spin_source,
+                    additional_information, notes, notes_internal, spin, spin_source,
                     source_urls, additional_sources, tags,
                     president_slug_from_voyage,
                     has_photo, has_video, presidential_use, presidential_initials,
@@ -345,7 +345,7 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s,
-                    %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
                     %s, %s, %s,
                     %s,
                     %s, %s, %s, %s,
@@ -358,7 +358,7 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                 voyage_data.get('start_time'), voyage_data.get('end_time'),
                 voyage_data.get('start_location'), voyage_data.get('end_location'),
                 voyage_data.get('vessel_name', 'USS Sequoia'), voyage_data.get('voyage_type'),
-                voyage_data.get('additional_information'), voyage_data.get('notes'),
+                voyage_data.get('additional_information'), voyage_data.get('notes'), voyage_data.get('notes_internal'),
                 voyage_data.get('spin'), voyage_data.get('spin_source'),
                 source_urls_json, additional_sources, ','.join(voyage_data.get('tags', [])) if voyage_data.get('tags') else None,
                 voyage_data.get('president_slug_from_voyage'),

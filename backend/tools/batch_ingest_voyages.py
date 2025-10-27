@@ -28,8 +28,9 @@ def split_voyages(markdown_content: str):
         if i + 1 < len(parts):
             header = parts[i].strip()
             content = parts[i + 1].strip()
-            if content:  # Skip empty voyages
-                voyages.append((header, f"## {header}\n\n{content}"))
+            # Include all voyages - even those with minimal/no content
+            # The processing will handle empty voyages with a placeholder
+            voyages.append((header, f"## {header}\n\n{content}", content))
 
     return voyages
 
@@ -72,13 +73,68 @@ def main():
     error_count = 0
     skipped_count = 0
 
-    for idx, (header, voyage_markdown) in enumerate(voyages_to_process, start=start_idx + 1):
+    for idx, (header, voyage_markdown, raw_content) in enumerate(voyages_to_process, start=start_idx + 1):
         print(f"\n[{idx}/{len(voyages)}] Processing: {header}")
         print("-" * 80)
 
         try:
-            # Parse with Claude
-            parsed_data = parse_with_claude(voyage_markdown, args.president_slug)
+            # Check if this is a floating date with minimal/no content
+            is_minimal = not raw_content or len(raw_content.strip()) < 10
+
+            if is_minimal:
+                # Create a minimal voyage with placeholder data
+                print(f"  📝 Floating date detected - creating placeholder voyage")
+
+                # Try to extract date from header
+                date_match = re.search(r'(\d{4}-\d{2}-\d{2})', header)
+                if date_match:
+                    date_str = date_match.group(1)
+                    parsed_data = {
+                        'voyage': {
+                            'title': f'Voyage on {date_str}',
+                            'start_date': date_str,
+                            'end_date': None,
+                            'start_time': None,
+                            'end_time': None,
+                            'start_location': None,
+                            'end_location': None,
+                            'vessel_name': 'USS Sequoia',
+                            'voyage_type': None,
+                            'additional_information': None,
+                            'notes': None,
+                            'notes_internal': 'No information available yet. Date placeholder created during ingestion.',
+                            'spin': None,
+                            'spin_source': None,
+                            'source_urls': [],
+                            'additional_source_urls': [],
+                            'tags': [],
+                            'president_slug_from_voyage': args.president_slug,
+                            'has_photo': False,
+                            'has_video': False,
+                            'presidential_use': False,
+                            'presidential_initials': None,
+                            'has_royalty': False,
+                            'royalty_details': None,
+                            'has_foreign_leader': False,
+                            'foreign_leader_country': None,
+                            'mention_camp_david': False,
+                            'mention_mount_vernon': False,
+                            'mention_captain': False,
+                            'mention_crew': False,
+                            'mention_rmd': False,
+                            'mention_yacht_spin': False,
+                            'mention_menu': False,
+                            'mention_drinks_wine': False
+                        },
+                        'passengers': []
+                    }
+                else:
+                    print(f"  ⚠ Skipped: Could not extract date from header '{header}'")
+                    skipped_count += 1
+                    continue
+            else:
+                # Parse with Claude
+                parsed_data = parse_with_claude(voyage_markdown, args.president_slug)
 
             # Check if we got valid data
             if not parsed_data or 'voyage' not in parsed_data:
