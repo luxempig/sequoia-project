@@ -142,8 +142,8 @@ def main():
                 skipped_count += 1
                 continue
 
-            # Insert to database
-            voyage_slug = insert_voyage_to_db(parsed_data, dry_run=args.dry_run)
+            # Insert to database with original markdown
+            voyage_slug = insert_voyage_to_db(parsed_data, dry_run=args.dry_run, original_markdown=voyage_markdown)
 
             if args.dry_run:
                 print(f"  ✓ [DRY RUN] Would create: {voyage_slug}")

@@ -31,6 +31,7 @@ export interface Voyage {
   spin?: string | null;  // Spin text (displayed in italics with quotes)
   spin_source?: string | null;  // Source for the spin
   tags?: string | null;
+  original_markdown?: string | null;  // Original markdown used during ingestion
   source_urls?: string[] | null;
   // denormalized hint to group by presidency (from your schema)
   president_slug_from_voyage?: string | null;

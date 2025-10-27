@@ -47,30 +47,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
   const [appliedPresidents, setAppliedPresidents] = useState<string[]>([]);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
-  // Boolean field filters (independent from list view)
-  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(() => {
-    const saved = sessionStorage.getItem('timelineFilters');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
-  const [attributeDropdownOpen, setAttributeDropdownOpen] = useState(false);
-  const attributeDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Filter options matching VoyageList
-  const filterOptions = [
-    { key: 'has_photo', label: 'Has Photos' },
-    { key: 'has_video', label: 'Has Video' },
-    { key: 'presidential_use', label: 'Presidential Use' },
-    { key: 'has_royalty', label: 'Royalty Present' },
-    { key: 'has_foreign_leader', label: 'Foreign Leader Present' },
-    { key: 'mention_camp_david', label: 'Mentions Camp David' },
-    { key: 'mention_mount_vernon', label: 'Mentions Mount Vernon' },
-    { key: 'mention_captain', label: 'Mentions Captain' },
-    { key: 'mention_crew', label: 'Mentions Crew' },
-    { key: 'mention_rmd', label: 'Mentions Restoration, Maintenance, or Damage' },
-    { key: 'mention_yacht_spin', label: 'Yacht Spin' },
-    { key: 'mention_menu', label: 'Includes Menu Info' },
-    { key: 'mention_drinks_wine', label: 'Mentions Drinks/Wine' },
-  ];
 
   // Load presidents and initialize filter
   useEffect(() => {
@@ -104,7 +80,7 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
       });
   }, []);
 
-  // Filter voyages by selected presidents AND boolean fields
+  // Filter voyages by selected presidents only
   const filteredVoyages = useMemo(() => {
     return voyages.filter(voyage => {
       if (!voyage.start_date) return false;
@@ -117,17 +93,9 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
         }
       }
 
-      // Filter by boolean attributes (AND logic - must match ALL selected)
-      if (selectedFilters.size > 0) {
-        return Array.from(selectedFilters).every(filterKey => {
-          const value = voyage[filterKey as keyof Voyage];
-          return value === true;
-        });
-      }
-
       return true;
     });
-  }, [voyages, appliedPresidents, selectedFilters]);
+  }, [voyages, appliedPresidents]);
 
   // Save applied filter to sessionStorage
   useEffect(() => {
@@ -135,11 +103,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
       sessionStorage.setItem('timelinePresidentFilter', JSON.stringify(appliedPresidents));
     }
   }, [appliedPresidents]);
-
-  // Save boolean filters to sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem('timelineFilters', JSON.stringify(Array.from(selectedFilters)));
-  }, [selectedFilters]);
 
   // Close president dropdown when clicking outside
   useEffect(() => {
@@ -152,18 +115,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
     document.addEventListener("mousedown", handleClickOutside, true);
     return () => document.removeEventListener("mousedown", handleClickOutside, true);
   }, [filterDropdownOpen]);
-
-  // Close attribute dropdown when clicking outside
-  useEffect(() => {
-    if (!attributeDropdownOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (attributeDropdownRef.current && !attributeDropdownRef.current.contains(e.target as Node)) {
-        setAttributeDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside, true);
-    return () => document.removeEventListener("mousedown", handleClickOutside, true);
-  }, [attributeDropdownOpen]);
 
   // Organize voyages by year/month/day
   useEffect(() => {
@@ -639,73 +590,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
             className="px-3 py-2 text-sm bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors shadow-md"
           >
             Clear Filter
-          </button>
-        )}
-
-        {/* Attribute Filter Dropdown */}
-        <div ref={attributeDropdownRef} className="relative">
-          <button
-            onClick={() => setAttributeDropdownOpen(!attributeDropdownOpen)}
-            className="px-3 py-2 text-sm border-2 border-gray-400 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2 shadow-md hover:bg-gray-50 transition-colors"
-          >
-            <span className="font-medium text-gray-700">
-              {selectedFilters.size === 0
-                ? 'All Attributes'
-                : `${selectedFilters.size} Filter${selectedFilters.size !== 1 ? 's' : ''}`}
-            </span>
-            <span className="text-gray-500">▾</span>
-          </button>
-
-          {attributeDropdownOpen && (
-            <div className="absolute z-20 mt-1 w-72 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 max-h-96 overflow-y-auto">
-              <div className="p-3 border-b border-gray-200 flex justify-between items-center">
-                <span className="text-sm font-semibold text-gray-900">Filter by Attributes</span>
-                <button
-                  onClick={() => setSelectedFilters(new Set())}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Clear All
-                </button>
-              </div>
-              <div className="p-2">
-                {filterOptions.map(option => {
-                  const isSelected = selectedFilters.has(option.key);
-                  return (
-                    <label
-                      key={option.key}
-                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => {
-                          const newFilters = new Set(selectedFilters);
-                          if (e.target.checked) {
-                            newFilters.add(option.key);
-                          } else {
-                            newFilters.delete(option.key);
-                          }
-                          setSelectedFilters(newFilters);
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">
-                        {option.label}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {selectedFilters.size > 0 && (
-          <button
-            onClick={() => setSelectedFilters(new Set())}
-            className="px-3 py-2 text-sm bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors shadow-md"
-          >
-            Clear Attributes
           </button>
         )}
       </div>

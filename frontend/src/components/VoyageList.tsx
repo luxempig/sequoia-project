@@ -210,6 +210,13 @@ export default function VoyageList() {
     if (dt) p.set("date_to", dt);
     // Note: president filter is now client-side only, not sent to API
     p.set("limit", "1000"); // Fetch all voyages
+
+    // Reset president filter to all when search query is applied
+    if (q && presidents.length > 0) {
+      const allSlugs = presidents.map(p => p.president_slug);
+      setPres(allSlugs);
+    }
+
     setParams(p);
     setMore(false);
   };

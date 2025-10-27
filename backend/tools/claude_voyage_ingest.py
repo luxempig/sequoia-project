@@ -261,7 +261,7 @@ Return ONLY valid JSON, no other text."""
         print(f"Response: {response_text if 'response_text' in locals() else 'No response'}")
         raise
 
-def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
+def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False, original_markdown: Optional[str] = None) -> str:
     """Insert parsed voyage data into database with passenger deduplication"""
 
     try:
@@ -341,7 +341,8 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                     has_photo, has_video, presidential_use, presidential_initials,
                     has_royalty, royalty_details, has_foreign_leader, foreign_leader_country,
                     mention_camp_david, mention_mount_vernon, mention_captain, mention_crew,
-                    mention_rmd, mention_yacht_spin, mention_menu, mention_drinks_wine
+                    mention_rmd, mention_yacht_spin, mention_menu, mention_drinks_wine,
+                    original_markdown
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s,
@@ -351,7 +352,8 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                     %s, %s, %s, %s,
                     %s, %s, %s, %s,
                     %s, %s, %s, %s,
-                    %s, %s, %s, %s
+                    %s, %s, %s, %s,
+                    %s
                 )
             """, (
                 voyage_slug, voyage_data.get('title'), voyage_data['start_date'], voyage_data.get('end_date'),
@@ -369,7 +371,8 @@ def insert_voyage_to_db(parsed_data: Dict, dry_run: bool = False) -> str:
                 voyage_data.get('mention_camp_david', False), voyage_data.get('mention_mount_vernon', False),
                 voyage_data.get('mention_captain', False), voyage_data.get('mention_crew', False),
                 voyage_data.get('mention_rmd', False), voyage_data.get('mention_yacht_spin', False),
-                voyage_data.get('mention_menu', False), voyage_data.get('mention_drinks_wine', False)
+                voyage_data.get('mention_menu', False), voyage_data.get('mention_drinks_wine', False),
+                original_markdown
             ))
 
         # Process passengers with deduplication
@@ -484,8 +487,8 @@ def main():
         print(json.dumps(parsed_data, indent=2))
         print("="*60)
 
-        # Insert to database
-        voyage_slug = insert_voyage_to_db(parsed_data, dry_run=args.dry_run)
+        # Insert to database with original markdown
+        voyage_slug = insert_voyage_to_db(parsed_data, dry_run=args.dry_run, original_markdown=markdown_content)
 
         if not args.dry_run:
             print(f"\n✓ Voyage added successfully: {voyage_slug}")

@@ -111,6 +111,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loadingPeople, setLoadingPeople] = useState(false);
   const [loadingMedia, setLoadingMedia] = useState(false);
+  const [showOriginalMarkdown, setShowOriginalMarkdown] = useState(false);
 
   // Helper function to get media type icon
   const getMediaIcon = (type: string | null | undefined) => {
@@ -738,6 +739,15 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 >
                   Edit
                 </button>
+                {voyage.original_markdown && (
+                  <button
+                    onClick={() => setShowOriginalMarkdown(!showOriginalMarkdown)}
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+                    title={showOriginalMarkdown ? "Hide original markdown" : "Show original markdown"}
+                  >
+                    {showOriginalMarkdown ? "Hide Source" : "Show Source"}
+                  </button>
+                )}
                 {onDelete && (
                   <button
                     onClick={handleDelete}
@@ -751,6 +761,19 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
           </div>
         )}
       </div>
+
+      {/* Original Markdown Display */}
+      {showOriginalMarkdown && voyage.original_markdown && (
+        <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold text-gray-700">Original Markdown Source</h4>
+            <span className="text-xs text-gray-500">Used during ingestion</span>
+          </div>
+          <pre className="bg-white border border-gray-300 rounded p-3 text-sm overflow-x-auto whitespace-pre-wrap font-mono text-gray-800">
+            {voyage.original_markdown}
+          </pre>
+        </div>
+      )}
 
       {/* Type */}
       {isEditing ? (
