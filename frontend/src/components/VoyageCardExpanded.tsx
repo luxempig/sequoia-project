@@ -2293,6 +2293,13 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 className="w-full h-[85vh] rounded-lg bg-white"
                 title="PDF Viewer"
               />
+            ) : lightboxSrc.match(/\.(mp4|mov|avi|webm)$/i) ? (
+              <video
+                src={lightboxSrc}
+                controls
+                className="w-full max-h-[85vh] rounded-lg bg-black"
+                autoPlay
+              />
             ) : (
               <img
                 src={lightboxSrc}
