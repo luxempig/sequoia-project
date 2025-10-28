@@ -2,6 +2,7 @@
 """
 Process Google Drive links in voyage source_urls and additional_sources.
 Downloads files, uploads to S3, creates media records, and links to voyages.
+Updated: 2025-10-28
 
 Usage:
     python process_drive_links.py [--dry-run] [--voyage-slug SLUG]
