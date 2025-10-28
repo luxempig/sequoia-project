@@ -135,7 +135,9 @@ const MediaExplorer: React.FC = () => {
         const metadataMap: Record<string, MediaItem> = {};
 
         result.files.forEach((file: FileItem) => {
-          const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+          // Convert HTTPS URL to s3:// format for comparison
+          const s3Url = file.url.replace(/https:\/\/([^.]+)\.s3\.amazonaws\.com\//, 's3://$1/');
+          const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
           if (mediaItem) {
             metadataMap[file.url] = mediaItem;
           }
@@ -567,6 +569,7 @@ const MediaExplorer: React.FC = () => {
                         ? [metadata.title, metadata.credit, metadata.date].filter(Boolean).join(' • ') || file.name
                         : file.name;
 
+                      // Show thumbnail from metadata for all file types (PDFs have JPG thumbnails)
                       const thumbnailUrl = metadata?.public_derivative_url || (file.type === "image" ? file.url : null);
 
                       return (
