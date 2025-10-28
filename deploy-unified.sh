@@ -267,6 +267,56 @@ else
     log "No frontend build archive found, skipping frontend deployment"
 fi
 
+# Ensure .env file is up-to-date with environment variables (run even if backend didn't change)
+log "Checking environment variables for .env update..."
+if [ -n "$DB_PASSWORD" ] && [ -n "$AWS_ACCESS_KEY_ID" ]; then
+    log "Environment variables available, updating .env file..."
+    cd $BACKEND_DIR
+    cat > .env << EOF
+# Database Configuration (mixed: local + secrets)
+DB_HOST="sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com"
+DB_PORT=5432
+DB_NAME=sequoia_db
+DB_USER=sequoia
+DB_PASSWORD='$DB_PASSWORD'
+DB_SCHEMA=sequoia
+
+# AWS Configuration (mixed: local + secrets)
+AWS_REGION=us-east-2
+MEDIA_BUCKET=uss-sequoia-bucket
+PUBLIC_BUCKET=sequoia-public
+PRIVATE_BUCKET=sequoia-canonical
+AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+# Google Sheets Integration (disabled - no longer needed)
+# DOC_ID=1brCftArb50GHRZfxDuvCJJkXFAfIE_UoP45xZV0TSdU
+# SPREADSHEET_ID=1CDfPY4zi_pkfwyoYxOGPUoeD2ypkKTfFNe1z81klePQ
+
+# Paths and Settings
+GOOGLE_APPLICATION_CREDENTIALS="/home/ec2-user/sequoia-project/backend/keys/sequoia_credentials.json"
+PRESIDENTS_SHEET_TITLE="presidents"
+
+# Dropbox Configuration
+DROPBOX_ACCESS_TOKEN=$DROPBOX_ACCESS_TOKEN
+DROPBOX_TIMEOUT=60
+
+# Canonical voyage data file path
+CANONICAL_VOYAGES_FILE=canonical_voyages.json
+
+# Redis configuration for Celery
+REDIS_URL=redis://localhost:6379/0
+
+# Async processing settings
+ASYNC_THUMBNAILS=true
+CELERY_WORKER_CONCURRENCY=2
+CELERY_TASK_TIME_LIMIT=1800
+EOF
+    log ".env file updated successfully"
+else
+    log "WARNING: Required environment variables (DB_PASSWORD, AWS_ACCESS_KEY_ID) not available, skipping .env update"
+fi
+
 # Ensure Google credentials exist (run even if backend didn't change)
 log "Checking Google credentials... File exists: $([ -f "$BACKEND_DIR/keys/sequoia_credentials.json" ] && echo 'yes' || echo 'no'), Variable set: $([ -n "$GOOGLE_CREDENTIALS" ] && echo 'yes' || echo 'no')"
 if [ ! -f "$BACKEND_DIR/keys/sequoia_credentials.json" ]; then
