@@ -1084,11 +1084,19 @@ const MediaExplorer: React.FC = () => {
             >
               Download
             </a>
-            <img
-              src={lightboxSrc}
-              alt="Media"
-              className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
-            />
+            {lightboxSrc.toLowerCase().endsWith('.pdf') ? (
+              <iframe
+                src={lightboxSrc}
+                className="w-full h-[85vh] rounded-lg bg-white"
+                title="PDF Viewer"
+              />
+            ) : (
+              <img
+                src={lightboxSrc}
+                alt="Media"
+                className="w-full max-h-[85vh] object-contain rounded-lg bg-white"
+              />
+            )}
           </div>
         </div>
       )}
