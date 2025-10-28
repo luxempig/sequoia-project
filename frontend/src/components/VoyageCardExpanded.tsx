@@ -748,15 +748,6 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 >
                   Edit
                 </button>
-                {voyage.original_markdown && (
-                  <button
-                    onClick={() => setShowOriginalMarkdown(!showOriginalMarkdown)}
-                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    title={showOriginalMarkdown ? "Hide original markdown" : "Show original markdown"}
-                  >
-                    {showOriginalMarkdown ? "Hide Source" : "Show Source"}
-                  </button>
-                )}
                 {onDelete && (
                   <button
                     onClick={handleDelete}
