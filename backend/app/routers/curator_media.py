@@ -180,6 +180,14 @@ def update_media(media_slug: str, updates: MediaUpdate) -> Dict[str, Any]:
                     new_media_type=new_media_type
                 )
 
+                # Check if reorganization succeeded
+                # If we have S3 URLs but reorganization returned None, it failed
+                if s3_url and not new_urls.get('s3_url'):
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Failed to reorganize files in S3. The files may not exist at the expected location. Please check the Media Explorer to verify file locations."
+                    )
+
                 # Update the URLs in update_data
                 if new_urls.get('s3_url'):
                     update_data['s3_url'] = new_urls['s3_url']
