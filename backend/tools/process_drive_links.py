@@ -19,6 +19,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import boto3
 from PIL import Image
+from dotenv import load_dotenv
+
+# Load .env file from backend directory
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(backend_dir, '.env')
+load_dotenv(env_path)
 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
