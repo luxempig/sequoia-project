@@ -828,11 +828,18 @@ def reorganize_media_in_s3(
         s3_client = boto3.client('s3')
 
         # Reorganize main file
-        if s3_url and 's3.amazonaws.com' in s3_url:
+        if s3_url and (s3_url.startswith('s3://') or 's3.amazonaws.com' in s3_url):
             # Parse current URL
-            parts = s3_url.replace('https://', '').split('/')
-            bucket = parts[0].replace('.s3.amazonaws.com', '')
-            old_key = '/'.join(parts[1:])
+            if s3_url.startswith('s3://'):
+                # Format: s3://bucket-name/president/media-type/file
+                parts = s3_url.replace('s3://', '').split('/')
+                bucket = parts[0]
+                old_key = '/'.join(parts[1:])
+            else:
+                # Format: https://bucket-name.s3.amazonaws.com/president/media-type/file
+                parts = s3_url.replace('https://', '').split('/')
+                bucket = parts[0].replace('.s3.amazonaws.com', '')
+                old_key = '/'.join(parts[1:])
 
             # Parse the key structure: president/media-type/filename
             key_parts = old_key.split('/')
@@ -857,15 +864,21 @@ def reorganize_media_in_s3(
                 # Delete old location
                 s3_client.delete_object(Bucket=bucket, Key=old_key)
 
-                result['s3_url'] = f"https://{bucket}.s3.amazonaws.com/{new_key}"
+                # Return in s3:// format to match database format
+                result['s3_url'] = f"s3://{bucket}/{new_key}"
                 LOG.info(f"Reorganized main file to: {result['s3_url']}")
 
         # Reorganize thumbnail/derivative
-        if derivative_url and 's3.amazonaws.com' in derivative_url:
+        if derivative_url and (derivative_url.startswith('s3://') or 's3.amazonaws.com' in derivative_url):
             # Parse current URL
-            parts = derivative_url.replace('https://', '').split('/')
-            bucket = parts[0].replace('.s3.amazonaws.com', '')
-            old_key = '/'.join(parts[1:])
+            if derivative_url.startswith('s3://'):
+                parts = derivative_url.replace('s3://', '').split('/')
+                bucket = parts[0]
+                old_key = '/'.join(parts[1:])
+            else:
+                parts = derivative_url.replace('https://', '').split('/')
+                bucket = parts[0].replace('.s3.amazonaws.com', '')
+                old_key = '/'.join(parts[1:])
 
             # Parse the key structure: president/media-type/filename
             key_parts = old_key.split('/')
