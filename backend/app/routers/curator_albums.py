@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import re
-from db import db_cursor
+from app.db import db_cursor
 
 router = APIRouter(prefix="/api/curator/albums", tags=["curator-albums"])
 
