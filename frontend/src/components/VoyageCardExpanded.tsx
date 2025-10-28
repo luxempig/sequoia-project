@@ -1559,7 +1559,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                               <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
                                 {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
                                   <img
-                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                    src={mediaItem.public_derivative_url || mediaItem.url || ''}
                                     alt={mediaItem.title || 'Source'}
                                     className="w-full h-full object-cover"
                                   />
@@ -1637,7 +1637,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
                               {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
                                 <img
-                                  src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                  src={mediaItem.public_derivative_url || mediaItem.url || ''}
                                   alt={mediaItem.title || 'Source'}
                                   className="w-full h-full object-cover"
                                 />
@@ -1743,8 +1743,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {sourceMedia.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {sourceMedia.map((media) => {
-                    const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
-                    const fullUrl = media.s3_url || media.url || '';
+                    const thumbnailUrl = media.public_derivative_url || media.url || '';
+                    const fullUrl = media.url || media.public_derivative_url || '';
 
                     return (
                       <button
@@ -1875,7 +1875,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                               <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
                                 {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
                                   <img
-                                    src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                    src={mediaItem.public_derivative_url || mediaItem.url || ''}
                                     alt={mediaItem.title || 'Additional Source'}
                                     className="w-full h-full object-cover"
                                   />
@@ -1953,7 +1953,7 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                             <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border border-gray-200">
                               {mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url ? (
                                 <img
-                                  src={mediaItem.public_derivative_url || mediaItem.s3_url || mediaItem.url || ''}
+                                  src={mediaItem.public_derivative_url || mediaItem.url || ''}
                                   alt={mediaItem.title || 'Additional Source'}
                                   className="w-full h-full object-cover"
                                 />
@@ -2066,8 +2066,8 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
               {additionalSourceMedia.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {additionalSourceMedia.map((media) => {
-                    const thumbnailUrl = media.public_derivative_url || media.s3_url || media.url || '';
-                    const fullUrl = media.s3_url || media.url || '';
+                    const thumbnailUrl = media.public_derivative_url || media.url || '';
+                    const fullUrl = media.url || media.public_derivative_url || '';
 
                     return (
                       <button
