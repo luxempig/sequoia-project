@@ -28,9 +28,17 @@ def split_voyages(markdown_content: str):
         if i + 1 < len(parts):
             header = parts[i].strip()
             content = parts[i + 1].strip()
-            # Include all voyages - even those with minimal/no content
-            # The processing will handle empty voyages with a placeholder
-            voyages.append((header, f"## {header}\n\n{content}", content))
+
+            # Extract tags from the PREVIOUS voyage (which appear before this voyage)
+            # Tags are lines like (FDR) (FL) (MV) that appear at the end of the previous section
+            prev_content = parts[i - 1] if i > 1 else ""
+            tag_match = re.search(r'(\([A-Z]{2,4}\)(?:\s*\([A-Z]{2,4}\))*)\s*$', prev_content)
+            tags_line = tag_match.group(1) if tag_match else ""
+
+            # Prepend tags to the voyage markdown so Claude sees them
+            voyage_markdown = f"{tags_line}\n\n## {header}\n\n{content}" if tags_line else f"## {header}\n\n{content}"
+
+            voyages.append((header, voyage_markdown, content))
 
     return voyages
 
