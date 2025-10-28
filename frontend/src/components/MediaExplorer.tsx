@@ -211,7 +211,13 @@ const MediaExplorer: React.FC = () => {
     // Try to find media record in database by S3 URL
     try {
       const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
-      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      // Convert HTTPS URL to s3:// format for comparison
+      // file.url is like: https://sequoia-canonical.s3.amazonaws.com/president/type/file.jpg
+      // We need: s3://sequoia-canonical/president/type/file.jpg
+      const s3Url = file.url.replace(/https:\/\/([^.]+)\.s3\.amazonaws\.com\//, 's3://$1/');
+
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
 
       if (mediaItem) {
         setEditingMedia(mediaItem);
@@ -257,7 +263,11 @@ const MediaExplorer: React.FC = () => {
     try {
       // Find media record in database
       const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
-      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      // Convert HTTPS URL to s3:// format for comparison
+      const s3Url = file.url.replace(/https:\/\/([^.]+)\.s3\.amazonaws\.com\//, 's3://$1/');
+
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
 
       if (!mediaItem) {
         alert("Media not found in database.");
@@ -314,7 +324,11 @@ const MediaExplorer: React.FC = () => {
     try {
       // Find media record in database
       const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
-      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      // Convert HTTPS URL to s3:// format for comparison
+      const s3Url = file.url.replace(/https:\/\/([^.]+)\.s3\.amazonaws\.com\//, 's3://$1/');
+
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
 
       if (!mediaItem) {
         alert("Media not found in database.");
@@ -379,7 +393,11 @@ const MediaExplorer: React.FC = () => {
     try {
       // Find media record in database
       const allMedia = await api.listMedia(new URLSearchParams({ limit: '500' }));
-      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === file.url);
+
+      // Convert HTTPS URL to s3:// format for comparison
+      const s3Url = file.url.replace(/https:\/\/([^.]+)\.s3\.amazonaws\.com\//, 's3://$1/');
+
+      const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
 
       if (!mediaItem) {
         alert("Media not found in database. Cannot delete.");
