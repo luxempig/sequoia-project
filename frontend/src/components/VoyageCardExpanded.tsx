@@ -1744,7 +1744,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {sourceMedia.map((media) => {
                     const thumbnailUrl = media.public_derivative_url || media.url || '';
-                    const fullUrl = media.url || media.public_derivative_url || '';
+                    // Convert s3:// to HTTPS for browser viewing
+                    const fullUrl = media.s3_url
+                      ? media.s3_url.replace(/^s3:\/\/([^/]+)\//, 'https://$1.s3.amazonaws.com/')
+                      : (media.url || media.public_derivative_url || '');
 
                     return (
                       <button
@@ -2067,7 +2070,10 @@ const VoyageCardExpanded: React.FC<VoyageCardExpandedProps> = ({ voyage, editMod
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {additionalSourceMedia.map((media) => {
                     const thumbnailUrl = media.public_derivative_url || media.url || '';
-                    const fullUrl = media.url || media.public_derivative_url || '';
+                    // Convert s3:// to HTTPS for browser viewing
+                    const fullUrl = media.s3_url
+                      ? media.s3_url.replace(/^s3:\/\/([^/]+)\//, 'https://$1.s3.amazonaws.com/')
+                      : (media.url || media.public_derivative_url || '');
 
                     return (
                       <button
