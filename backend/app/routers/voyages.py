@@ -45,8 +45,12 @@ def list_voyages(
             params: List[Any] = []
 
             if q:
-                # Search across all text fields
+                # Search across all text fields, including passenger names and titles
                 search_pattern = f"%{q}%"
+                # Add JOINs for passenger search
+                joins.append("LEFT JOIN sequoia.voyage_passengers vp_search ON vp_search.voyage_slug = v.voyage_slug")
+                joins.append("LEFT JOIN sequoia.people p_search ON p_search.person_slug = vp_search.person_slug")
+
                 conds.append("""(
                     COALESCE(v.voyage_slug,'') ILIKE %s OR
                     COALESCE(v.title,'') ILIKE %s OR
@@ -64,9 +68,13 @@ def list_voyages(
                     COALESCE(v.presidential_initials,'') ILIKE %s OR
                     COALESCE(v.royalty_details,'') ILIKE %s OR
                     COALESCE(v.foreign_leader_country,'') ILIKE %s OR
-                    COALESCE(array_to_string(v.source_urls, ' '),'') ILIKE %s
+                    COALESCE(array_to_string(v.source_urls, ' '),'') ILIKE %s OR
+                    COALESCE(v.start_date::text,'') ILIKE %s OR
+                    COALESCE(v.end_date::text,'') ILIKE %s OR
+                    COALESCE(p_search.full_name,'') ILIKE %s OR
+                    COALESCE(vp_search.role_title,'') ILIKE %s
                 )""")
-                params += [search_pattern] * 17
+                params += [search_pattern] * 21
 
             if origin:
                 conds.append("v.origin = %s"); params.append(origin)
