@@ -486,7 +486,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
 
   const handleMediaClick = (media: MediaItem) => {
     // Prefer high-quality original (s3_url) over thumbnail (public_derivative_url)
-    const url = media.s3_url || media.url || media.public_derivative_url || '';
+    // Convert s3:// to HTTPS for browser viewing
+    let url = '';
+    if (media.s3_url) {
+      url = media.s3_url.replace(/^s3:\/\/([^/]+)\//, 'https://$1.s3.amazonaws.com/');
+    } else {
+      url = media.url || media.public_derivative_url || '';
+    }
 
     // Open all media in lightbox (not just images)
     if (url) {
