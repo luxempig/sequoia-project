@@ -24,6 +24,10 @@ from PIL import Image
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from voyage_ingest.drive_sync import _parse_drive_file_id, _download_drive_binary, _drive_service
 
+# Import the existing DB connection function from claude_voyage_ingest
+sys.path.insert(0, os.path.dirname(__file__))
+from claude_voyage_ingest import get_db_connection as get_voyage_db_connection
+
 # Try to import PyMuPDF for PDF thumbnails
 try:
     import fitz
@@ -37,14 +41,8 @@ S3_CANONICAL_BUCKET = os.environ.get("S3_PRIVATE_BUCKET", "sequoia-canonical")
 S3_PUBLIC_BUCKET = os.environ.get("S3_PUBLIC_BUCKET", "sequoia-public")
 
 def get_db_connection():
-    """Get database connection using environment variables"""
-    return psycopg2.connect(
-        host=os.environ.get("DB_HOST", "localhost"),
-        port=os.environ.get("DB_PORT", "5432"),
-        dbname=os.environ.get("DB_NAME", "sequoia"),
-        user=os.environ.get("DB_USER", "postgres"),
-        password=os.environ.get("DB_PASSWORD", ""),
-    )
+    """Get database connection using the same method as other tools"""
+    return get_voyage_db_connection()
 
 def parse_drive_folder_id(url: str) -> Optional[str]:
     """Extract folder ID from Google Drive folder URL"""
