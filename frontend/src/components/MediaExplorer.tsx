@@ -69,7 +69,10 @@ const MediaExplorer: React.FC = () => {
   const [data, setData] = useState<S3BrowseResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
+
+  // Get selected file from URL parameter
+  const selectedFilePath = searchParams.get("file");
+  const selectedFile = data?.files.find(f => f.path === selectedFilePath) || null;
   const [mediaMetadata, setMediaMetadata] = useState<Record<string, MediaItem>>({});
 
   // Upload modal state
@@ -127,6 +130,14 @@ const MediaExplorer: React.FC = () => {
         throw new Error("Failed to load directory");
       }
       const result = await response.json();
+
+      // Sort files by last_modified date (newest first)
+      if (result.files) {
+        result.files.sort((a: FileItem, b: FileItem) => {
+          return new Date(b.last_modified).getTime() - new Date(a.last_modified).getTime();
+        });
+      }
+
       setData(result);
 
       // Load media metadata for files in this directory
@@ -152,6 +163,14 @@ const MediaExplorer: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const selectFile = (file: FileItem) => {
+    setSearchParams({ path: currentPrefix, file: file.path });
+  };
+
+  const returnToDirectory = () => {
+    setSearchParams({ path: currentPrefix });
   };
 
   const handleUpload = async () => {
@@ -381,7 +400,7 @@ const MediaExplorer: React.FC = () => {
       }
 
       alert("✓ Media permanently deleted from S3 and database!");
-      setSelectedFile(null);
+      returnToDirectory();
 
       // Refresh the view
       window.location.reload();
@@ -445,7 +464,7 @@ const MediaExplorer: React.FC = () => {
       }
 
       alert("✓ Media deleted successfully!");
-      setSelectedFile(null);
+      returnToDirectory();
       // Reload directory
       loadDirectory(currentPrefix);
     } catch (err) {
@@ -537,255 +556,254 @@ const MediaExplorer: React.FC = () => {
               </div>
             )}
 
-            {/* Directory Contents */}
-            {!loading && data && (
-              <div className="space-y-6">
-                <div className="text-sm text-gray-600">
-                  {data.total_items} items
-                </div>
+            {/* Dedicated File View */}
+            {!loading && data && selectedFile ? (
+              <div className="space-y-4">
+                {/* Return to Directory Button */}
+                <button
+                  onClick={returnToDirectory}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  ← Return to {data.breadcrumbs.length > 0 ? formatFolderName(data.breadcrumbs[data.breadcrumbs.length - 1].name) : 'Media Library'}
+                </button>
 
-                {/* Folders */}
-                {data.folders.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {data.folders.map((folder) => (
-                      <div
-                        key={folder.path}
-                        onClick={() => setCurrentPrefix(folder.path)}
-                        className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
-                      >
-                        <span className="text-4xl">📁</span>
-                        <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{formatFolderName(folder.name)}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* File Details View */}
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-2xl mb-6 truncate">
+                    {selectedFile.name}
+                  </h3>
 
-                {/* Files Grid */}
-                {data.files.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {data.files.map((file) => {
-                      const metadata = mediaMetadata[file.url];
-                      const caption = metadata
-                        ? [metadata.title, metadata.credit, metadata.date].filter(Boolean).join(' • ') || file.name
-                        : file.name;
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Preview */}
+                    <div>
+                      {selectedFile.type === "image" && (
+                        <img
+                          src={selectedFile.url}
+                          alt={selectedFile.name}
+                          className="w-full rounded-lg border border-gray-300"
+                        />
+                      )}
 
-                      // Show thumbnail from metadata for all file types (PDFs have JPG thumbnails)
-                      const thumbnailUrl = metadata?.public_derivative_url || (file.type === "image" ? file.url : null);
-
-                      return (
-                        <figure
-                          key={file.path}
-                          className={`rounded overflow-hidden bg-white ring-1 shadow-sm cursor-pointer transition-all ${
-                            selectedFile?.path === file.path
-                              ? "ring-2 ring-blue-500"
-                              : "ring-gray-200 hover:ring-gray-300"
-                          }`}
-                          onClick={() => setSelectedFile(file)}
+                      {selectedFile.type === "video" && (
+                        <video
+                          controls
+                          className="w-full rounded-lg border border-gray-300"
+                          src={selectedFile.url}
                         >
-                          {thumbnailUrl ? (
-                            <div className="aspect-square bg-gray-50">
-                              <img
-                                src={thumbnailUrl}
-                                alt={caption}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : file.type === "video" ? (
-                            <div className="aspect-square bg-black flex items-center justify-center">
-                              <span className="text-6xl">🎬</span>
-                            </div>
-                          ) : file.type === "pdf" ? (
-                            <div className="aspect-square bg-red-50 flex items-center justify-center border-b border-red-200">
-                              <span className="text-6xl">📄</span>
-                            </div>
-                          ) : (
-                            <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                              <span className="text-6xl">📋</span>
-                            </div>
-                          )}
-                          <figcaption className="p-2 text-xs text-gray-700">
-                            <div className="line-clamp-3 mb-1">{caption}</div>
-                            <div className="text-gray-500">{formatFileSize(file.size)}</div>
-                          </figcaption>
-                        </figure>
-                      );
-                    })}
-                  </div>
-                )}
+                          Your browser does not support video playback.
+                        </video>
+                      )}
 
-                {data.total_items === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <p className="text-lg">This folder is empty</p>
+                      {selectedFile.type === "pdf" && (() => {
+                        const metadata = mediaMetadata[selectedFile.url];
+                        const thumbnailUrl = metadata?.public_derivative_url;
+
+                        if (thumbnailUrl) {
+                          return (
+                            <img
+                              src={thumbnailUrl}
+                              alt={selectedFile.name}
+                              className="w-full rounded-lg border border-gray-300"
+                            />
+                          );
+                        }
+                        return (
+                          <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
+                            <span className="text-8xl">📄</span>
+                          </div>
+                        );
+                      })()}
+
+                      {selectedFile.type === "document" && (() => {
+                        const metadata = mediaMetadata[selectedFile.url];
+                        const thumbnailUrl = metadata?.public_derivative_url;
+
+                        if (thumbnailUrl) {
+                          return (
+                            <img
+                              src={thumbnailUrl}
+                              alt={selectedFile.name}
+                              className="w-full rounded-lg border border-gray-300"
+                            />
+                          );
+                        }
+                        return (
+                          <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
+                            <span className="text-8xl">📋</span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Details and Actions */}
+                    <div className="space-y-4">
+                      {/* File Details */}
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">Size:</span>
+                          <span className="ml-2 text-gray-600">{formatFileSize(selectedFile.size)}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Type:</span>
+                          <span className="ml-2 text-gray-600">{selectedFile.type}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Modified:</span>
+                          <span className="ml-2 text-gray-600">{formatDate(selectedFile.last_modified)}</span>
+                        </div>
+                        {(() => {
+                          const metadata = mediaMetadata[selectedFile.url];
+                          if (metadata) {
+                            return (
+                              <>
+                                {metadata.date && (
+                                  <div>
+                                    <span className="font-medium text-gray-700">Date:</span>
+                                    <span className="ml-2 text-gray-600">{metadata.date}</span>
+                                  </div>
+                                )}
+                                {metadata.credit && (
+                                  <div>
+                                    <span className="font-medium text-gray-700">Credit:</span>
+                                    <span className="ml-2 text-gray-600">{metadata.credit}</span>
+                                  </div>
+                                )}
+                                {metadata.description_markdown && (
+                                  <div>
+                                    <span className="font-medium text-gray-700">Description:</span>
+                                    <span className="ml-2 text-gray-600">{metadata.description_markdown}</span>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="space-y-2 pt-4">
+                        <button
+                          onClick={() => setLightboxSrc(selectedFile.url)}
+                          className="block w-full bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Open File
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedFile.url);
+                            alert("URL copied to clipboard!");
+                          }}
+                          className="block w-full bg-gray-200 text-gray-800 text-center px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                        >
+                          Copy URL
+                        </button>
+                        <button
+                          onClick={() => handleEditClick(selectedFile)}
+                          className="block w-full bg-green-600 text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Edit Metadata
+                        </button>
+                        <button
+                          onClick={() => handleDetachFromVoyages(selectedFile)}
+                          className="block w-full bg-orange-500 text-white text-center px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                          Detach from All Voyages
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCompletely(selectedFile)}
+                          className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Detach and Delete from Media Library
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
+            ) : (
+              /* Directory Contents */
+              !loading && data && (
+                <div className="space-y-6">
+                  <div className="text-sm text-gray-600">
+                    {data.total_items} items
+                  </div>
+
+                  {/* Folders */}
+                  {data.folders.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {data.folders.map((folder) => (
+                        <div
+                          key={folder.path}
+                          onClick={() => setCurrentPrefix(folder.path)}
+                          className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
+                        >
+                          <span className="text-4xl">📁</span>
+                          <p className="text-xs font-medium text-gray-900 text-center truncate w-full">{formatFolderName(folder.name)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Files Grid */}
+                  {data.files.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {data.files.map((file) => {
+                        const metadata = mediaMetadata[file.url];
+                        const caption = metadata
+                          ? [metadata.title, metadata.credit, metadata.date].filter(Boolean).join(' • ') || file.name
+                          : file.name;
+
+                        // Show thumbnail from metadata for all file types (PDFs have JPG thumbnails)
+                        const thumbnailUrl = metadata?.public_derivative_url || (file.type === "image" ? file.url : null);
+
+                        return (
+                          <figure
+                            key={file.path}
+                            className="rounded overflow-hidden bg-white ring-1 ring-gray-200 hover:ring-gray-300 shadow-sm cursor-pointer transition-all"
+                            onClick={() => selectFile(file)}
+                          >
+                            {thumbnailUrl ? (
+                              <div className="aspect-square bg-gray-50">
+                                <img
+                                  src={thumbnailUrl}
+                                  alt={caption}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ) : file.type === "video" ? (
+                              <div className="aspect-square bg-black flex items-center justify-center">
+                                <span className="text-6xl">🎬</span>
+                              </div>
+                            ) : file.type === "pdf" ? (
+                              <div className="aspect-square bg-red-50 flex items-center justify-center border-b border-red-200">
+                                <span className="text-6xl">📄</span>
+                              </div>
+                            ) : (
+                              <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                                <span className="text-6xl">📋</span>
+                              </div>
+                            )}
+                            <figcaption className="p-2 text-xs text-gray-700">
+                              <div className="line-clamp-3 mb-1">{caption}</div>
+                              <div className="text-gray-500">{formatFileSize(file.size)}</div>
+                            </figcaption>
+                          </figure>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {data.total_items === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <p className="text-lg">This folder is empty</p>
+                    </div>
+                  )}
+                </div>
+              )
             )}
           </div>
-
-          {/* File Preview Panel */}
-          {selectedFile && (
-            <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 text-lg truncate flex-1">
-                  {selectedFile.name}
-                </h3>
-                <button
-                  onClick={() => setSelectedFile(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Preview */}
-                <div>
-                  {selectedFile.type === "image" && (
-                    <img
-                      src={selectedFile.url}
-                      alt={selectedFile.name}
-                      className="w-full rounded-lg border border-gray-300"
-                    />
-                  )}
-
-                  {selectedFile.type === "video" && (
-                    <video
-                      controls
-                      className="w-full rounded-lg border border-gray-300"
-                      src={selectedFile.url}
-                    >
-                      Your browser does not support video playback.
-                    </video>
-                  )}
-
-                  {selectedFile.type === "pdf" && (() => {
-                    const metadata = mediaMetadata[selectedFile.url];
-                    const thumbnailUrl = metadata?.public_derivative_url;
-
-                    if (thumbnailUrl) {
-                      return (
-                        <img
-                          src={thumbnailUrl}
-                          alt={selectedFile.name}
-                          className="w-full rounded-lg border border-gray-300"
-                        />
-                      );
-                    }
-                    return (
-                      <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
-                        <span className="text-8xl">📄</span>
-                      </div>
-                    );
-                  })()}
-
-                  {selectedFile.type === "document" && (() => {
-                    const metadata = mediaMetadata[selectedFile.url];
-                    const thumbnailUrl = metadata?.public_derivative_url;
-
-                    if (thumbnailUrl) {
-                      return (
-                        <img
-                          src={thumbnailUrl}
-                          alt={selectedFile.name}
-                          className="w-full rounded-lg border border-gray-300"
-                        />
-                      );
-                    }
-                    return (
-                      <div className="p-12 bg-gray-50 rounded-lg text-center border border-gray-300">
-                        <span className="text-8xl">📋</span>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Details and Actions */}
-                <div className="space-y-4">
-                  {/* File Details */}
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-700">Size:</span>
-                      <span className="ml-2 text-gray-600">{formatFileSize(selectedFile.size)}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">Type:</span>
-                      <span className="ml-2 text-gray-600">{selectedFile.type}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">Modified:</span>
-                      <span className="ml-2 text-gray-600">{formatDate(selectedFile.last_modified)}</span>
-                    </div>
-                    {(() => {
-                      const metadata = mediaMetadata[selectedFile.url];
-                      if (metadata) {
-                        return (
-                          <>
-                            {metadata.date && (
-                              <div>
-                                <span className="font-medium text-gray-700">Date:</span>
-                                <span className="ml-2 text-gray-600">{metadata.date}</span>
-                              </div>
-                            )}
-                            {metadata.credit && (
-                              <div>
-                                <span className="font-medium text-gray-700">Credit:</span>
-                                <span className="ml-2 text-gray-600">{metadata.credit}</span>
-                              </div>
-                            )}
-                            {metadata.description_markdown && (
-                              <div>
-                                <span className="font-medium text-gray-700">Description:</span>
-                                <span className="ml-2 text-gray-600">{metadata.description_markdown}</span>
-                              </div>
-                            )}
-                          </>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-2 pt-4">
-                    <button
-                      onClick={() => setLightboxSrc(selectedFile.url)}
-                      className="block w-full bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Open File
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(selectedFile.url);
-                        alert("URL copied to clipboard!");
-                      }}
-                      className="block w-full bg-gray-200 text-gray-800 text-center px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Copy URL
-                    </button>
-                    <button
-                      onClick={() => handleEditClick(selectedFile)}
-                      className="block w-full bg-green-600 text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Edit Metadata
-                    </button>
-                    <button
-                      onClick={() => handleDetachFromVoyages(selectedFile)}
-                      className="block w-full bg-orange-500 text-white text-center px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-                    >
-                      Detach from All Voyages
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCompletely(selectedFile)}
-                      className="block w-full bg-red-600 text-white text-center px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      Detach and Delete from Media Library
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
