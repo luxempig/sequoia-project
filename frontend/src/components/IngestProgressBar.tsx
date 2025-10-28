@@ -53,8 +53,12 @@ const IngestProgressBar: React.FC = () => {
     // Check immediately on mount
     checkIngestStatus();
 
-    // Poll every 2 seconds
-    intervalId = setInterval(checkIngestStatus, 2000);
+    // Determine polling interval based on whether there's an active operation
+    // Poll every 2 seconds if active, every 60 seconds if idle
+    const hasActiveOperation = progress?.status === 'running' || progress?.status === 'initializing';
+    const pollInterval = hasActiveOperation ? 2000 : 60000;
+
+    intervalId = setInterval(checkIngestStatus, pollInterval);
 
     return () => {
       if (intervalId) clearInterval(intervalId);
