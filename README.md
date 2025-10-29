@@ -99,7 +99,23 @@ python3 -m voyage_ingest.main --source json --file canonical_voyages.json
 - **Logs:** `logs/nightly-ingest-YYYY-MM-DD.log` (auto-cleanup after 7 days)
 - **Documentation:** `README-CRON.md`
 
-### 6. GitHub Actions Auto-Deploy
+### 6. SEO Optimization
+**Documentation:** `SEO_OPTIMIZATIONS.md`
+
+Comprehensive search engine optimization for maximum visibility:
+- **Meta Tags**: Optimized title, description, keywords, Open Graph, Twitter Cards
+- **Structured Data**: Schema.org JSON-LD (WebSite, HistoricalArchive, Vehicle)
+- **XML Sitemap**: Auto-generated with 361+ URLs (voyages, people, presidents)
+- **robots.txt**: Proper crawler directives with sitemap reference
+- **Auto-Generation**: Sitemap regenerated on each deployment
+
+Expected benefits:
+- Top rankings for "USS Sequoia", "presidential yacht"
+- Rich search results with knowledge panel
+- Site search box in Google results
+- Optimized social media previews
+
+### 7. GitHub Actions Auto-Deploy
 **Location:** `.github/workflows/deploy.yml`
 
 **Trigger Paths:**
@@ -139,7 +155,7 @@ python3 -m voyage_ingest.main --source json --file canonical_voyages.json
 - `GOOGLE_CREDENTIALS` - Service account JSON
 - `DROPBOX_ACCESS_TOKEN` - Dropbox API token
 
-### 7. AWS Infrastructure
+### 8. AWS Infrastructure
 **S3 Buckets:**
 - `sequoia-canonical-media` (private) - Original high-res files
 - `sequoia-derivative-media` (public) - Thumbnails and web-optimized versions
@@ -154,7 +170,7 @@ python3 -m voyage_ingest.main --source json --file canonical_voyages.json
 - Services: Nginx (port 80), FastAPI backend (port 8000), PM2 process manager
 - Node.js v18, Python 3.9
 
-### 8. Data Consolidation
+### 9. Data Consolidation
 **Location:** `backend/scripts/consolidate_duplicates.py`
 
 Automated deduplication system that:
