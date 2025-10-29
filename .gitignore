@@ -60,7 +60,6 @@ ENV/
 .env.test.local
 .env.production.local
 *.env
-!no_secrets.env
 
 # Frontend build outputs
 frontend/build/
