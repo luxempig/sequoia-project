@@ -97,9 +97,10 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 /var/log/
+nightly-ingest-*.log
 
 # PM2
 .pm2/

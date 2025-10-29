@@ -6,13 +6,12 @@ A comprehensive digital archive documenting the USS Sequoia Presidential Yacht's
 
 ## Project Status
 
-**Production Ready** - Fully deployed and operational with automated deployment pipeline, nightly data ingestion, and curator interface for ongoing content management.
+**Production Ready** - Fully deployed and operational with automated deployment pipeline and curator interface for ongoing content management.
 
 ### Current Statistics
 - **460+ voyages** documented across 9 presidential administrations
 - **362+ media items** (photos, documents, logs)
 - **496+ unique passenger titles** (presidents, dignitaries, crew, guests)
-- **Automated nightly ingestion** at 3 AM EST
 
 ## Key Features
 
@@ -93,11 +92,11 @@ cd backend
 python3 -m voyage_ingest.main --source json --file canonical_voyages.json
 ```
 
-**Nightly Automation:**
-- **Script:** `run-nightly-ingest.sh`
-- **Schedule:** 3 AM EST via cron
-- **Logs:** `logs/nightly-ingest-YYYY-MM-DD.log` (auto-cleanup after 7 days)
-- **Documentation:** `README-CRON.md`
+**Triggered via Curator Interface:**
+- Navigate to `/curator` page
+- Make edits to voyages/media/passengers
+- Click "Trigger Ingest" button to manually run ingestion
+- Monitor progress in real-time via API status endpoint
 
 ### 6. SEO Optimization
 **Documentation:** `SEO_OPTIMIZATIONS.md`
@@ -232,11 +231,10 @@ sequoia-project/
 │   └── deploy.yml                         # Auto-deploy pipeline
 │
 ├── deploy-unified.sh                      # Deployment orchestration
-├── run-nightly-ingest.sh                  # Cron job script
 ├── nginx-sequoia.conf                     # Web server config
 ├── ecosystem.config.js                    # PM2 configuration
-├── README-CRON.md                         # Nightly automation docs
-├── EXTERNAL-ACCESS.md                     # Temp access guide
+├── SEO_OPTIMIZATIONS.md                   # SEO documentation
+├── VOYAGE-JSON-SCHEMA.md                  # Data schema reference
 └── LICENSE.md                             # Proprietary license
 ```
 
@@ -415,7 +413,7 @@ npm start
 ```
 canonical_voyages.json (source of truth)
          ↓
-  [Nightly Ingest @ 3 AM]
+  [Manual Ingest via Curator Interface]
          ↓
   Voyage Ingest Pipeline:
     1. Validate JSON
@@ -540,11 +538,7 @@ ssh -i sequoia-key.pem ec2-user@3.14.31.211
 pm2 logs sequoia-backend --lines 100
 
 # Deployment logs
-tail -f ~/sequoia-project/logs/deploy-unified.log
-
-# Nightly ingest logs
-ls -lth ~/sequoia-project/logs/nightly-ingest-*.log
-tail -100 ~/sequoia-project/logs/nightly-ingest-$(date +%Y-%m-%d).log
+tail -f ~/sequoia-deploy.log
 
 # Nginx logs
 sudo tail -f /var/log/nginx/access.log
@@ -612,20 +606,7 @@ ssh -i sequoia-key.pem ec2-user@3.14.31.211
 - `ecosystem.config.js` - PM2 configuration
 - `nginx-sequoia.conf` - Nginx configuration
 - `deploy-unified.sh` - Deployment script
-- `run-nightly-ingest.sh` - Cron job script
 - `backend/canonical_voyages.json` - Data source of truth
-
-**Cron Jobs:**
-```bash
-# View crontab
-crontab -l
-
-# Edit crontab
-crontab -e
-
-# Current schedule: 3 AM EST nightly ingest
-0 8 * * * /home/ec2-user/sequoia-project/run-nightly-ingest.sh
-```
 
 ### Emergency Procedures
 
@@ -698,12 +679,12 @@ npm run dev:backend        # FastAPI with hot reload (port 8000)
 ```
 
 ### Curator Workflow
-1. Navigate to `/curators` page
+1. Navigate to `/curator` page
 2. Select president to filter voyages
 3. Edit voyage details, add media, manage passengers
-4. Click "Save Changes" (instant, no ingest)
-5. Edits persist in `canonical_voyages.json`
-6. Nightly ingest at 3 AM updates database and website
+4. Click "Save Changes" (instant, updates `canonical_voyages.json`)
+5. Click "Trigger Ingest" button to run ingestion manually
+6. Monitor progress in real-time, changes appear on website immediately after ingest completes
 
 ### Making Code Changes
 1. Create feature branch: `git checkout -b feature/your-feature`
@@ -754,11 +735,10 @@ sudo nginx -t                    # Test config
 sudo tail -f /var/log/nginx/error.log
 
 # View deployment logs
-tail -f ~/sequoia-project/logs/deploy-unified.log
+tail -f ~/sequoia-deploy.log
 
-# Check nightly ingest logs
-ls -lth ~/sequoia-project/logs/nightly-ingest-*.log
-tail -50 ~/sequoia-project/logs/nightly-ingest-2025-10-01.log
+# Backend application logs
+pm2 logs sequoia-backend --lines 100
 ```
 
 ### Manual Deployment

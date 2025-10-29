@@ -4,7 +4,7 @@ This document describes the expected structure of `backend/canonical_voyages.jso
 
 ## Overview
 
-The canonical JSON file is structured by president, with each president containing an array of voyages. The nightly ingestion process reads this file and syncs it to the PostgreSQL database.
+The canonical JSON file is structured by president, with each president containing an array of voyages. The ingestion process reads this file and syncs it to the PostgreSQL database when manually triggered via the curator interface.
 
 ## Top-Level Structure
 
@@ -219,10 +219,11 @@ The ingestion process maps JSON fields to database columns as follows:
 
 ## Curator Workflow
 
-1. Edit `canonical_voyages.json` using the curator interface at `/curators`
+1. Edit `canonical_voyages.json` using the curator interface at `/curator`
 2. Save changes (updates JSON file immediately)
-3. Nightly ingestion at 3 AM EST syncs to database
-4. Or trigger manual ingestion via curator interface
+3. Click "Trigger Ingest" button to manually run ingestion
+4. Monitor progress in real-time (takes ~4-5 minutes for full dataset)
+5. Changes appear on public website immediately after ingestion completes
 
 ---
 

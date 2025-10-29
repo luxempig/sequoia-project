@@ -370,14 +370,13 @@ source venv/bin/activate
 python3 -m voyage_ingest.main --source json --file canonical_voyages.json
 ```
 
-### Automated Nightly Ingestion
+### Triggered via Curator Interface
 
-Runs at 3 AM EST via cron:
-```bash
-0 8 * * * /home/ec2-user/sequoia-project/run-nightly-ingest.sh
-```
-
-Logs to: `logs/nightly-ingest-YYYY-MM-DD.log`
+The curator interface provides a "Trigger Ingest" button that:
+1. Starts the ingestion process asynchronously
+2. Returns an `ingest_id` for progress tracking
+3. Updates can be monitored via `/api/ingest/status/{ingest_id}`
+4. Takes 4-5 minutes to complete for full dataset
 
 ### Ingestion Workflow
 
