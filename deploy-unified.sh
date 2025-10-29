@@ -187,7 +187,20 @@ if [ -f "frontend-build.tar.gz" ]; then
     sudo mkdir -p $NGINX_ROOT
     sudo rm -rf $NGINX_ROOT/*
     sudo tar -xzf frontend-build.tar.gz -C $NGINX_ROOT/
-    
+
+    # Generate and copy XML sitemap for SEO
+    log "Generating XML sitemap..."
+    cd $BACKEND_DIR
+    source venv/bin/activate
+    python3 generate_sitemap.py > ../frontend/public/sitemap.xml 2>&1 || log "WARNING: Sitemap generation failed"
+    if [ -f "../frontend/public/sitemap.xml" ]; then
+        sudo cp ../frontend/public/sitemap.xml $NGINX_ROOT/sitemap.xml
+        log "Sitemap deployed successfully ($(grep -c '<url>' ../frontend/public/sitemap.xml) URLs)"
+    else
+        log "WARNING: Sitemap file not found, skipping sitemap deployment"
+    fi
+    cd $APP_DIR
+
     # Copy truman_translated.json to web root for nginx static serving
     log "Copying truman_translated.json to web root..."
     sudo cp $APP_DIR/truman_translated.json $NGINX_ROOT/
