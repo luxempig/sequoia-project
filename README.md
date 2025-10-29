@@ -134,7 +134,9 @@ Expected benefits:
    - Detects changed directories
    - Installs Python dependencies if needed
    - Clears Python bytecode cache
+   - Generates and deploys XML sitemap (361+ URLs)
    - Extracts frontend build to nginx directory
+   - Creates `.env` file with secrets and hardcoded values
    - Deletes and recreates PM2 backend process
    - Reloads nginx
 
@@ -151,8 +153,38 @@ Expected benefits:
 - `AWS_ACCESS_KEY_ID` - AWS credentials for S3
 - `AWS_SECRET_ACCESS_KEY` - AWS secret
 - `DB_PASSWORD` - PostgreSQL password
-- `GOOGLE_CREDENTIALS` - Service account JSON
+- `GOOGLE_CREDENTIALS_B64` - Base64-encoded service account JSON
 - `DROPBOX_ACCESS_TOKEN` - Dropbox API token
+
+**Environment Variables (Hardcoded in `deploy-unified.sh`):**
+
+The deployment script hardcodes non-secret environment variables directly in the `.env` file it creates. **To update these values, edit `deploy-unified.sh` lines 71-110 and 288-327.**
+
+| Category | Variable | Hardcoded Value | To Change |
+|----------|----------|----------------|-----------|
+| **Database** | DB_HOST | `sequoia-prod.cricoy2ms8a0.us-east-2.rds.amazonaws.com` | Edit deploy-unified.sh |
+| | DB_PORT | `5432` | Edit deploy-unified.sh |
+| | DB_NAME | `sequoia_db` | Edit deploy-unified.sh |
+| | DB_USER | `sequoia` | Edit deploy-unified.sh |
+| | DB_SCHEMA | `sequoia` | Edit deploy-unified.sh |
+| **AWS S3** | AWS_REGION | `us-east-2` | Edit deploy-unified.sh |
+| | MEDIA_BUCKET | `uss-sequoia-bucket` | Edit deploy-unified.sh |
+| | PUBLIC_BUCKET | `sequoia-public` | Edit deploy-unified.sh |
+| | PRIVATE_BUCKET | `sequoia-canonical` | Edit deploy-unified.sh |
+| **Google** | GOOGLE_APPLICATION_CREDENTIALS | `/home/ec2-user/sequoia-project/backend/keys/sequoia_credentials.json` | Edit deploy-unified.sh |
+| | PRESIDENTS_SHEET_TITLE | `presidents` | Edit deploy-unified.sh |
+| **Dropbox** | DROPBOX_TIMEOUT | `60` | Edit deploy-unified.sh |
+| **Processing** | CANONICAL_VOYAGES_FILE | `canonical_voyages.json` | Edit deploy-unified.sh |
+| | REDIS_URL | `redis://localhost:6379/0` | Edit deploy-unified.sh |
+| | ASYNC_THUMBNAILS | `true` | Edit deploy-unified.sh |
+| | CELERY_WORKER_CONCURRENCY | `2` | Edit deploy-unified.sh |
+| | CELERY_TASK_TIME_LIMIT | `1800` | Edit deploy-unified.sh |
+
+**Note:** The `.env` file is created fresh on every deployment by combining:
+- **Hardcoded values** from `deploy-unified.sh` (non-secrets)
+- **Secret values** from GitHub Secrets (passwords, API keys)
+
+This means there is no `.env` file in the repository - it's generated on the server during deployment.
 
 ### 8. AWS Infrastructure
 **S3 Buckets:**
