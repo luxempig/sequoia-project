@@ -9,12 +9,9 @@
 !package.json
 !package-lock.json
 !deploy-unified.sh
-!setup-ec2.sh
 !nginx-sequoia.conf
 !ecosystem.config.js
-!webhook-server.js
-!truman.json
-!truman_translated.json
+!SEO_OPTIMIZATIONS.md
 
 # Dependencies
 node_modules/
@@ -132,7 +129,9 @@ VOYAGE-JSON-SCHEMA.md
 AWS_S3_SETUP.md
 README-CRON.md
 aws-iam-s3-policy.json
+nginx-sequoia-complete.conf
 
 # Deprecated scripts
 run-nightly-ingest.sh
 setup-ec2.sh
+webhook-server.js
