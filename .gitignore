@@ -42,6 +42,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+=*
 
 # Virtual environments
 venv/
@@ -109,11 +110,13 @@ keys/
 !keys/.gitkeep
 claude-api-keys.txt
 sequoia-key.pem
+sequoia-claude.txt
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+*.bak
 
 # Coverage reports
 coverage/
