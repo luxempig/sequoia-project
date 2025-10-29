@@ -1,6 +1,12 @@
 # Automated Nightly Ingest
 
-The EC2 instance is configured to automatically run the voyage ingest script every night at 3 AM EST.
+> **⚠️ DEPRECATED - This feature is no longer in use.**
+> Ingestion is now triggered manually via the curator interface at `/curator`.
+> This file is kept for historical reference only.
+
+---
+
+The EC2 instance was previously configured to automatically run the voyage ingest script every night at 3 AM EST.
 
 ## Setup
 

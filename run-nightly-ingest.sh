@@ -1,6 +1,9 @@
 #!/bin/bash
-# Nightly voyage ingest script
-# Runs at 3 AM daily via cron
+# ⚠️ DEPRECATED - This script is no longer in use
+# Ingestion is now triggered manually via the curator interface at /curator
+# This file is kept for historical reference only
+#
+# Previously: Nightly voyage ingest script that ran at 3 AM daily via cron
 
 LOG_DIR=/home/ec2-user/sequoia-project/logs
 LOG_FILE=${LOG_DIR}/nightly-ingest-$(date +%Y-%m-%d).log
