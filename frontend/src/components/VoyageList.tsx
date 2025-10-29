@@ -1,6 +1,7 @@
 import { api } from "../api";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Layout from "./Layout";
 import VoyageCard from "./VoyageCard";
 import VoyageCardExpanded from "./VoyageCardExpanded";
@@ -47,6 +48,14 @@ const getTagColor = (tag: string) => {
 export default function VoyageList() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Pagination state
+  const [page, setPage] = useState(() => {
+    const pageParam = params.get("page");
+    return pageParam ? parseInt(pageParam, 10) : 1;
+  });
+  const pageSize = 50; // Items per page
 
   const [q, setQ] = useState(() => params.get("q") || "");
   const [df, setDF] = useState(() => params.get("date_from") || "");
@@ -64,9 +73,7 @@ export default function VoyageList() {
   });
   const [presidentDropdownOpen, setPresidentDropdownOpen] = useState(false);
 
-  const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [presidents, setPrez] = useState<President[]>([]);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>(() => {
     const saved = sessionStorage.getItem('voyageListViewMode');
     return (saved === 'timeline' ? 'timeline' : 'list') as 'list' | 'timeline';
@@ -75,6 +82,19 @@ export default function VoyageList() {
   const [editMode, setEditMode] = useState<boolean>(() => {
     const saved = sessionStorage.getItem('voyageListEditMode');
     return saved === 'true';
+  });
+
+  // Fetch voyages with React Query and pagination
+  const { data: voyages = [], isLoading: loading } = useQuery({
+    queryKey: ['voyages', params.toString(), page],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams(params);
+      searchParams.set("limit", pageSize.toString());
+      searchParams.set("offset", ((page - 1) * pageSize).toString());
+      const data = await api.listVoyages(searchParams);
+      return Array.isArray(data) ? data : [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Track which president/owner sections are collapsed
@@ -139,10 +159,10 @@ export default function VoyageList() {
       })
       .catch(console.error);
 
-    // Set default limit if no params are present
+    // Set default page if no params are present
     if (!params.toString()) {
       const p = new URLSearchParams();
-      p.set("limit", "1000");
+      p.set("page", "1");
       setParams(p);
     }
 
@@ -191,13 +211,13 @@ export default function VoyageList() {
     setRoy(params.get("royalty") === "1");
   }, [params]);
 
+  // Sync page state with URL
   useEffect(() => {
-    setLoading(true);
-    api
-      .listVoyages(params)
-      .then((d) => setVoyages(Array.isArray(d) ? d : []))
-      .catch(() => setVoyages([]))
-      .finally(() => setLoading(false));
+    const pageParam = params.get("page");
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    if (newPage !== page) {
+      setPage(newPage);
+    }
   }, [params]);
 
   const apply = (e?: React.FormEvent) => {
@@ -208,8 +228,7 @@ export default function VoyageList() {
     if (roy) p.set("royalty", "1");
     if (df) p.set("date_from", df);
     if (dt) p.set("date_to", dt);
-    // Note: president filter is now client-side only, not sent to API
-    p.set("limit", "1000"); // Fetch all voyages
+    p.set("page", "1"); // Reset to first page on new search
 
     // Reset president filter to all when search query is applied
     if (q && presidents.length > 0) {
@@ -218,6 +237,7 @@ export default function VoyageList() {
     }
 
     setParams(p);
+    setPage(1);
     setMore(false);
   };
   const clear = () => {
@@ -226,8 +246,18 @@ export default function VoyageList() {
     setPres(allSlugs); // Reset to all selected
     setSig(false); setRoy(false);
     const p = new URLSearchParams();
-    p.set("limit", "1000");
+    p.set("page", "1");
     setParams(p);
+    setPage(1);
+  };
+
+  // Handle page navigation
+  const goToPage = (newPage: number) => {
+    const p = new URLSearchParams(params);
+    p.set("page", newPage.toString());
+    setParams(p);
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle saving edited voyage
@@ -247,12 +277,8 @@ export default function VoyageList() {
         throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Update local state
-      setVoyages(prevVoyages =>
-        prevVoyages.map(v =>
-          v.voyage_slug === updatedVoyage.voyage_slug ? updatedVoyage : v
-        )
-      );
+      // Invalidate React Query cache to refetch data
+      queryClient.invalidateQueries({ queryKey: ['voyages'] });
 
       console.log('Voyage saved successfully');
       alert('✓ Voyage saved successfully');
@@ -274,8 +300,8 @@ export default function VoyageList() {
         throw new Error('Failed to delete voyage');
       }
 
-      // Remove from local state
-      setVoyages(prevVoyages => prevVoyages.filter(v => v.voyage_slug !== voyageSlug));
+      // Invalidate React Query cache to refetch data
+      queryClient.invalidateQueries({ queryKey: ['voyages'] });
       alert('Voyage deleted successfully');
     } catch (error) {
       console.error('Error deleting voyage:', error);
@@ -619,6 +645,110 @@ export default function VoyageList() {
                     </section>
                   );
                 })}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {viewMode !== 'timeline' && !loading && filteredVoyages.length > 0 && (
+            <div className="mt-8 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 1}
+                  className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                    page === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-gray-700 self-center">
+                  Page {page}
+                </span>
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={filteredVoyages.length < pageSize}
+                  className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                    filteredVoyages.length < pageSize
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing page <span className="font-medium">{page}</span> ({filteredVoyages.length} voyages)
+                  </p>
+                </div>
+                <div>
+                  <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <button
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page === 1}
+                      className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 ${
+                        page === 1 ? 'cursor-not-allowed' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    {/* Page numbers */}
+                    {page > 2 && (
+                      <button
+                        onClick={() => goToPage(1)}
+                        className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      >
+                        1
+                      </button>
+                    )}
+                    {page > 3 && (
+                      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300">
+                        ...
+                      </span>
+                    )}
+                    {page > 1 && (
+                      <button
+                        onClick={() => goToPage(page - 1)}
+                        className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      >
+                        {page - 1}
+                      </button>
+                    )}
+                    <button
+                      aria-current="page"
+                      className="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20"
+                    >
+                      {page}
+                    </button>
+                    {filteredVoyages.length === pageSize && (
+                      <button
+                        onClick={() => goToPage(page + 1)}
+                        className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      >
+                        {page + 1}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => goToPage(page + 1)}
+                      disabled={filteredVoyages.length < pageSize}
+                      className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 ${
+                        filteredVoyages.length < pageSize ? 'cursor-not-allowed' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Next</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
           )}
         </>

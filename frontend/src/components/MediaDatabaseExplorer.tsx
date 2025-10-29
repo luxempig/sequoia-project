@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "./Layout";
 import { MediaItem } from "../types";
 import ConfirmationDialog, { ConfirmationDialogProps } from "./ConfirmationDialog";
@@ -16,42 +17,37 @@ interface MediaUsage {
 }
 
 const MediaDatabaseExplorer: React.FC = () => {
-  const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [mediaTypeFilter, setMediaTypeFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+
+  // Local error state for operations (delete, etc.)
+  const [operationError, setOperationError] = useState("");
 
   // Dialogs
   const [confirmationDialog, setConfirmationDialog] = useState<Omit<ConfirmationDialogProps, 'isOpen' | 'onClose'> | null>(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
 
-  useEffect(() => {
-    loadMedia();
-  }, [searchQuery, mediaTypeFilter]);
-
-  const loadMedia = async () => {
-    setLoading(true);
-    setError("");
-    try {
+  // Fetch media with React Query and pagination
+  const { data: media = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['media', searchQuery, mediaTypeFilter, page],
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("q", searchQuery);
       if (mediaTypeFilter !== "all") params.append("media_type", mediaTypeFilter);
-      params.append("limit", "1000");
+      params.append("limit", pageSize.toString());
+      params.append("offset", ((page - 1) * pageSize).toString());
 
       const response = await fetch(`/api/media/?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to load media");
 
-      const data = await response.json();
-      setMedia(data);
-    } catch (err) {
-      setError(`Error loading media: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return await response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const checkMediaUsage = async (mediaSlug: string): Promise<MediaUsage> => {
     const response = await fetch(`/api/curator/media/${mediaSlug}/usage`);
@@ -114,7 +110,7 @@ const MediaDatabaseExplorer: React.FC = () => {
         });
       }
     } catch (err) {
-      setError(`Failed to check media usage: ${err}`);
+      setOperationError(`Failed to check media usage: ${err}`);
     } finally {
       setDeleteInProgress(false);
     }
@@ -150,10 +146,10 @@ const MediaDatabaseExplorer: React.FC = () => {
       });
 
       // Reload media list
-      await loadMedia();
+      await refetch();
       setSelectedMedia(null);
     } catch (err) {
-      setError(`Failed to delete media: ${err}`);
+      setOperationError(`Failed to delete media: ${err}`);
     } finally {
       setDeleteInProgress(false);
     }
@@ -173,7 +169,7 @@ const MediaDatabaseExplorer: React.FC = () => {
     });
 
     // Reload media list
-    await loadMedia();
+    await refetch();
   };
 
   const getMediaIcon = (type: string) => {
@@ -220,9 +216,9 @@ const MediaDatabaseExplorer: React.FC = () => {
           </div>
 
           {/* Error Messages */}
-          {error && (
+          {(error || operationError) && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-              {error}
+              {error ? (error instanceof Error ? error.message : String(error)) : operationError}
             </div>
           )}
 
@@ -234,14 +230,20 @@ const MediaDatabaseExplorer: React.FC = () => {
                   type="text"
                   placeholder="Search by title or description..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1); // Reset to first page on search
+                  }}
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
                 <select
                   value={mediaTypeFilter}
-                  onChange={(e) => setMediaTypeFilter(e.target.value)}
+                  onChange={(e) => {
+                    setMediaTypeFilter(e.target.value);
+                    setPage(1); // Reset to first page on filter change
+                  }}
                   className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Types</option>
@@ -272,7 +274,7 @@ const MediaDatabaseExplorer: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {media.map((item) => (
+                    {media.map((item: MediaItem) => (
                       <div
                         key={item.media_slug}
                         onClick={() => setSelectedMedia(item)}
@@ -299,6 +301,44 @@ const MediaDatabaseExplorer: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Pagination Controls */}
+                {!loading && media.length > 0 && (
+                  <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing page <span className="font-medium">{page}</span> ({media.length} items)
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className={`px-4 py-2 text-sm font-medium rounded-md ${
+                          page === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Previous
+                      </button>
+                      <span className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md">
+                        {page}
+                      </span>
+                      <button
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={media.length < pageSize}
+                        className={`px-4 py-2 text-sm font-medium rounded-md ${
+                          media.length < pageSize
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

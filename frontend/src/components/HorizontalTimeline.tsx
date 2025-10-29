@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { Voyage, MediaItem, President } from "../types";
 import { api } from "../api";
@@ -19,9 +20,6 @@ interface TimelineData {
 interface HorizontalTimelineProps {}
 
 const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
-  // Fetch voyages independently from list view
-  const [voyages, setVoyages] = useState<Voyage[]>([]);
-  const [isLoadingVoyages, setIsLoadingVoyages] = useState(true);
   // Initialize from sessionStorage if available
   const [currentYear, setCurrentYear] = useState<string>(() => {
     return sessionStorage.getItem('timelineYear') || "";
@@ -34,8 +32,28 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
   });
   const [timelineData, setTimelineData] = useState<TimelineData>({});
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
-  const [isLoadingTimeline, setIsLoadingTimeline] = useState(true);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch voyages with React Query (with higher limit for timeline view, but cached)
+  const { data: voyages = [], isLoading: isLoadingVoyages } = useQuery({
+    queryKey: ['timeline-voyages'],
+    queryFn: async () => {
+      const data = await api.listVoyages(new URLSearchParams({ limit: '1000' }));
+      return Array.isArray(data) ? data : [];
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - timeline data doesn't change often
+  });
+
+  // Fetch media with React Query
+  const { data: allMedia = [], isLoading: isLoadingMedia } = useQuery({
+    queryKey: ['timeline-media'],
+    queryFn: async () => {
+      return await api.listMedia(new URLSearchParams({ limit: '500' }));
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const isLoadingTimeline = isLoadingVoyages || isLoadingMedia;
 
   // President filter state
   const [presidents, setPresidents] = useState<President[]>([]);
@@ -64,20 +82,6 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
         setPendingPresidents(savedSlugs);
       }
     }).catch(() => setPresidents([]));
-  }, []);
-
-  // Fetch all voyages independently from list view
-  useEffect(() => {
-    setIsLoadingVoyages(true);
-    api.listVoyages(new URLSearchParams({ limit: '1000' }))
-      .then(data => {
-        setVoyages(Array.isArray(data) ? data : []);
-        setIsLoadingVoyages(false);
-      })
-      .catch(() => {
-        setVoyages([]);
-        setIsLoadingVoyages(false);
-      });
   }, []);
 
   // Filter voyages by selected presidents only
@@ -116,11 +120,13 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside, true);
   }, [filterDropdownOpen]);
 
-  // Organize voyages by year/month/day
+  // Organize voyages and media by year/month/day
   useEffect(() => {
-    setIsLoadingTimeline(true);
+    if (isLoadingTimeline) return; // Wait for data to load
+
     const organized: TimelineData = {};
 
+    // Add voyages to timeline
     filteredVoyages.forEach(voyage => {
       if (!voyage.start_date) return;
 
@@ -136,103 +142,63 @@ const HorizontalTimeline: React.FC<HorizontalTimelineProps> = () => {
       organized[year][month][day].voyages.push(voyage);
     });
 
-    // Fetch all media with dates and add to timeline
-    api.listMedia(new URLSearchParams({ limit: '500' })).then(allMedia => {
-      allMedia.forEach(media => {
-        if (!media.date) return;
+    // Add media to timeline
+    allMedia.forEach(media => {
+      if (!media.date) return;
 
-        const mediaDate = dayjs(media.date);
-        const year = mediaDate.format('YYYY');
-        const month = mediaDate.format('MMMM');
-        const day = mediaDate.format('D');
+      const mediaDate = dayjs(media.date);
+      const year = mediaDate.format('YYYY');
+      const month = mediaDate.format('MMMM');
+      const day = mediaDate.format('D');
 
-        // Include media with valid URLs (s3, drive, dropbox)
-        const url = media.s3_url || media.url || media.public_derivative_url || '';
-        if (!url) return; // Skip media without any URL
+      // Include media with valid URLs (s3, drive, dropbox)
+      const url = media.s3_url || media.url || media.public_derivative_url || '';
+      if (!url) return; // Skip media without any URL
 
-        if (!organized[year]) organized[year] = {};
-        if (!organized[year][month]) organized[year][month] = {};
-        if (!organized[year][month][day]) organized[year][month][day] = { voyages: [], media: [] };
+      if (!organized[year]) organized[year] = {};
+      if (!organized[year][month]) organized[year][month] = {};
+      if (!organized[year][month][day]) organized[year][month][day] = { voyages: [], media: [] };
 
-        organized[year][month][day].media.push(media);
-      });
-
-      setTimelineData(organized);
-      setIsLoadingTimeline(false);
-
-      // Set initial year, month, and day - prefer saved position, fallback to first available
-      const years = Object.keys(organized).sort();
-      if (years.length > 0) {
-        // Check if saved position is valid
-        const savedYear = currentYear;
-        const savedMonth = currentMonth;
-        const savedDay = currentDay;
-
-        const isValidSavedPosition = savedYear &&
-          organized[savedYear] &&
-          savedMonth &&
-          organized[savedYear][savedMonth] &&
-          savedDay &&
-          organized[savedYear][savedMonth][savedDay];
-
-        if (!isValidSavedPosition && !currentYear) {
-          // No valid saved position, use first available
-          const firstYear = years[0];
-          setCurrentYear(firstYear);
-
-          const months = Object.keys(organized[firstYear]).sort((a, b) =>
-            dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
-          );
-          if (months.length > 0) {
-            const firstMonth = months[0];
-            setCurrentMonth(firstMonth);
-
-            const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
-            if (days.length > 0) {
-              setCurrentDay(days[0]);
-            }
-          }
-        }
-      }
-    }).catch(err => {
-      console.error('Failed to fetch media for timeline:', err);
-      setTimelineData(organized);
-      setIsLoadingTimeline(false);
-
-      // Set initial year, month, and day even if media fetch fails
-      const years = Object.keys(organized).sort();
-      if (years.length > 0) {
-        const savedYear = currentYear;
-        const savedMonth = currentMonth;
-        const savedDay = currentDay;
-
-        const isValidSavedPosition = savedYear &&
-          organized[savedYear] &&
-          savedMonth &&
-          organized[savedYear][savedMonth] &&
-          savedDay &&
-          organized[savedYear][savedMonth][savedDay];
-
-        if (!isValidSavedPosition && !currentYear) {
-          const firstYear = years[0];
-          setCurrentYear(firstYear);
-
-          const months = Object.keys(organized[firstYear]).sort((a, b) =>
-            dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
-          );
-          if (months.length > 0) {
-            const firstMonth = months[0];
-            setCurrentMonth(firstMonth);
-
-            const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
-            if (days.length > 0) {
-              setCurrentDay(days[0]);
-            }
-          }
-        }
-      }
+      organized[year][month][day].media.push(media);
     });
-  }, [filteredVoyages]);
+
+    setTimelineData(organized);
+
+    // Set initial year, month, and day - prefer saved position, fallback to first available
+    const years = Object.keys(organized).sort();
+    if (years.length > 0) {
+      // Check if saved position is valid
+      const savedYear = currentYear;
+      const savedMonth = currentMonth;
+      const savedDay = currentDay;
+
+      const isValidSavedPosition = savedYear &&
+        organized[savedYear] &&
+        savedMonth &&
+        organized[savedYear][savedMonth] &&
+        savedDay &&
+        organized[savedYear][savedMonth][savedDay];
+
+      if (!isValidSavedPosition && !currentYear) {
+        // No valid saved position, use first available
+        const firstYear = years[0];
+        setCurrentYear(firstYear);
+
+        const months = Object.keys(organized[firstYear]).sort((a, b) =>
+          dayjs().month(dayjs(`${a} 1`).month()).valueOf() - dayjs().month(dayjs(`${b} 1`).month()).valueOf()
+        );
+        if (months.length > 0) {
+          const firstMonth = months[0];
+          setCurrentMonth(firstMonth);
+
+          const days = Object.keys(organized[firstYear][firstMonth]).sort((a, b) => parseInt(a) - parseInt(b));
+          if (days.length > 0) {
+            setCurrentDay(days[0]);
+          }
+        }
+      }
+    }
+  }, [filteredVoyages, allMedia, isLoadingTimeline]);
 
   // Save timeline position whenever it changes
   useEffect(() => {
