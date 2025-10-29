@@ -5,20 +5,93 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>USS Sequoia Archive</title>
-    <!-- Cache busting: v2024-09-08-14:00 -->
+    <!-- Primary Meta Tags -->
+    <title>USS Sequoia Presidential Yacht Archive | Historic Voyages & Media Collection</title>
+    <meta name="title" content="USS Sequoia Presidential Yacht Archive | Historic Voyages & Media Collection" />
+    <meta name="description" content="Explore the complete digital archive of USS Sequoia, America's presidential yacht from 1933-1977. Browse historic voyages, photos, documents, and stories from Presidents Hoover through Carter." />
+    <meta name="keywords" content="USS Sequoia, presidential yacht, Herbert Hoover, Franklin D Roosevelt, FDR, Harry Truman, Dwight Eisenhower, John F Kennedy, JFK, Lyndon Johnson, Richard Nixon, Gerald Ford, Jimmy Carter, naval history, presidential history, historic ships, maritime archive" />
+    <meta name="author" content="USS Sequoia Presidential Yacht Group" />
+    <link rel="canonical" href="https://uss-sequoia.com/" />
 
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://uss-sequoia.com/" />
+    <meta property="og:title" content="USS Sequoia Presidential Yacht Archive" />
+    <meta property="og:description" content="Explore the complete digital archive of USS Sequoia, America's presidential yacht. Browse historic voyages, photos, and documents from 1933-1977." />
+    <meta property="og:image" content="https://uss-sequoia.com/social-preview.jpg" />
+    <meta property="og:site_name" content="USS Sequoia Archive" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://uss-sequoia.com/" />
+    <meta property="twitter:title" content="USS Sequoia Presidential Yacht Archive" />
+    <meta property="twitter:description" content="Explore the complete digital archive of USS Sequoia, America's presidential yacht from 1933-1977." />
+    <meta property="twitter:image" content="https://uss-sequoia.com/social-preview.jpg" />
+
+    <!-- Theme and Mobile -->
+    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="USS Sequoia" />
+
+    <!-- Geographic Tags -->
+    <meta name="geo.region" content="US-DC" />
+    <meta name="geo.placename" content="Washington, D.C." />
+
+    <!-- Robots -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!-- Cache busting: v2024-10-29 -->
+
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Structured Data / Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "USS Sequoia Presidential Yacht Archive",
+      "url": "https://uss-sequoia.com",
+      "description": "Digital archive of America's presidential yacht USS Sequoia, featuring historic voyages, photographs, and documents from 1933-1977.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "USS Sequoia Presidential Yacht Group",
+        "url": "https://uss-sequoia.com"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://uss-sequoia.com/voyages?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HistoricalArchive",
+      "name": "USS Sequoia Presidential Yacht Archive",
+      "description": "Complete digital collection documenting the USS Sequoia presidential yacht and its role in American history from 1933-1977.",
+      "url": "https://uss-sequoia.com",
+      "about": {
+        "@type": "Vehicle",
+        "name": "USS Sequoia",
+        "description": "Presidential yacht that served nine U.S. presidents from Herbert Hoover to Jimmy Carter",
+        "vehicleIdentificationNumber": "USS Sequoia (AG-23)",
+        "category": "Yacht"
+      },
+      "holdingArchive": {
+        "@type": "ArchiveOrganization",
+        "name": "USS Sequoia Presidential Yacht Group"
+      }
+    }
+    </script>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.

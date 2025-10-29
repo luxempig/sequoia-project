@@ -1,3 +1,37 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt for USS Sequoia Presidential Yacht Archive
+# https://uss-sequoia.com/robots.txt
+
 User-agent: *
-Disallow:
+Allow: /
+Allow: /voyages
+Allow: /timeline
+Allow: /people
+Allow: /presidents
+Allow: /media
+
+# Disallow admin/curator interfaces
+Disallow: /curator
+Disallow: /admin
+Disallow: /api/curator
+Disallow: /media-explorer
+
+# Disallow search result pages with query parameters (to avoid duplicate content)
+Disallow: /*?q=*
+
+# Sitemap location
+Sitemap: https://uss-sequoia.com/sitemap.xml
+
+# Crawl delay (be gentle)
+Crawl-delay: 1
+
+# Special rules for specific bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
