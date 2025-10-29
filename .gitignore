@@ -124,3 +124,14 @@ coverage/
 
 # ESLint cache
 .eslintcache
+
+# Data files and schemas (legacy/working files)
+truman.json
+truman_translated.json
+VOYAGE-JSON-SCHEMA.md
+AWS_S3_SETUP.md
+README-CRON.md
+
+# Deprecated scripts
+run-nightly-ingest.sh
+setup-ec2.sh
