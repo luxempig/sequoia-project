@@ -64,7 +64,7 @@ def list_voyages(
                     COALESCE(v.start_location,'') ILIKE %s OR
                     COALESCE(v.end_location,'') ILIKE %s OR
                     COALESCE(v.vessel_name,'') ILIKE %s OR
-                    COALESCE(v.voyage_type,'') ILIKE %s OR
+                    COALESCE(v.voyage_type::text,'') ILIKE %s OR
                     COALESCE(v.presidential_initials,'') ILIKE %s OR
                     COALESCE(v.royalty_details,'') ILIKE %s OR
                     COALESCE(v.foreign_leader_country,'') ILIKE %s OR
