@@ -72,7 +72,7 @@ def list_voyages(
                     COALESCE(v.start_date::text,'') ILIKE %s OR
                     COALESCE(v.end_date::text,'') ILIKE %s OR
                     COALESCE(p_search.full_name,'') ILIKE %s OR
-                    COALESCE(vp_search.role_title,'') ILIKE %s
+                    COALESCE(p_search.role_title,'') ILIKE %s
                 )""")
                 params += [search_pattern] * 21
 
