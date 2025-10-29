@@ -8,13 +8,14 @@ from dotenv import load_dotenv
 import boto3
 from PIL import Image
 
-# Change to backend directory
-backend_dir = '/home/ec2-user/sequoia-project/backend'
+# Get backend directory relative to this script
+from pathlib import Path
+backend_dir = Path(__file__).parent
 os.chdir(backend_dir)
 load_dotenv()
 
 # Import after changing directory
-sys.path.insert(0, backend_dir)
+sys.path.insert(0, str(backend_dir))
 from voyage_ingest.db_updater import _conn
 
 # Try to import PyMuPDF for PDF thumbnails

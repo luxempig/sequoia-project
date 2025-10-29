@@ -12,9 +12,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# Add app directory to path to import database utilities
+# Add parent directory to path to import database utilities
 import sys
-sys.path.insert(0, '/home/ec2-user/sequoia-project/backend')
+from pathlib import Path
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
 
 from app.db import get_connection
 

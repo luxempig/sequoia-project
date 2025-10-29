@@ -414,35 +414,33 @@ The curator interface provides a "Trigger Ingest" button that:
 
 ## Utility Scripts
 
-### Consolidate Duplicate People
-```bash
-python3 scripts/consolidate_duplicates.py
-```
-Merges duplicate person records, consolidating to the most complete entry.
+All utility scripts are located in `scripts/` directory. See `scripts/README.md` for complete documentation.
 
-### Clear S3 Media
+### Database Maintenance
 ```bash
-python3 scripts/clear_s3_media.py
+python3 scripts/deduplicate_passengers.py    # Merge duplicate person records
+python3 scripts/clear_database.py            # Delete all data (keeps schema)
 ```
-Deletes all media from S3 buckets (use with caution!).
 
-### Debug Voyage Media
+### S3 Maintenance
 ```bash
-python3 scripts/debug_voyage_media.py
+python3 scripts/clear_s3_media.py                    # Delete all S3 media files
+python3 scripts/fix_s3_content_disposition.py        # Fix Content-Disposition headers
+python3 scripts/regenerate_missing_thumbnails.py     # Regenerate missing PDF thumbnails
 ```
-Checks for media issues on specific voyages.
 
-### Populate Sample Media
+### Debugging & Exploration
 ```bash
-python3 scripts/populate_sample_media.py
+python3 scripts/debug_voyage_media.py <voyage-slug>  # Debug media issues for a voyage
+python3 scripts/find_passenger_example.py            # Find passengers on multiple voyages
 ```
-Generates sample media records for testing.
 
-### Fix Voyage Search
+### Site Generation
 ```bash
-python3 scripts/fix_voyage_search.py
+python3 scripts/generate_sitemap.py > sitemap.xml   # Generate SEO sitemap
 ```
-Repairs search-related database issues.
+
+**Note:** See `scripts/README.md` for detailed usage, warnings, and requirements for each script.
 
 ## Data Processing Tools
 

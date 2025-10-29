@@ -195,7 +195,7 @@ if [ -f "frontend-build.tar.gz" ]; then
     log "Generating XML sitemap..."
     cd $BACKEND_DIR
     source venv/bin/activate
-    python3 generate_sitemap.py > ../frontend/public/sitemap.xml 2>&1 || log "WARNING: Sitemap generation failed"
+    python3 scripts/generate_sitemap.py > ../frontend/public/sitemap.xml 2>&1 || log "WARNING: Sitemap generation failed"
     if [ -f "../frontend/public/sitemap.xml" ]; then
         sudo cp ../frontend/public/sitemap.xml $NGINX_ROOT/sitemap.xml
         log "Sitemap deployed successfully ($(grep -c '<url>' ../frontend/public/sitemap.xml) URLs)"
