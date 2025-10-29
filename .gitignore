@@ -131,6 +131,7 @@ truman_translated.json
 VOYAGE-JSON-SCHEMA.md
 AWS_S3_SETUP.md
 README-CRON.md
+aws-iam-s3-policy.json
 
 # Deprecated scripts
 run-nightly-ingest.sh
