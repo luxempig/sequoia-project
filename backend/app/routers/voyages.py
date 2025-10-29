@@ -111,11 +111,14 @@ def list_voyages(
             sql += f" ORDER BY v.{sort} {order.upper()} NULLS LAST LIMIT %s OFFSET %s"
             params += [limit, offset]
 
+            LOG.info(f"Executing voyage search query with q={q}, params count={len(params)}")
             cur.execute(sql, params)
             rows = cur.fetchall()
+            LOG.info(f"Query returned {len(rows)} rows")
             return [parse_voyage_sources(dict(row)) for row in rows]
     except Exception as e:
-        LOG.warning(f"Database error in list_voyages, returning mock data: {e}")
+        LOG.error(f"Database error in list_voyages: {e}", exc_info=True)
+        LOG.warning(f"Returning mock data due to error")
         return get_mock_voyages()
 
 def get_mock_voyages() -> List[Dict[str, Any]]:
