@@ -53,8 +53,8 @@ def main():
     args = parser.parse_args()
 
     # Check for API key
-    if not os.getenv('ANTHROPIC_API_KEY'):
-        print("Error: ANTHROPIC_API_KEY not found in environment")
+    if not os.getenv('CLAUDE_API_KEY'):
+        print("Error: CLAUDE_API_KEY not found in environment")
         sys.exit(1)
 
     # Read markdown file

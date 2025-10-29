@@ -73,7 +73,7 @@ def find_existing_person(cur, full_name: str, bio_url: Optional[str] = None) -> 
 
 def rank_title_importance(title1: str, title2: str, person_name: str) -> str:
     """Use Claude API to determine which title is more important/notable for a person"""
-    client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+    client = anthropic.Anthropic(api_key=os.getenv('CLAUDE_API_KEY'))
 
     prompt = f"""Compare these two titles/roles for {person_name} and determine which is MORE IMPORTANT or NOTABLE historically.
 
@@ -107,7 +107,7 @@ Respond with ONLY "A" or "B" - nothing else."""
 def parse_with_claude(markdown_content: str, president_slug: Optional[str] = None) -> Dict:
     """Use Claude API to parse voyage markdown into structured JSON"""
 
-    client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+    client = anthropic.Anthropic(api_key=os.getenv('CLAUDE_API_KEY'))
 
     prompt = f"""You are a data extraction specialist. Parse the following voyage markdown document into structured JSON.
 
@@ -462,8 +462,8 @@ def main():
     args = parser.parse_args()
 
     # Check for API key
-    if not os.getenv('ANTHROPIC_API_KEY'):
-        print("Error: ANTHROPIC_API_KEY not found in environment")
+    if not os.getenv('CLAUDE_API_KEY'):
+        print("Error: CLAUDE_API_KEY not found in environment")
         sys.exit(1)
 
     # Read markdown file

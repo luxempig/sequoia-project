@@ -354,13 +354,19 @@ def main():
     parser = argparse.ArgumentParser(description='Convert USS Sequoia voyage markdown files to JSON using Claude API')
     parser.add_argument('input', help='Input markdown file or directory containing markdown files')
     parser.add_argument('output', help='Output JSON file path')
-    parser.add_argument('--api-key', required=True, help='Anthropic API key')
+    parser.add_argument('--api-key', help='Claude API key (defaults to CLAUDE_API_KEY environment variable)')
     parser.add_argument('--merge-with', help='Existing JSON file to merge with')
-    
+
     args = parser.parse_args()
-    
+
+    # Get API key from argument or environment
+    api_key = args.api_key or os.getenv('CLAUDE_API_KEY')
+    if not api_key:
+        print("Error: CLAUDE_API_KEY not found in environment and --api-key not provided")
+        sys.exit(1)
+
     # Initialize processor
-    processor = VoyageProcessor(args.api_key)
+    processor = VoyageProcessor(api_key)
     
     # Check if input is file or directory
     input_path = Path(args.input)

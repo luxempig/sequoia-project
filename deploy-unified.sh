@@ -97,6 +97,9 @@ PRESIDENTS_SHEET_TITLE="presidents"
 DROPBOX_ACCESS_TOKEN=$DROPBOX_ACCESS_TOKEN
 DROPBOX_TIMEOUT=60
 
+# Claude API Configuration
+CLAUDE_API_KEY=$CLAUDE_API_KEY
+
 # Canonical voyage data file path
 CANONICAL_VOYAGES_FILE=canonical_voyages.json
 
@@ -311,6 +314,9 @@ PRESIDENTS_SHEET_TITLE="presidents"
 # Dropbox Configuration
 DROPBOX_ACCESS_TOKEN=$DROPBOX_ACCESS_TOKEN
 DROPBOX_TIMEOUT=60
+
+# Claude API Configuration
+CLAUDE_API_KEY=$CLAUDE_API_KEY
 
 # Canonical voyage data file path
 CANONICAL_VOYAGES_FILE=canonical_voyages.json

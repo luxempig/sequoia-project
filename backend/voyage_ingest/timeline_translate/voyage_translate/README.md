@@ -13,26 +13,30 @@ pip install -r requirements.txt
 ## Setup
 
 1. Get your Anthropic API key from https://console.anthropic.com/
-2. Set it as an environment variable (optional):
+2. Set it as an environment variable or provide via --api-key flag:
 ```bash
-export ANTHROPIC_API_KEY="your-api-key-here"
+export CLAUDE_API_KEY="your-api-key-here"
 ```
 
 ## Usage
 
 ### Process a single markdown file:
 ```bash
+# Using environment variable
+python voyage_markdown_to_json.py voyage.md output.json
+
+# Or with explicit API key
 python voyage_markdown_to_json.py voyage.md output.json --api-key YOUR_API_KEY
 ```
 
 ### Process a directory of markdown files:
 ```bash
-python voyage_markdown_to_json.py ./voyages_directory/ combined_output.json --api-key YOUR_API_KEY
+python voyage_markdown_to_json.py ./voyages_directory/ combined_output.json
 ```
 
 ### Merge with existing JSON:
 ```bash
-python voyage_markdown_to_json.py new_voyages.md output.json --api-key YOUR_API_KEY --merge-with existing.json
+python voyage_markdown_to_json.py new_voyages.md output.json --merge-with existing.json
 ```
 
 ## Input Format
@@ -89,17 +93,17 @@ The script generates JSON with the following structure:
 
 ### Example 1: Process President Ford's voyages
 ```bash
-python voyage_markdown_to_json.py Gerald_Ford.md ford_voyages.json --api-key $ANTHROPIC_API_KEY
+python voyage_markdown_to_json.py Gerald_Ford.md ford_voyages.json
 ```
 
 ### Example 2: Process multiple presidents and combine
 ```bash
-python voyage_markdown_to_json.py ./president_markdowns/ all_voyages.json --api-key $ANTHROPIC_API_KEY
+python voyage_markdown_to_json.py ./president_markdowns/ all_voyages.json
 ```
 
 ### Example 3: Add new voyages to existing database
 ```bash
-python voyage_markdown_to_json.py new_discoveries.md updated.json --merge-with sequoia_database.json --api-key $ANTHROPIC_API_KEY
+python voyage_markdown_to_json.py new_discoveries.md updated.json --merge-with sequoia_database.json
 ```
 
 ## Notes

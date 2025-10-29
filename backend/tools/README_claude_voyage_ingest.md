@@ -12,7 +12,7 @@ Parse voyage markdown files from Google Docs using Claude API and intelligently 
 
 ## Setup
 
-1. API key is already configured in `.env` as `ANTHROPIC_API_KEY`
+1. API key is already configured in `.env` as `CLAUDE_API_KEY`
 
 2. Install required packages (if not already installed):
 ```bash

@@ -155,6 +155,7 @@ Expected benefits:
 - `DB_PASSWORD` - PostgreSQL password
 - `GOOGLE_CREDENTIALS_B64` - Base64-encoded service account JSON
 - `DROPBOX_ACCESS_TOKEN` - Dropbox API token
+- `CLAUDE_API_KEY` - Anthropic Claude API key (for voyage ingestion tools)
 
 **Environment Variables (Hardcoded in `deploy-unified.sh`):**
 
