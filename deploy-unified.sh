@@ -201,9 +201,7 @@ if [ -f "frontend-build.tar.gz" ]; then
     fi
     cd $APP_DIR
 
-    # Copy truman_translated.json to web root for nginx static serving
-    log "Copying truman_translated.json to web root..."
-    sudo cp $APP_DIR/truman_translated.json $NGINX_ROOT/
+    # Note: truman_translated.json removed from repository (no longer needed)
 
     # Debug: Check what files were deployed
     log "Files deployed to $NGINX_ROOT:"
