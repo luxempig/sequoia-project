@@ -85,17 +85,24 @@ export default function VoyageList() {
   });
 
   // Fetch voyages with React Query and pagination
-  const { data: voyages = [], isLoading: loading } = useQuery({
+  const { data, isLoading: loading } = useQuery({
     queryKey: ['voyages', params.toString(), page],
     queryFn: async () => {
       const searchParams = new URLSearchParams(params);
       searchParams.set("limit", pageSize.toString());
       searchParams.set("offset", ((page - 1) * pageSize).toString());
-      const data = await api.listVoyages(searchParams);
-      return Array.isArray(data) ? data : [];
+      const response = await api.listVoyages(searchParams);
+      // Handle both old format (array) and new format (object with items and total)
+      if (Array.isArray(response)) {
+        return { items: response, total: response.length };
+      }
+      return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const voyages = data?.items || [];
+  const totalCount = data?.total || 0;
 
   // Track which president/owner sections are collapsed
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
@@ -651,37 +658,44 @@ export default function VoyageList() {
           {/* Pagination Controls */}
           {viewMode !== 'timeline' && !loading && filteredVoyages.length > 0 && (
             <div className="mt-8 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
-              <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                  onClick={() => goToPage(page - 1)}
-                  disabled={page === 1}
-                  className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                    page === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                  }`}
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-700 self-center">
-                  Page {page}
-                </span>
-                <button
-                  onClick={() => goToPage(page + 1)}
-                  disabled={filteredVoyages.length < pageSize}
-                  className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                    filteredVoyages.length < pageSize
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                  }`}
-                >
-                  Next
-                </button>
+              <div className="flex flex-1 flex-col gap-3 sm:hidden">
+                <div className="text-sm text-gray-700 text-center">
+                  Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount}
+                </div>
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page === 1}
+                    className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                      page === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-700 self-center">
+                    Page {page}
+                  </span>
+                  <button
+                    onClick={() => goToPage(page + 1)}
+                    disabled={filteredVoyages.length < pageSize}
+                    className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                      filteredVoyages.length < pageSize
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
               <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm text-gray-700">
-                    Showing page <span className="font-medium">{page}</span> ({filteredVoyages.length} voyages)
+                    Showing <span className="font-medium">{((page - 1) * pageSize) + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(page * pageSize, totalCount)}</span> of{' '}
+                    <span className="font-medium">{totalCount}</span> results
                   </p>
                 </div>
                 <div>

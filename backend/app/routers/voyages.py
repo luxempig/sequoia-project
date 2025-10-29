@@ -21,7 +21,7 @@ def parse_voyage_sources(voyage: Dict[str, Any]) -> Dict[str, Any]:
             pass
     return voyage
 
-@router.get("/", response_model=List[Dict[str, Any]])
+@router.get("/", response_model=Dict[str, Any])
 def list_voyages(
     q: Optional[str] = Query(None, description="Keyword search across all voyage text fields"),
     origin: Optional[str] = None,
@@ -36,7 +36,7 @@ def list_voyages(
     order: str = Query("asc", pattern="^(asc|desc)$"),
     limit: int = Query(250, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     try:
         with db_cursor(read_only=True) as cur:
             base = "SELECT DISTINCT v.* FROM sequoia.voyages v"
@@ -104,22 +104,40 @@ def list_voyages(
             valid_sorts = {"start_date", "end_date", "title", "created_at", "updated_at"}
             if sort not in valid_sorts:
                 sort = "start_date"
-                
-            sql = base + (" " + " ".join(joins) if joins else "")
-            if conds:
-                sql += " WHERE " + " AND ".join(conds)
+
+            # Build WHERE clause
+            where_clause = " WHERE " + " AND ".join(conds) if conds else ""
+            join_clause = " " + " ".join(joins) if joins else ""
+
+            # First, get the total count (without LIMIT/OFFSET)
+            count_sql = f"SELECT COUNT(DISTINCT v.voyage_slug) FROM sequoia.voyages v{join_clause}{where_clause}"
+            LOG.info(f"Executing count query with q={q}")
+            cur.execute(count_sql, params[:len(params)])  # Use params without limit/offset
+            total = cur.fetchone()['count']
+            LOG.info(f"Total count: {total}")
+
+            # Now get the paginated results
+            sql = base + join_clause + where_clause
             sql += f" ORDER BY v.{sort} {order.upper()} NULLS LAST LIMIT %s OFFSET %s"
             params += [limit, offset]
 
             LOG.info(f"Executing voyage search query with q={q}, params count={len(params)}")
             cur.execute(sql, params)
             rows = cur.fetchall()
-            LOG.info(f"Query returned {len(rows)} rows")
-            return [parse_voyage_sources(dict(row)) for row in rows]
+            LOG.info(f"Query returned {len(rows)} rows out of {total} total")
+
+            return {
+                "items": [parse_voyage_sources(dict(row)) for row in rows],
+                "total": total
+            }
     except Exception as e:
         LOG.error(f"Database error in list_voyages: {e}", exc_info=True)
         LOG.warning(f"Returning mock data due to error")
-        return get_mock_voyages()
+        mock_voyages = get_mock_voyages()
+        return {
+            "items": mock_voyages,
+            "total": len(mock_voyages)
+        }
 
 def get_mock_voyages() -> List[Dict[str, Any]]:
     """Mock voyage data for development when database is unavailable"""
