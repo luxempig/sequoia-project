@@ -68,6 +68,12 @@ frontend/dist/
 frontend/.next/
 frontend/out/
 
+# Build artifacts and tarballs
+*.tar.gz
+*.tgz
+frontend-build.tar.gz
+build.tar.gz
+
 # Backend specific
 backend/__pycache__/
 backend/*.db
