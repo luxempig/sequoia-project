@@ -351,55 +351,89 @@ const MediaExplorer: React.FC = () => {
 
       const mediaItem = allMedia.find((m: MediaItem) => m.s3_url === s3Url);
 
-      if (!mediaItem) {
-        alert("Media not found in database.");
-        return;
-      }
+      if (mediaItem) {
+        // Media exists in database - check voyages and delete from both
+        const usageResponse = await fetch(`/api/curator/media/${mediaItem.media_slug}/usage`);
+        if (!usageResponse.ok) {
+          throw new Error("Failed to check media usage");
+        }
 
-      // Check which voyages use this media
-      const usageResponse = await fetch(`/api/curator/media/${mediaItem.media_slug}/usage`);
-      if (!usageResponse.ok) {
-        throw new Error("Failed to check media usage");
-      }
+        const usageData = await usageResponse.json();
+        const voyages = usageData.voyages || [];
 
-      const usageData = await usageResponse.json();
-      const voyages = usageData.voyages || [];
+        // Build confirmation message
+        let confirmMessage = `⚠️ PERMANENTLY DELETE "${file.name}"?\n\n`;
+        confirmMessage += "This will permanently remove it from:\n";
+        confirmMessage += "• Database\n";
+        confirmMessage += "• S3 storage (original file)\n";
+        confirmMessage += "• S3 storage (thumbnail)\n\n";
+        confirmMessage += "⚠️ THIS ACTION CANNOT BE UNDONE! ⚠️\n\n";
 
-      // Build confirmation message
-      let confirmMessage = `⚠️ PERMANENTLY DELETE "${file.name}"?\n\n`;
-      confirmMessage += "This will permanently remove it from:\n";
-      confirmMessage += "• Database\n";
-      confirmMessage += "• S3 storage (original file)\n";
-      confirmMessage += "• S3 storage (thumbnail)\n\n";
-      confirmMessage += "⚠️ THIS ACTION CANNOT BE UNDONE! ⚠️\n\n";
+        if (voyages.length > 0) {
+          confirmMessage += `This media is currently used in ${voyages.length} voyage${voyages.length > 1 ? 's' : ''}:\n`;
+          voyages.forEach((v: any) => {
+            confirmMessage += `\n• ${v.title || v.voyage_slug}`;
+          });
+          confirmMessage += "\n\nIt will be removed from all these voyages.";
+        }
 
-      if (voyages.length > 0) {
-        confirmMessage += `This media is currently used in ${voyages.length} voyage${voyages.length > 1 ? 's' : ''}:\n`;
-        voyages.forEach((v: any) => {
-          confirmMessage += `\n• ${v.title || v.voyage_slug}`;
+        if (!confirm(confirmMessage)) {
+          return;
+        }
+
+        // Double confirmation for permanent deletion
+        if (!confirm("Are you ABSOLUTELY SURE? This cannot be undone!")) {
+          return;
+        }
+
+        // Delete completely (from S3 and database)
+        const response = await fetch(`/api/curator/media/${mediaItem.media_slug}?delete_from_s3=true`, {
+          method: "DELETE"
         });
-        confirmMessage += "\n\nIt will be removed from all these voyages.";
+
+        if (!response.ok) {
+          throw new Error("Failed to delete media from database and S3");
+        }
+
+        alert("✓ Media permanently deleted from S3 and database!");
+      } else {
+        // Media not in database - delete directly from S3
+        let confirmMessage = `⚠️ PERMANENTLY DELETE "${file.name}" FROM S3?\n\n`;
+        confirmMessage += "This file is NOT in the database.\n\n";
+        confirmMessage += "This will delete it from:\n";
+        confirmMessage += "• S3 storage only\n\n";
+        confirmMessage += "⚠️ THIS ACTION CANNOT BE UNDONE! ⚠️\n\n";
+
+        if (!confirm(confirmMessage)) {
+          return;
+        }
+
+        if (!confirm("Are you ABSOLUTELY SURE? This cannot be undone!")) {
+          return;
+        }
+
+        const response = await fetch('/api/curator/media/delete-from-s3', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            urls: [file.url]
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete file from S3");
+        }
+
+        const result = await response.json();
+        if (result.deleted_count > 0) {
+          alert("✓ File permanently deleted from S3!");
+        } else {
+          throw new Error("Failed to delete file from S3");
+        }
       }
 
-      if (!confirm(confirmMessage)) {
-        return;
-      }
-
-      // Double confirmation for permanent deletion
-      if (!confirm("Are you ABSOLUTELY SURE? This cannot be undone!")) {
-        return;
-      }
-
-      // Delete completely (from S3 and database)
-      const response = await fetch(`/api/curator/media/${mediaItem.media_slug}?delete_from_s3=true`, {
-        method: "DELETE"
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete media");
-      }
-
-      alert("✓ Media permanently deleted from S3 and database!");
       returnToDirectory();
 
       // Refresh the view

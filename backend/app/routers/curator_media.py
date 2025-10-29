@@ -423,6 +423,50 @@ def delete_media(media_slug: str, delete_from_s3: bool = False) -> Dict[str, Any
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+@router.post("/delete-from-s3")
+def delete_file_from_s3(s3_urls: Dict[str, List[str]]) -> Dict[str, Any]:
+    """
+    Delete files directly from S3 by URL without requiring database records.
+    Useful for cleaning up orphaned files that exist in S3 but not in the database.
+
+    Request body: {"urls": ["https://bucket.s3.amazonaws.com/path/to/file1.jpg", ...]}
+    """
+    try:
+        urls = s3_urls.get('urls', [])
+        if not urls:
+            raise HTTPException(status_code=400, detail="No URLs provided")
+
+        results = {
+            'deleted': [],
+            'failed': []
+        }
+
+        for url in urls:
+            try:
+                success = delete_from_s3_bucket(url)
+                if success:
+                    results['deleted'].append(url)
+                else:
+                    results['failed'].append({'url': url, 'error': 'Failed to delete'})
+            except Exception as e:
+                results['failed'].append({'url': url, 'error': str(e)})
+
+        LOG.info(f"S3 direct delete: {len(results['deleted'])} succeeded, {len(results['failed'])} failed")
+
+        return {
+            "message": f"Deleted {len(results['deleted'])} file(s) from S3",
+            "deleted_count": len(results['deleted']),
+            "failed_count": len(results['failed']),
+            "results": results
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOG.error(f"Error in S3 direct delete: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
 @router.post("/upload")
 async def upload_media_file(
     file: UploadFile = File(...),
@@ -796,16 +840,25 @@ def upload_to_s3(file_content: bytes, bucket: str, key: str, content_type: str) 
 
 
 def delete_from_s3_bucket(s3_url: str) -> bool:
-    """Delete a file from S3 given its URL"""
+    """Delete a file from S3 given its URL (supports both s3:// and https:// formats)"""
     try:
-        # Parse bucket and key from URL
-        # Format: https://bucket-name.s3.amazonaws.com/key/path
-        if not s3_url or 's3.amazonaws.com' not in s3_url:
+        if not s3_url:
             return False
 
-        parts = s3_url.replace('https://', '').split('/')
-        bucket = parts[0].replace('.s3.amazonaws.com', '')
-        key = '/'.join(parts[1:])
+        # Parse bucket and key from URL
+        if s3_url.startswith('s3://'):
+            # Format: s3://bucket-name/key/path
+            parts = s3_url.replace('s3://', '').split('/')
+            bucket = parts[0]
+            key = '/'.join(parts[1:])
+        elif 's3.amazonaws.com' in s3_url:
+            # Format: https://bucket-name.s3.amazonaws.com/key/path
+            parts = s3_url.replace('https://', '').split('/')
+            bucket = parts[0].replace('.s3.amazonaws.com', '')
+            key = '/'.join(parts[1:])
+        else:
+            LOG.warning(f"Invalid S3 URL format: {s3_url}")
+            return False
 
         s3_client = boto3.client('s3')
         s3_client.delete_object(Bucket=bucket, Key=key)
